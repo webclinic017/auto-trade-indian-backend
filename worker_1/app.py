@@ -1,0 +1,83 @@
+from re import T
+import pika
+import json
+from streamer import Streamer
+from pymongo import MongoClient
+from functions_db import get_key_token
+import datetime
+import os
+import gc
+import threading
+
+mongo = MongoClient('mongodb://db')
+db = mongo['intraday'+str(datetime.date.today())]
+collection = mongo['orders']
+
+mongo_clients = mongo_clients = MongoClient(
+    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+
+worker = 'worker_1'
+garbage = 'garbage'
+
+zerodha_id = os.environ['USERNAME']
+api_key, access_token = get_key_token(
+    zerodha_id, mongo_clients['client_details']['clients'])
+
+# access_token = "PSTIVkiKnMIYot42uTXnF9LbBKLqBeT4"
+
+ws_host = os.environ['WS_HOST']
+
+tickers = {}
+threads = {}
+
+
+def main():
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='rabbit_mq'))
+    channel = connection.channel()
+    channel.queue_declare(queue=worker)
+    channel.queue_declare(queue=garbage)
+
+    # the encoded body is received below and it is decoded to readable format )(utf-8 is readable text)
+
+    def callback(ch, method, properties, body):
+        print('[*] Message Received')
+        document = json.loads(body.decode('utf-8'))
+
+        if document['instrument'] not in tickers:
+            tickers[document['instrument']] = Streamer(
+                document['token'],
+                ws_host,
+                api_key,
+                access_token,
+                document,
+                channel
+            )
+            t = threading.Thread(target=tickers[document['instrument']].start)
+            threads[document['instrument']] = t
+            threads[document['instrument']].start()
+        else:
+            # just update the document
+            tickers[document['instrument']].document = document
+
+    def collect_garbage(ch, method, properties, body):
+        print('[*] Clearing Garbage')
+        ticker = body.decode('utf-8')
+
+        del tickers[ticker]
+        del threads[ticker]
+        gc.collect()
+
+    channel.basic_consume(
+        queue=worker, on_message_callback=callback, auto_ack=True)
+    channel.basic_consume(
+        queue=garbage, on_message_callback=collect_garbage, auto_ack=True)
+    print('[*] Waiting for Message')
+    channel.start_consuming()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit()

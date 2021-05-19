@@ -1,0 +1,6 @@
+pika
+pymongo
+requests
+pandas
+kiteconnect
+dnspython
