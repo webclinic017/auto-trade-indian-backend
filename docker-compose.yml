@@ -1,0 +1,88 @@
+version: "3.3"
+
+services:
+  db:
+    image: mongo
+    # volumes:
+    # - ./data:/data/db
+    ports:
+      - "27018:27017"
+    command: mongod
+    logging:
+      driver: none
+  rabbit_mq:
+    image: rabbitmq:3-management
+    logging:
+      driver: none
+  scrapper:
+    build: ./Scrapper
+    volumes:
+      - ./Scrapper:/app
+    depends_on:
+      - rabbit_mq
+      - db
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    restart: always
+  calculator:
+    build: ./Calculator
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    volumes:
+      - ./Calculator:/app
+    depends_on:
+      - scrapper
+    restart: always
+    env_file:
+      - .env
+      - auth.env
+    extra_hosts:
+      # - 'token_server:192.168.1.10'
+      - 'token_server:192.168.100.3'
+      # - 'token_server:0.0.0.0'
+  compare:
+    build: ./Compare
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    volumes:
+      - ./Compare:/app
+    depends_on:
+      - calculator
+    restart: always
+    env_file:
+      - .env
+      - auth.env
+    extra_hosts:
+      # - 'token_server:192.168.1.10'
+      - 'token_server:192.168.100.3'
+      # - 'token_server:0.0.0.0'
+  #add workers below
+  worker_1:
+    build: ./worker_1
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    depends_on:
+      - scrapper
+      - calculator
+      - compare
+    volumes:
+      - ./worker_1:/app
+    env_file:
+      - .env
+      - auth.env
+    extra_hosts:
+      # - 'token_server:192.168.1.10'
+      - 'token_server:192.168.100.3'
+      # - 'token_server:0.0.0.0'
+  # worker_3:
+  #   build: ./worker_3
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   depends_on:
+  #     - scrapper
+  #     - calculator
+  #     - compare
+  #   volumes:
+  #     - ./worker_3:/app
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   extra_hosts:
+  #     # - 'token_server:192.168.1.10'
+  #     - 'token_server:192.168.100.3'
+      # - 'token_server:0.0.0.0'
