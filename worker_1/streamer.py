@@ -7,7 +7,7 @@ import threading
 
 
 class Streamer:
-    def __init__(self, token, host, api_key, access_token, document, q_channel):
+    def __init__(self, token, host, api_key, access_token, document):
         self.token = token
         self.document = document
         self.entry_price = -math.inf
@@ -24,8 +24,6 @@ class Streamer:
         self.is_first = True
         self.entry_lock = threading.Lock()
         self.exit_lock = threading.Lock()
-
-        self.q_channel = q_channel
 
         print(f'[***] STREAMER STARTED FOR {self.token} [***]')
 
@@ -72,13 +70,6 @@ class Streamer:
                     self.should_stream = False
                     self.should_trade = False
 
-                    # send the message to delete the current object
-                    self.q_channel.basic_publish(
-                        exchange='',
-                        routing_key='garbage',
-                        body=str(self.document['instrument']).encode()
-                    )
-
                 elif cmp >= (self.entry_price + 1*self.document['sl_points']) and self.document['quantity'] > 0 and self.should_trade and self.mode == 'exit':
                     market_sell_order(
                         self.kite,
@@ -90,13 +81,6 @@ class Streamer:
                     self.mode = 'entry'
                     self.should_stream = False
                     self.should_trade = True
-
-                    # send the message to delete the current object
-                    self.q_channel.basic_publish(
-                        exchange='',
-                        routing_key='garbage',
-                        body=str(self.document['instrument']).encode()
-                    )
 
             self.exit_lock.release()
 
