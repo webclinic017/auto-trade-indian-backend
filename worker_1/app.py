@@ -17,7 +17,6 @@ mongo_clients = mongo_clients = MongoClient(
     'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
 worker = 'worker_1'
-garbage = 'garbage'
 
 zerodha_id = os.environ['USERNAME']
 api_key, access_token = get_key_token(
@@ -28,7 +27,6 @@ api_key, access_token = get_key_token(
 ws_host = os.environ['WS_HOST']
 
 tickers = {}
-threads = {}
 
 
 def main():
@@ -36,7 +34,6 @@ def main():
         pika.ConnectionParameters(host='rabbit_mq'))
     channel = connection.channel()
     channel.queue_declare(queue=worker)
-    channel.queue_declare(queue=garbage)
 
     # the encoded body is received below and it is decoded to readable format )(utf-8 is readable text)
 
@@ -50,28 +47,20 @@ def main():
                 ws_host,
                 api_key,
                 access_token,
-                document,
-                channel
+                document
             )
             t = threading.Thread(target=tickers[document['instrument']].start)
-            threads[document['instrument']] = t
-            threads[document['instrument']].start()
+            t.start()
         else:
             # just update the document
             tickers[document['instrument']].document = document
-
-    def collect_garbage(ch, method, properties, body):
-        print('[*] Clearing Garbage')
-        ticker = body.decode('utf-8')
-
-        del tickers[ticker]
-        del threads[ticker]
-        gc.collect()
+            if tickers[document['instrument']].should_trade == False:
+                tickers[document['instrument']].should_trade = True
+                tickers[document['instrument']].should_stream = True
+                tickers[document['instrument']].mode = 'entry'
 
     channel.basic_consume(
         queue=worker, on_message_callback=callback, auto_ack=True)
-    channel.basic_consume(
-        queue=garbage, on_message_callback=collect_garbage, auto_ack=True)
     print('[*] Waiting for Message')
     channel.start_consuming()
 
