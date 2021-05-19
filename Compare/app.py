@@ -43,16 +43,9 @@ def main():
         latest_compare = compareResult(prev, current, True)
         # Take this as reference
 
-        # send the notification to streaming server
-        if latest_compare['weekly_Options_PE'] not in tokens:
-            token = token_map[latest_compare['weekly_Options_PE']]['token']
-            requests.get(f'http://{token_server}:3000/subscribe/{token}')
-            tokens.add(latest_compare['weekly_Options_PE'])
+        if latest_compare['weekly_Options_CE'] not in token_map or latest_compare['weekly_Options_PE'] not in token_map:
+            return 
 
-        if latest_compare['weekly_Options_CE'] not in tokens:
-            token = token_map[latest_compare['weekly_Options_CE']]['token']
-            requests.get(f'http://{token_server}:3000/subscribe/{token}')
-            tokens.add(latest_compare['weekly_Options_CE'])
 
         atr_PE = get_atr(latest_compare['weekly_Options_PE'])
         atr_CE = get_atr(latest_compare['weekly_Options_CE'])
@@ -83,6 +76,12 @@ def main():
                 'sl_points': latest_compare['atr_CE']
 
             }
+
+            if latest_compare['weekly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_CE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_CE'])
+            
             # the above document is encoded in binary format and named with variable body and sent to worker 1 app.py
             channel.basic_publish(
                 exchange='',
@@ -103,6 +102,11 @@ def main():
                 'sl_points': latest_compare['atr_PE']
 
             }
+
+            if latest_compare['weekly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_PE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
@@ -136,6 +140,11 @@ def main():
 
             }
 
+            if latest_compare['weekly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_CE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_CE'])
+
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
@@ -153,6 +162,11 @@ def main():
                 'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_PE'] else nf_quantity,
                 'sl_points': latest_compare['atr_PE']
             }
+
+            if latest_compare['weekly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_PE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
@@ -238,6 +252,11 @@ def main():
 
             }
 
+            if latest_compare['weekly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_CE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_CE'])
+
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
@@ -257,6 +276,11 @@ def main():
 
 
             }
+
+            if latest_compare['weekly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_PE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
@@ -290,6 +314,11 @@ def main():
 
             }
 
+            if latest_compare['weekly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_CE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_CE'])
+
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
@@ -309,6 +338,11 @@ def main():
 
 
             }
+
+            if latest_compare['weekly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['weekly_Options_PE']]['token']
+                requests.get(f'http://{token_server}:3000/subscribe/{token}')
+                tokens.add(latest_compare['weekly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
