@@ -92,7 +92,7 @@ class Streamer:
                     
                     self.send_notification({
                         'notification': {
-                            'title':'ORDER PLACED',
+                            'title':'ORDER EXITED',
                             'body': self.document['instrument'],  
                         },
                         'trade': {
@@ -118,7 +118,7 @@ class Streamer:
                     
                     self.send_notification({
                         'notification': {
-                            'title':'ORDER PLACED',
+                            'title':'ORDER EXITED',
                             'body': self.document['instrument'],  
                         },
                         'trade': {
