@@ -50,8 +50,16 @@ class Streamer:
                 )
                 
                 self.send_notification({
-                    'title':'ORDER PLACED',
-                    'body': self.document['instrument']
+                    'notification': {
+                        'title':'ORDER PLACED',
+                        'body': self.document['instrument'],  
+                    },
+                    'trade': {
+                        'endpoint':'/place/market_order/buy',
+                        'trading_symbol': self.document['instrument'],
+                        'exchange': 'NFO',
+                        'quantity': self.document['quantity']
+                    }
                 })
                 
                 print('[***] ORDER PLACED [***]')
@@ -81,10 +89,20 @@ class Streamer:
                         self.kite.EXCHANGE_NFO,
                         self.document['quantity']
                     )
+                    
                     self.send_notification({
-                        'title':'ORDER EXITED',
-                        'body': self.document['instrument']
+                        'notification': {
+                            'title':'ORDER PLACED',
+                            'body': self.document['instrument'],  
+                        },
+                        'trade': {
+                            'endpoint':'/place/market_order/sell',
+                            'trading_symbol': self.document['instrument'],
+                            'exchange': 'NFO',
+                            'quantity': self.document['quantity']
+                        }
                     })
+                    
                     print('[***] ORDER EXITED [***]')
                     self.mode = 'entry'
                     self.should_stream = False
@@ -97,10 +115,20 @@ class Streamer:
                         self.kite.EXCHANGE_NFO,
                         self.document['quantity']
                     )
+                    
                     self.send_notification({
-                        'title':'ORDER EXITED',
-                        'body': self.document['instrument']
+                        'notification': {
+                            'title':'ORDER PLACED',
+                            'body': self.document['instrument'],  
+                        },
+                        'trade': {
+                            'endpoint':'/place/market_order/sell',
+                            'trading_symbol': self.document['instrument'],
+                            'exchange': 'NFO',
+                            'quantity': self.document['quantity']
+                        }
                     })
+                    
                     print('[***] ORDER EXITED [***]')
                     self.mode = 'entry'
                     self.should_stream = False
