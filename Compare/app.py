@@ -43,16 +43,17 @@ def main():
         latest_compare = compareResult(prev, current, True)
         # Take this as reference
 
-        if latest_compare['weekly_Options_CE'] not in token_map or latest_compare['weekly_Options_PE'] not in token_map:
+        if (latest_compare['monthly_Options_CE'] not in token_map) or (latest_compare['monthly_Options_PE'] not in token_map):
+            print('TOKEN NOT PRESENT')
             return 
 
 
-        atr_PE = get_atr(latest_compare['weekly_Options_PE'])
-        atr_CE = get_atr(latest_compare['weekly_Options_CE'])
-        # ema5_ce,ema8_ce,ema13_ce,ema20_ce=ema_5813(latest_compare['weekly_Options_CE'])
-        # ema5_pe,ema8_pe,ema13_pe,ema20_pe=ema_5813(latest_compare['weekly_Options_PE'])
-        slope_ce = ema_5813(latest_compare['weekly_Options_CE'])
-        slope_pe = ema_5813(latest_compare['weekly_Options_PE'])
+        atr_PE = get_atr(latest_compare['monthly_Options_PE'])
+        atr_CE = get_atr(latest_compare['monthly_Options_CE'])
+        # ema5_ce,ema8_ce,ema13_ce,ema20_ce=ema_5813(latest_compare['monthly_Options_CE'])
+        # ema5_pe,ema8_pe,ema13_pe,ema20_pe=ema_5813(latest_compare['monthly_Options_PE'])
+        slope_ce = ema_5813(latest_compare['monthly_Options_CE'])
+        slope_pe = ema_5813(latest_compare['monthly_Options_PE'])
         latest_compare['atr_PE'] = atr_PE
         latest_compare['atr_CE'] = atr_CE
         insert_data(collection, latest_compare, latest_compare['symbol'])
@@ -66,21 +67,21 @@ def main():
 
         if (latest_compare['total_power'] > 500) and (latest_compare['costly_option'] == 'bull') and (slope_ce == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_CE'],
-                'token': token_map[latest_compare['weekly_Options_CE']]['token'],
+                'instrument': latest_compare['monthly_Options_CE'],
+                'token': token_map[latest_compare['monthly_Options_CE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_CE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_CE'] else nf_quantity,
                 'entry': True,
                 'sl_points': latest_compare['atr_CE']
 
             }
 
-            if latest_compare['weekly_Options_CE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_CE']]['token']
+            if latest_compare['monthly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_CE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_CE'])
+                tokens.add(latest_compare['monthly_Options_CE'])
             
             # the above document is encoded in binary format and named with variable body and sent to worker 1 app.py
             channel.basic_publish(
@@ -88,32 +89,36 @@ def main():
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy CE')
+
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
         if (latest_compare['total_power'] < -500) and latest_compare['costly_option'] == 'bear' and (slope_pe == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_PE'],
-                'token': token_map[latest_compare['weekly_Options_PE']]['token'],
+                'instrument': latest_compare['monthly_Options_PE'],
+                'token': token_map[latest_compare['monthly_Options_PE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_PE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_PE'] else nf_quantity,
                 'entry': True,
                 'sl_points': latest_compare['atr_PE']
 
             }
 
-            if latest_compare['weekly_Options_PE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_PE']]['token']
+            if latest_compare['monthly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_PE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_PE'])
+                tokens.add(latest_compare['monthly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy PE')
+
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy PE {symbol}')
 
 
 ###################################################################################################################################################################################
@@ -130,50 +135,52 @@ def main():
 
         if (latest_compare['total_CE_short_covering'] > 0) and (latest_compare['total_PE_power'] > 0) and (slope_ce == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_CE'],
-                'token': token_map[latest_compare['weekly_Options_CE']]['token'],
+                'instrument': latest_compare['monthly_Options_CE'],
+                'token': token_map[latest_compare['monthly_Options_CE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_CE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_CE'] else nf_quantity,
                 'sl_points': latest_compare['atr_CE']
 
             }
 
-            if latest_compare['weekly_Options_CE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_CE']]['token']
+            if latest_compare['monthly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_CE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_CE'])
+                tokens.add(latest_compare['monthly_Options_CE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy CE')
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
         if latest_compare['total_CE_unwinding'] < 0 and latest_compare['total_PE_power'] < 0 and (slope_pe == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_PE'],
-                'token': token_map[latest_compare['weekly_Options_PE']]['token'],
+                'instrument': latest_compare['monthly_Options_PE'],
+                'token': token_map[latest_compare['monthly_Options_PE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_PE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_PE'] else nf_quantity,
                 'sl_points': latest_compare['atr_PE']
             }
 
-            if latest_compare['weekly_Options_PE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_PE']]['token']
+            if latest_compare['monthly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_PE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_PE'])
+                tokens.add(latest_compare['monthly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy PE')
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy PE {symbol}')
 
 ###################################################################################################################################################################################
 #                                                                                                                                                                           #
@@ -191,17 +198,17 @@ def main():
 
             document = latest_compare
             document['enter'] = True
-            # document['token_CE'] = token_map[latest_compare['weekly_Options_CE']]
-            # document['token_PE'] = token_map[latest_compare['weekly_Options_PE']]
+            # document['token_CE'] = token_map[latest_compare['monthly_Options_CE']]
+            # document['token_PE'] = token_map[latest_compare['monthly_Options_PE']]
 
-            document['ticker_CE'] = latest_compare['weekly_Options_CE']
-            document['ticker_PE'] = latest_compare['weekly_Options_PE']
+            document['ticker_CE'] = latest_compare['monthly_Options_CE']
+            document['ticker_PE'] = latest_compare['monthly_Options_PE']
 
-            document['quantity_ce'] = 125 if "BANKNIFTY" in latest_compare['weekly_Options_CE'] else 375
-            document['quantity_pe'] = 125 if "BANKNIFTY" in latest_compare['weekly_Options_PE'] else 375
-            # document['instrument'] = latest_compare['weekly_Options_CE']
-            # document['token'] = token_map[latest_compare['weekly_Options_CE']]['token']
-            # 'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_CE'] else nf_quantity,
+            document['quantity_ce'] = 125 if "BANKNIFTY" in latest_compare['monthly_Options_CE'] else 375
+            document['quantity_pe'] = 125 if "BANKNIFTY" in latest_compare['monthly_Options_PE'] else 375
+            # document['instrument'] = latest_compare['monthly_Options_CE']
+            # document['token'] = token_map[latest_compare['monthly_Options_CE']]['token']
+            # 'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_CE'] else nf_quantity,
 
             channel.basic_publish(
                 exchange='',
@@ -213,13 +220,13 @@ def main():
             document = latest_compare
             document['enter'] = False
 
-            document['ticker_CE'] = latest_compare['weekly_Options_CE'],
-            document['ticker_PE'] = latest_compare['weekly_Options_PE'],
-            document['quantity_ce'] = 125 if "BANKNIFTY" in latest_compare['weekly_Options_CE'] else 375
-            document['quantity_pe'] = 125 if "BANKNIFTY" in latest_compare['weekly_Options_PE'] else 375
+            document['ticker_CE'] = latest_compare['monthly_Options_CE'],
+            document['ticker_PE'] = latest_compare['monthly_Options_PE'],
+            document['quantity_ce'] = 125 if "BANKNIFTY" in latest_compare['monthly_Options_CE'] else 375
+            document['quantity_pe'] = 125 if "BANKNIFTY" in latest_compare['monthly_Options_PE'] else 375
 
-            # document['instrument'] = latest_compare['weekly_Options_CE']
-            # document['token'] = token_map[latest_compare['weekly_Options_CE']]['token']
+            # document['instrument'] = latest_compare['monthly_Options_CE']
+            # document['token'] = token_map[latest_compare['monthly_Options_CE']]['token']
 
             channel.basic_publish(
                 exchange='',
@@ -241,53 +248,55 @@ def main():
 
         if latest_compare["total_PE_unwinding"] > 0 and latest_compare["total_CE_power"] > 0 and (slope_ce == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_CE'],
-                'token': token_map[latest_compare['weekly_Options_CE']]['token'],
+                'instrument': latest_compare['monthly_Options_CE'],
+                'token': token_map[latest_compare['monthly_Options_CE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_CE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_CE'] else nf_quantity,
                 'sl_points': latest_compare['atr_CE']
 
 
             }
 
-            if latest_compare['weekly_Options_CE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_CE']]['token']
+            if latest_compare['monthly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_CE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_CE'])
+                tokens.add(latest_compare['monthly_Options_CE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy CE')
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
         if latest_compare["total_PE_short_covering"] < 0 and latest_compare["total_CE_power"] < 0 and (slope_pe == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_PE'],
-                'token': token_map[latest_compare['weekly_Options_PE']]['token'],
+                'instrument': latest_compare['monthly_Options_PE'],
+                'token': token_map[latest_compare['monthly_Options_PE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_PE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_PE'] else nf_quantity,
                 'sl_points': latest_compare['atr_PE']
 
 
             }
 
-            if latest_compare['weekly_Options_PE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_PE']]['token']
+            if latest_compare['monthly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_PE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_PE'])
+                tokens.add(latest_compare['monthly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy PE')
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy PE {symbol}')
 
 ###################################################################################################################################################################################
 #                                                                                                                                                                           #
@@ -303,53 +312,55 @@ def main():
 
         if latest_compare["total_CE_short_covering"] > 0 and latest_compare["total_CE_unwinding"] == 0 and (slope_ce == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_CE'],
-                'token': token_map[latest_compare['weekly_Options_CE']]['token'],
+                'instrument': latest_compare['monthly_Options_CE'],
+                'token': token_map[latest_compare['monthly_Options_CE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_CE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_CE'] else nf_quantity,
                 'sl_points': latest_compare['atr_CE']
 
 
             }
 
-            if latest_compare['weekly_Options_CE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_CE']]['token']
+            if latest_compare['monthly_Options_CE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_CE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_CE'])
+                tokens.add(latest_compare['monthly_Options_CE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy CE')
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
         if latest_compare["total_CE_unwinding"] < 0 and latest_compare["total_CE_short_covering"] == 0 and (slope_pe == 1):
             document = {
-                'instrument': latest_compare['weekly_Options_PE'],
-                'token': token_map[latest_compare['weekly_Options_PE']]['token'],
+                'instrument': latest_compare['monthly_Options_PE'],
+                'token': token_map[latest_compare['monthly_Options_PE']]['token'],
                 'trade_direction': 'buy',
                 'entry_level': latest_compare['ltp'],
                 'last_time': latest_compare["last_time"],
-                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['weekly_Options_PE'] else nf_quantity,
+                'quantity': bf_quantity if 'BANKNIFTY' in latest_compare['monthly_Options_PE'] else nf_quantity,
                 'sl_points': latest_compare['atr_PE']
 
 
             }
 
-            if latest_compare['weekly_Options_PE'] not in tokens:
-                token = token_map[latest_compare['weekly_Options_PE']]['token']
+            if latest_compare['monthly_Options_PE'] not in tokens:
+                token = token_map[latest_compare['monthly_Options_PE']]['token']
                 requests.get(f'http://{token_server}:3000/subscribe/{token}')
-                tokens.add(latest_compare['weekly_Options_PE'])
+                tokens.add(latest_compare['monthly_Options_PE'])
 
             channel.basic_publish(
                 exchange='',
                 routing_key='worker_1',
                 body=json.dumps(document).encode()
             )
-            print('[**] Message send to worker 1 to buy PE')
+            symbol = document['instrument']
+            print(f'[**] Message send to worker 1 to buy PE {symbol}')
 
 ###################################################################################################################################################################################
 #                                                                                                                                                                           #

@@ -49,8 +49,7 @@ def main():
                 access_token,
                 document
             )
-            t = threading.Thread(target=tickers[document['instrument']].start)
-            t.start()
+            tickers[document['instrument']].start()
         else:
             # just update the document
             tickers[document['instrument']].document = document
