@@ -7,7 +7,7 @@ import threading
 
 
 class Streamer:
-    def __init__(self, token, host, api_key, access_token, document):
+    def __init__(self, token, host, api_key, access_token, document, publisher_uri):
         self.token = token
         self.document = document
         self.entry_price = -math.inf
@@ -15,6 +15,7 @@ class Streamer:
 
         self.uri = f'ws://{host}/ws/ticker/{self.token}'
         self.ws = websocket.WebSocketApp(self.uri, on_message=self.on_message)
+        self.publisher_uri = publisher_uri
         self.kite = KiteConnect(api_key, access_token=access_token)
 
         self.should_stream = True
@@ -27,6 +28,12 @@ class Streamer:
 
         print(f'[***] STREAMER STARTED FOR {self.token} [***]')
 
+
+    def send_notification(self, data):
+        ws_publisher = websocket.create_connection(self.publisher_uri)
+        ws_publisher.send(json.dumps(data))
+        ws_publisher.close()
+
     def perform_entry(self, cmp):
         if not self.entry_lock.locked():
             self.entry_lock.acquire()
@@ -38,6 +45,12 @@ class Streamer:
                     self.kite.EXCHANGE_NFO,
                     self.document['quantity']
                 )
+                
+                self.send_notification({
+                    'title':'ORDER PLACED',
+                    'body': self.document['instrument']
+                })
+                
                 print('[***] ORDER PLACED [***]')
                 self.mode = 'exit'
 
@@ -65,6 +78,10 @@ class Streamer:
                         self.kite.EXCHANGE_NFO,
                         self.document['quantity']
                     )
+                    self.send_notification({
+                        'title':'ORDER EXITED',
+                        'body': self.document['instrument']
+                    })
                     print('[***] ORDER EXITED [***]')
                     self.mode = 'entry'
                     self.should_stream = False
@@ -77,6 +94,10 @@ class Streamer:
                         self.kite.EXCHANGE_NFO,
                         self.document['quantity']
                     )
+                    self.send_notification({
+                        'title':'ORDER EXITED',
+                        'body': self.document['instrument']
+                    })
                     print('[***] ORDER EXITED [***]')
                     self.mode = 'entry'
                     self.should_stream = False
