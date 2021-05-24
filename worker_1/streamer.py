@@ -30,9 +30,12 @@ class Streamer:
 
 
     def send_notification(self, data):
-        ws_publisher = websocket.create_connection(self.publisher_uri)
-        ws_publisher.send(json.dumps(data))
-        ws_publisher.close()
+        try:
+            ws_publisher = websocket.create_connection(self.publisher_uri)
+            ws_publisher.send(json.dumps(data))
+            ws_publisher.close()
+        except:
+            pass
 
     def perform_entry(self, cmp):
         if not self.entry_lock.locked():
