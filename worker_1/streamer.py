@@ -104,4 +104,5 @@ class Streamer:
                 t_exit.start()
 
     def start(self):
-        self.ws.run_forever()
+        t = threading.Thread(target=self.ws.run_forever)
+        t.start()
