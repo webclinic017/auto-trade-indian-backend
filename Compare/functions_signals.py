@@ -8,6 +8,8 @@ import talib as tb
 from pymongo import MongoClient
 from functions_db import get_key_token
 import pandas as pd
+import numpy as np
+import statsmodels.api as sm
 
 
 mongo = MongoClient('mongodb://db')
@@ -368,3 +370,32 @@ def ema_5813(symbol):
     print("slopes of 581320 are" + ""+"" + symbol + str(slope_5),
           str(slope_8), str(slope_13), str(slope_20))
     return requirement
+
+def slope(symbol, n):
+    "function to calculate the slope of regression line for n consecutive points on a plot"
+    token = tokens_dict[symbol]['token']
+    tday = datetime.date.today()
+    fday = datetime.date.today()-datetime.timedelta(days=4)
+    df = kite.historical_data(token, fday, tday, '2minute', False, False)
+    df_slope=df.copy()
+    df = df_slope.iloc[-1*n:,:]
+    y = ((df_slope["open"] + df_slope["close"])/2).values
+    x = np.array(range(n))
+    y_scaled = (y - y.min())/(y.max() - y.min())
+    x_scaled = (x - x.min())/(x.max() - x.min())
+    x_scaled = sm.add_constant(x_scaled)
+    model = sm.OLS(y_scaled,x_scaled)
+    results = model.fit()
+    slope = np.rad2deg(np.arctan(results.params[-1]))
+    df["up"] = np.where(df["low"]>=df["low"].shift(1),1,0)
+    df["dn"] = np.where(df["high"]<=df["high"].shift(1),1,0)
+    if df["close"][-1] > df["open"][-1]:
+        if df["up"][-1*n:].sum() >= 0.7*n:
+            trend="uptrend"
+    elif df["open"][-1] > df["close"][-1]:
+        if df["dn"][-1*n:].sum() >= 0.7*n:
+            trend= "downtrend"
+    else:
+        trend=None
+    return slope,trend
+
