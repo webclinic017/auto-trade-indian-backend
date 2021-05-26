@@ -5,4 +5,4 @@ pandas
 kiteconnect
 dnspython
 numpy
-statsmodels.api
+statsmodels

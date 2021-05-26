@@ -376,26 +376,32 @@ def slope(symbol, n):
     token = tokens_dict[symbol]['token']
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
-    df = kite.historical_data(token, fday, tday, '2minute', False, False)
+    df = pd.DataFrame(kite.historical_data(token, fday, tday, '2minute', False, False))
     df_slope=df.copy()
-    df = df_slope.iloc[-1*n:,:]
+    df_slope = df_slope.iloc[-1*n:,:]
     y = ((df_slope["open"] + df_slope["close"])/2).values
     x = np.array(range(n))
     y_scaled = (y - y.min())/(y.max() - y.min())
     x_scaled = (x - x.min())/(x.max() - x.min())
     x_scaled = sm.add_constant(x_scaled)
+    print(x_scaled.shape)
+    print(y_scaled.shape)
     model = sm.OLS(y_scaled,x_scaled)
     results = model.fit()
     slope = np.rad2deg(np.arctan(results.params[-1]))
+    trend = None
+    # slope = 1
     df["up"] = np.where(df["low"]>=df["low"].shift(1),1,0)
     df["dn"] = np.where(df["high"]<=df["high"].shift(1),1,0)
-    if df["close"][-1] > df["open"][-1]:
+    if df["close"].values[-1] > df["open"].values[-1]:
         if df["up"][-1*n:].sum() >= 0.7*n:
             trend="uptrend"
-    elif df["open"][-1] > df["close"][-1]:
-        if df["dn"][-1*n:].sum() >= 0.7*n:
+    elif df["open"].values[-1] > df["close"].values[-1]:
+        if df["dn"].iloc[-1*n:].sum() >= 0.7*n:
             trend= "downtrend"
     else:
         trend=None
+    print("(slope, trend) ", end="")
+    print(slope, trend)
     return slope,trend
 
