@@ -58,7 +58,6 @@ class Streamer:
                         'endpoint':'/place/market_order/buy',
                         'trading_symbol': self.document['instrument'],
                         'exchange': 'NFO',
-                        'quantity': self.document['quantity']
                     }
                 })
                 
@@ -99,7 +98,6 @@ class Streamer:
                             'endpoint':'/place/market_order/sell',
                             'trading_symbol': self.document['instrument'],
                             'exchange': 'NFO',
-                            'quantity': self.document['quantity']
                         }
                     })
                     
@@ -125,7 +123,6 @@ class Streamer:
                             'endpoint':'/place/market_order/sell',
                             'trading_symbol': self.document['instrument'],
                             'exchange': 'NFO',
-                            'quantity': self.document['quantity']
                         }
                     })
                     
