@@ -36,7 +36,7 @@ services:
       - auth.env
     extra_hosts:
       # - 'token_server:192.168.1.10'
-      - 'token_server:192.168.100.3'
+      - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
   compare:
     build: ./Compare
@@ -51,7 +51,7 @@ services:
       - auth.env
     extra_hosts:
       # - 'token_server:192.168.1.10'
-      - 'token_server:192.168.100.3'
+      - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
   #add workers below
   worker_1:
@@ -68,7 +68,7 @@ services:
       - auth.env
     extra_hosts:
       # - 'token_server:192.168.1.10'
-      - 'token_server:192.168.100.3'
+      - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
   # worker_3:
   #   build: ./worker_3
@@ -85,4 +85,16 @@ services:
   #   extra_hosts:
   #     # - 'token_server:192.168.1.10'
   #     - 'token_server:192.168.100.3'
+  # - 'token_server:0.0.0.0'
+  worker_4:
+    build: ./worker_4
+    command: ["python", "app.py"]
+    volumes:
+      - ./worker_4:/app
+    env_file:
+      - .env
+      - auth.env
+    extra_hosts:
+      # - 'token_server:192.168.1.10'
+      - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
