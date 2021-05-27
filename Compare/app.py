@@ -77,7 +77,7 @@ def main():
 #                                                                                                                                                                           #                                                                                                                                                                           #
 #############################################################################################################################################################################
 
-        if (latest_compare['total_power'] > 500) and (latest_compare['costly_option'] == 'bull') and trend_ce == UP_TREND  and (slope_ce >= 30):
+        if (latest_compare['total_power'] > 500) and (latest_compare['costly_option'] == 'bull') and (trend_ce == UP_TREND  or (slope_ce >= 30)):
             document = {
                 'instrument': latest_compare['monthly_Options_CE'],
                 'token': token_map[latest_compare['monthly_Options_CE']]['token'],
@@ -105,7 +105,7 @@ def main():
             symbol = document['instrument']
             print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
-        if (latest_compare['total_power'] < -500) and latest_compare['costly_option'] == 'bear' and trend_pe == UP_TREND and (slope_pe >= 30):
+        if (latest_compare['total_power'] < -500) and latest_compare['costly_option'] == 'bear' and (trend_pe == UP_TREND or (slope_pe >= 30)):
             document = {
                 'instrument': latest_compare['monthly_Options_PE'],
                 'token': token_map[latest_compare['monthly_Options_PE']]['token'],
@@ -145,7 +145,7 @@ def main():
 #                                                                                                                                                                           #                                                                                                                                                                           #
 #############################################################################################################################################################################
 
-        if (latest_compare['total_CE_short_covering'] > 0) and (latest_compare['total_PE_power'] > 0) and trend_ce==UP_TREND and (slope_ce >= 30):
+        if (latest_compare['total_CE_short_covering'] > 0) and (latest_compare['total_PE_power'] > 0) and (trend_ce==UP_TREND or (slope_ce >= 30)):
             document = {
                 'instrument': latest_compare['monthly_Options_CE'],
                 'token': token_map[latest_compare['monthly_Options_CE']]['token'],
@@ -170,7 +170,7 @@ def main():
             symbol = document['instrument']
             print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
-        if latest_compare['total_CE_unwinding'] < 0 and latest_compare['total_PE_power'] < 0 and trend_pe==UP_TREND and (slope_pe >= 30):
+        if latest_compare['total_CE_unwinding'] < 0 and latest_compare['total_PE_power'] < 0 and (trend_pe==UP_TREND or (slope_pe >= 30)):
             document = {
                 'instrument': latest_compare['monthly_Options_PE'],
                 'token': token_map[latest_compare['monthly_Options_PE']]['token'],
@@ -258,7 +258,7 @@ def main():
 #                                                                                                                                                                           #                                                                                                                                                                           #
 #############################################################################################################################################################################
 
-        if latest_compare["total_PE_unwinding"] > 0 and latest_compare["total_CE_power"] > 0 and trend_ce==UP_TREND and (slope_ce >= 30):
+        if latest_compare["total_PE_unwinding"] > 0 and latest_compare["total_CE_power"] > 0 and (trend_ce==UP_TREND or (slope_ce >= 30)):
             document = {
                 'instrument': latest_compare['monthly_Options_CE'],
                 'token': token_map[latest_compare['monthly_Options_CE']]['token'],
@@ -284,7 +284,7 @@ def main():
             symbol = document['instrument']
             print(f'[**] Message send to worker 1 to buy CE {symbol}')
 
-        if latest_compare["total_PE_short_covering"] < 0 and latest_compare["total_CE_power"] < 0 and trend_pe==UP_TREND and (slope_pe >= 30):
+        if latest_compare["total_PE_short_covering"] < 0 and latest_compare["total_CE_power"] < 0 and (trend_pe==UP_TREND or(slope_pe >= 30)):
             document = {
                 'instrument': latest_compare['monthly_Options_PE'],
                 'token': token_map[latest_compare['monthly_Options_PE']]['token'],
