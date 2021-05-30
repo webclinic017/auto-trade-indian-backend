@@ -26,19 +26,26 @@ kite = KiteConnect(api_key=api_key, access_token=access_token)
 scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-
-tickers_buy = []
+#10557186
+tickers_buy = ['NIFTY2160315500CE']
 
 tickers_sell = []
 
 n = 900
 n_min = 15
 
-buy_quantity = int((scalp_buy_investment/len(tickers_buy))/3600/n_min)
-sell_quantity = int((scalp_sell_investment/len(tickers_sell))/3600/n_min)
+try:
+    buy_quantity = int((scalp_buy_investment/len(tickers_buy))/3600/n_min)
+except:
+    buy_quantity = 0
+
+try:
+    sell_quantity = int((scalp_sell_investment/len(tickers_sell))/3600/n_min)
+except:
+    sell_quantity = 0
 
 if buy_quantity < 1:
-    buy_quantity = 1
+    buy_quantity = 75
 
 if sell_quantity < 1:
     sell_quantity = 1
