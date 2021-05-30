@@ -26,10 +26,10 @@ api_key, access_token = get_key_token(
 
 ws_host = os.environ['WS_HOST']
 publisher_host = os.environ['PUBLISHER_HOST']
-publisher_port = os.environ['PUBLISHER_PORT']
+# publisher_port = os.environ['PUBLISHER_PORT']
 publisher_path = os.environ['PUBLISHER_PATH']
 
-publisher_uri = f'ws://{publisher_host}:{publisher_port}{publisher_path}'
+publisher_uri = f'{publisher_host}{publisher_path}'
 
 tickers = {}
 

@@ -49,7 +49,7 @@ def scalp_buy(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub'
                 market_buy_order(
                     kite,
                     symbol,
-                    kite.EXCHANGE_NSE,
+                    kite.EXCHANGE_NFO,
                     quantity
                 )
                 total_quantity += quantity
