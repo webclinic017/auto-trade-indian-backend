@@ -44,7 +44,7 @@ def scalp_buy(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub'
         if message['type'] != 'subscribe':
             positions = json.loads(message['data'])
             # print(positions)
-            # print(datetime.datetime.now().time())
+            print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
                 market_buy_order(
                     kite,
@@ -69,7 +69,7 @@ def scalp_sell(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub
         if message['type'] != 'subscribe':
             positions = json.loads(message['data'])
             # print(positions)
-            # print(datetime.datetime.now().time())
+            print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
                 market_sell_order(
                     kite,

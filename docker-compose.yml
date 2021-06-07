@@ -58,21 +58,21 @@ services:
       - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
   #add workers below
-  worker_1:
-    build: ./worker_1
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-    depends_on:
-      - scrapper
-      - calculator
-      - compare
-    volumes:
-      - ./worker_1:/app
-    env_file:
-      - .env
-      - auth.env
-    extra_hosts:
-      # - 'token_server:192.168.1.10'
-      - "token_server:192.168.100.3"
+  # worker_1:
+  #   build: ./worker_1
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   depends_on:
+  #     - scrapper
+  #     - calculator
+  #     - compare
+  #   volumes:
+  #     - ./worker_1:/app
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   extra_hosts:
+  #     # - 'token_server:192.168.1.10'
+  #     - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
   # worker_3:
   #   build: ./worker_3
