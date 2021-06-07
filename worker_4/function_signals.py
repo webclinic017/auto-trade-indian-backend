@@ -4,6 +4,22 @@ import json
 import datetime
 from zerodha_functions import *
 import redis
+import websocket
+
+import os
+
+PUBLISHER_HOST = os.environ['PUBLISHER_HOST']
+PUBLISHER_PATH = os.environ['PUBLISHER_PATH']
+
+PUBLISHER_URI = f'{PUBLISHER_HOST}{PUBLISHER_PATH}'
+
+def send_notification(data):
+    try:
+        ws_publisher = websocket.create_connection(PUBLISHER_URI)
+        ws_publisher.send(json.dumps(data))
+        ws_publisher.close()
+    except:
+        pass
 
 def loss_for_buyticker(position):
     average_price=position['average_price']
@@ -46,6 +62,20 @@ def scalp_buy(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub'
             # print(positions)
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
+                
+                send_notification({
+                    'notification': {
+                        'title': 'SCALP BUY',
+                        'symbol': symbol
+                    },
+                    'trade': {
+                        'endpoint': '/place/market_order/buy',
+                        'trading_symbol': symbol,
+                        'exchange': 'NFO',
+                        'quantity': quantity
+                    }
+                })
+                
                 market_buy_order(
                     kite,
                     symbol,
@@ -71,6 +101,19 @@ def scalp_sell(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub
             # print(positions)
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
+                send_notification({
+                    'notification': {
+                        'title': 'SCALP SELL',
+                        'body': symbol
+                    },
+                    'trade': {
+                        'endpoint': '/place/market_order/sell',
+                        'trading_symbol': symbol,
+                        'exchange': 'NFO',
+                        'quantity': quantity
+                    }
+                })
+                
                 market_sell_order(
                     kite,
                     symbol,
