@@ -3,7 +3,7 @@ import datetime
 import logging
 import time
 import kiteconnect
-import talib as tb
+import talib as tb # type: ignore
 
 from pymongo import MongoClient
 from functions_db import get_key_token
@@ -169,20 +169,7 @@ def put_evaluate(curr_Volume, curr_LTP, curr_OI, prev_Volume, prev_LTP, prev_OI,
 
 
 def compareResult(prev, current, is_index=True):
-
-    # out_2 = {
-    #     'CE_long_unwinding':0,
-    #     'CE_short_covering':0,
-    #     'PE_long_unwinding':0,
-    #     'PE_short_covering':0,
-    #     'ATM_CE_long_winding':0,
-    #     'ATM_CE_short_covering':0,
-    #     'ATM_PE_long_winding':0,
-    #     'ATM_PE_short_covering':0
-    # }
     out_2 = defaultdict(int)
-
-    curr_atm = current['atm']
 
     evaluation = defaultdict(int)
     # key_parent means keys of the current dictionary

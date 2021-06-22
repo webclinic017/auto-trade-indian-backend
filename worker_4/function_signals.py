@@ -135,9 +135,8 @@ import math
 from pymongo import MongoClient
 from functions_db import *
 import pandas as pd
-import talib as tb
+import talib as tb # type: ignore
 import numpy as np
-import statsmodels.api as sm
 
 
 mongo = MongoClient('mongodb://db')

@@ -1,4 +1,3 @@
-from re import T
 import pika
 import json
 from streamer import Streamer
@@ -6,8 +5,7 @@ from pymongo import MongoClient
 from functions_db import get_key_token
 import datetime
 import os
-import gc
-import threading
+
 
 mongo = MongoClient('mongodb://db')
 db = mongo['intraday'+str(datetime.date.today())]
