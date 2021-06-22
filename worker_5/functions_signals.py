@@ -44,6 +44,17 @@ def start_trade(kite : KiteConnect, document, quantity):
                     tradingsymbol=ce_documents[strike]['weekly_Options_CE'],
                     exchange=kite.EXCHANGE_NFO
                 )
+                send_notification({
+                    'notification': {
+                        'title': 'ORDER PLACED HEDGE',
+                        'body': ce_documents[strike]['weekly_Options_CE']
+                    },
+                    'trade': {
+                        'endpoint': '/place/market_order/buy',
+                        'trading_symbol': ce_documents[strike]['weekly_Options_CE'],
+                        'exchange': 'NFO',
+                    }
+                })
                 
                 market_buy_order(
                     kite=kite,
@@ -51,6 +62,18 @@ def start_trade(kite : KiteConnect, document, quantity):
                     quantity=quantity,
                     exchange=kite.EXCHANGE_NFO
                 )
+                
+                send_notification({
+                    'notification': {
+                        'title': 'ORDER PLACED HEDGE',
+                        'body': pe_documents[strike_]['weekly_Options_PE']
+                    },
+                    'trade': {
+                        'endpoint': '/place/market_order/buy',
+                        'trading_symbol': pe_documents[strike_]['weekly_Options_PE'],
+                        'exchange': 'NFO',
+                    }
+                })
                 return
         
         
@@ -70,12 +93,38 @@ def start_trade(kite : KiteConnect, document, quantity):
                     quantity=quantity,
                     exchange=kite.EXCHANGE_NFO
                 )
+                
+                send_notification({
+                    'notification': {
+                        'title': 'ORDER PLACED HEDGE',
+                        'body': ce_documents[strike_]['weekly_Options_CE']
+                    },
+                    'trade': {
+                        'endpoint': '/place/market_order/buy',
+                        'trading_symbol': ce_documents[strike_]['weekly_Options_CE'],
+                        'exchange': 'NFO',
+                    }
+                })
+                
                 market_buy_order(
                     kite=kite,
                     tradingsymbol=pe_documents[strike]['weekly_Options_PE'],
                     quantity=quantity,
                     exchange=kite.EXCHANGE_NFO
                 )
+                
+                send_notification({
+                    'notification': {
+                        'title': 'ORDER PLACED HEDGE',
+                        'body': pe_documents[strike]['weekly_Options_PE']
+                    },
+                    'trade': {
+                        'endpoint': '/place/market_order/buy',
+                        'trading_symbol': pe_documents[strike]['weekly_Options_PE'],
+                        'exchange': 'NFO',
+                    }
+                })
+                
                 return
     
     return
