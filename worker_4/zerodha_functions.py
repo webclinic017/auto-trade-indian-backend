@@ -66,9 +66,8 @@ def profit_or_loss_for_the_day(kite: KiteConnect):
             profit = profit + trade["quantity"] * trade["average_price"]
     return profit
 
-def exit_all_positions(kite):
+def exit_all_positions(kite, positions):
     print('exit all positions')
-    positions = kite.positions()
     
     for pos in positions['net']:
         quantity = pos['quantity']

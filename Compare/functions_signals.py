@@ -405,3 +405,5 @@ def slope(symbol, n):
     print(slope, trend)
     return slope,trend
 
+
+
