@@ -94,7 +94,11 @@ services:
   #   env_file:
   #     - .env
   #     - auth.env
-  #   extra_hosts:
-  #     # - 'token_server:192.168.1.10'
-  #     - "token_server:192.168.100.3"
-  #     - 'token_server:0.0.0.0'
+  worker_5:
+    build: ./worker_5
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    volumes:
+      - ./worker_5:/app
+    env_file:
+      - .env
+      - auth.env

@@ -1,0 +1,44 @@
+import json
+import pika
+from functions_db import get_key_token
+from functions_signals import start_trade
+from pymongo import MongoClient
+from kiteconnect import KiteConnect
+import os
+
+mongo_clients = MongoClient(
+    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+
+worker = 'worker_5'
+
+zerodha_id = os.environ['USERNAME']
+api_key, access_token = get_key_token(
+    zerodha_id, mongo_clients['client_details']['clients'])
+
+kite = KiteConnect(api_key=api_key, access_token=access_token)
+
+def main():
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='rabbit_mq')
+    )
+    channel = connection.channel()
+    channel.queue_declare(queue=worker)
+    
+    def callback(ch, method, properties, body):
+        print('[*] Message Received')
+        document = json.loads(body.decode('utf-8'))
+        # logic for auto trade goes here
+        start_trade(kite, document)
+    
+    channel.basic_consume(
+        queue=worker, on_message_callback=callback, auto_ack=True
+    )
+    print('[*] Waiting for Message')
+    channel.start_consuming()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit()

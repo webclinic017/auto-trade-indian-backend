@@ -1,0 +1,4 @@
+kiteconnect
+pymongo
+dnspython
+websocket-client
