@@ -17,6 +17,9 @@ api_key, access_token = get_key_token(
 
 kite = KiteConnect(api_key=api_key, access_token=access_token)
 
+nf_quantity = int(os.environ['NF_QUANTITY'])
+bf_quantity = int(os.environ['BF_QUANTITY'])
+
 def main():
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='rabbit_mq')
@@ -28,7 +31,14 @@ def main():
         print('[*] Message Received')
         document = json.loads(body.decode('utf-8'))
         # logic for auto trade goes here
-        start_trade(kite, document)
+        
+        if document['ticker'] == 'NIFTY':
+            quantity = nf_quantity
+        elif document['ticker'] == 'BANKNIFTY':
+            quantity = bf_quantity
+        
+        
+        start_trade(kite, document['data'].pop(), quantity)
     
     channel.basic_consume(
         queue=worker, on_message_callback=callback, auto_ack=True

@@ -17,6 +17,7 @@ def main(expiry_date):
     channel = connection.channel()
     channel.queue_declare(queue='trader')
     channel.queue_declare(queue='compare')
+    channel.queue_declare(queue='worker_5')
 
     def callback(ch, method, properties, body):
         print("[*] Message Received")
@@ -44,7 +45,7 @@ def main(expiry_date):
         
         
         doc = collection.find_one(
-            {'ticker':ticker}, {"data":{"$slice":-2}}
+            {'ticker':ticker}, {"data":{"$slice":-1}}
         )
         
         doc["_id"] = str(doc["_id"])

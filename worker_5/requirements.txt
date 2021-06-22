@@ -2,3 +2,4 @@ kiteconnect
 pymongo
 dnspython
 websocket-client
+pika
