@@ -400,7 +400,6 @@ def create_dict(parent_dict, key_to_add, keys_to_remove=['expiryDate', 'identifi
 def find_all_tickers(data):
     date_, month, year = data['date'].split('-')
     symbol = data['symbol']
-    atm = data['atm']
     
     for key in ['CE_Stikes', 'PE_Stikes']:
         for strike in data[key]:
@@ -412,13 +411,13 @@ def find_all_tickers(data):
             obj['symbol'] = symbol
             obj['futures'] = symbol + year + month.upper() + 'FUT'
             obj['weekly_Options_CE'] = symbol + year + \
-            str(month_number) + date_ + str(int(atm)) + 'CE'
+            str(month_number) + date_ + strike + 'CE'
             obj['weekly_Options_PE'] = symbol + year + \
-                str(month_number) + date_ + str(int(atm)) + 'PE'
+                str(month_number) + date_ + strike + 'PE'
             obj['monthly_Options_CE'] = symbol + year + \
-                month.upper() + str(int(atm)) + 'CE'
+                month.upper() + strike + 'CE'
             obj['monthly_Options_PE'] = symbol + year + \
-                month.upper() + str(int(atm)) + 'PE'
+                month.upper() + strike + 'PE'
             
             data[key][strike] = obj
 
