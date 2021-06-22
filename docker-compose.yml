@@ -18,30 +18,26 @@ services:
     image: redis:alpine
     logging:
       driver: none
-  # scrapper:
-  #   build: ./Scrapper
-  #   volumes:
-  #     - ./Scrapper:/app
-  #   depends_on:
-  #     - rabbit_mq
-  #     - db
-  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-  #   restart: always
-  # calculator:
-  #   build: ./Calculator
-  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-  #   volumes:
-  #     - ./Calculator:/app
-  #   depends_on:
-  #     - scrapper
-  #   restart: always
-  #   env_file:
-  #     - .env
-  #     - auth.env
-  #   extra_hosts:
-  #     # - 'token_server:192.168.1.10'
-  #     - "token_server:192.168.100.3"
-      # - 'token_server:0.0.0.0'
+  scrapper:
+    build: ./Scrapper
+    volumes:
+      - ./Scrapper:/app
+    depends_on:
+      - rabbit_mq
+      - db
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    restart: always
+  calculator:
+    build: ./Calculator
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    volumes:
+      - ./Calculator:/app
+    depends_on:
+      - scrapper
+    restart: always
+    env_file:
+      - .env
+      - auth.env
   # compare:
   #   build: ./Compare
   #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
@@ -90,15 +86,15 @@ services:
   #     # - 'token_server:192.168.1.10'
   #     - 'token_server:192.168.100.3'
   # - 'token_server:0.0.0.0'
-  worker_4:
-    build: ./worker_4
-    command: ["python", "app.py"]
-    volumes:
-      - ./worker_4:/app
-    env_file:
-      - .env
-      - auth.env
-    extra_hosts:
-      # - 'token_server:192.168.1.10'
-      - "token_server:192.168.100.3"
-      - 'token_server:0.0.0.0'
+  # worker_4:
+  #   build: ./worker_4
+  #   command: ["python", "app.py"]
+  #   volumes:
+  #     - ./worker_4:/app
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   extra_hosts:
+  #     # - 'token_server:192.168.1.10'
+  #     - "token_server:192.168.100.3"
+  #     - 'token_server:0.0.0.0'

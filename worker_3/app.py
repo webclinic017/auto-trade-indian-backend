@@ -20,7 +20,6 @@ zerodha_id = os.environ['USERNAME']
 api_key, access_token = get_key_token(
     zerodha_id, mongo_clients['client_details']['clients'])
 
-# access_token = 'PSTIVkiKnMIYot42uTXnF9LbBKLqBeT4'
 
 kite = KiteConnect(api_key, access_token=access_token)
 

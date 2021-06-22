@@ -1,6 +1,6 @@
 import logging
 import operator
-
+import datetime, time
 
 def filterd_dates(res, filter_key='expiryDate'):
     logging.info(f'Filtering by {filter_key} - Start')
@@ -397,6 +397,33 @@ def create_dict(parent_dict, key_to_add, keys_to_remove=['expiryDate', 'identifi
     return new_dict
 
 
+def find_all_tickers(data):
+    date_, month, year = data['date'].split('-')
+    symbol = data['symbol']
+    atm = data['atm']
+    
+    for key in ['CE_Stikes', 'PE_Stikes']:
+        for strike in data[key]:
+            obj = data[key][strike]
+            
+            datetime_object = datetime.datetime.strptime(month, "%b")
+            month_number = datetime_object.month
+            year = time.strftime("%y", time.localtime())
+            obj['symbol'] = symbol
+            obj['futures'] = symbol + year + month.upper() + 'FUT'
+            obj['weekly_Options_CE'] = symbol + year + \
+            str(month_number) + date_ + str(int(atm)) + 'CE'
+            obj['weekly_Options_PE'] = symbol + year + \
+                str(month_number) + date_ + str(int(atm)) + 'PE'
+            obj['monthly_Options_CE'] = symbol + year + \
+                month.upper() + str(int(atm)) + 'CE'
+            obj['monthly_Options_PE'] = symbol + year + \
+                month.upper() + str(int(atm)) + 'PE'
+            
+            data[key][strike] = obj
+
+    return data
+
 def gen_data(json_data, expiry_date):
     ticker = json_data['ticker']
     ltp = json_data['records']['underlyingValue']
@@ -408,4 +435,7 @@ def gen_data(json_data, expiry_date):
         filterd_dates_dict, expiry_date, json_data, ticker)
     final_filtered_output = constract_final_output(
         filterd_dates_dict, filterd_strikes, expiry_date, giant_dict)
+    
+    final_filtered_output = find_all_tickers(final_filtered_output)
+    
     return final_filtered_output
