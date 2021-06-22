@@ -18,45 +18,45 @@ services:
     image: redis:alpine
     logging:
       driver: none
-  scrapper:
-    build: ./Scrapper
-    volumes:
-      - ./Scrapper:/app
-    depends_on:
-      - rabbit_mq
-      - db
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-    restart: always
-  calculator:
-    build: ./Calculator
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-    volumes:
-      - ./Calculator:/app
-    depends_on:
-      - scrapper
-    restart: always
-    env_file:
-      - .env
-      - auth.env
-    extra_hosts:
-      # - 'token_server:192.168.1.10'
-      - "token_server:192.168.100.3"
+  # scrapper:
+  #   build: ./Scrapper
+  #   volumes:
+  #     - ./Scrapper:/app
+  #   depends_on:
+  #     - rabbit_mq
+  #     - db
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   restart: always
+  # calculator:
+  #   build: ./Calculator
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   volumes:
+  #     - ./Calculator:/app
+  #   depends_on:
+  #     - scrapper
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   extra_hosts:
+  #     # - 'token_server:192.168.1.10'
+  #     - "token_server:192.168.100.3"
       # - 'token_server:0.0.0.0'
-  compare:
-    build: ./Compare
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-    volumes:
-      - ./Compare:/app
-    depends_on:
-      - calculator
-    restart: always
-    env_file:
-      - .env
-      - auth.env
-    extra_hosts:
-      # - 'token_server:192.168.1.10'
-      - "token_server:192.168.100.3"
-      # - 'token_server:0.0.0.0'
+  # compare:
+  #   build: ./Compare
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   volumes:
+  #     - ./Compare:/app
+  #   depends_on:
+  #     - calculator
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   extra_hosts:
+  #     # - 'token_server:192.168.1.10'
+  #     - "token_server:192.168.100.3"
+  #     # - 'token_server:0.0.0.0'
   #add workers below
   # worker_1:
   #   build: ./worker_1
@@ -73,7 +73,7 @@ services:
   #   extra_hosts:
   #     # - 'token_server:192.168.1.10'
   #     - "token_server:192.168.100.3"
-      # - 'token_server:0.0.0.0'
+  #     - 'token_server:0.0.0.0'
   # worker_3:
   #   build: ./worker_3
   #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
@@ -101,4 +101,4 @@ services:
     extra_hosts:
       # - 'token_server:192.168.1.10'
       - "token_server:192.168.100.3"
-      # - 'token_server:0.0.0.0'
+      - 'token_server:0.0.0.0'

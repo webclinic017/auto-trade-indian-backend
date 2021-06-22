@@ -27,9 +27,22 @@ scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
 #10557186
-tickers_buy = ['NIFTY2161015700CE']
+tickers_buy = ['NIFTY21JUN15800PE']
 
 tickers_sell = []
+
+tickers_sell_depth = list(map(lambda x : f'NFO:{x}', tickers_sell))
+
+buy_quantity_depth = {}
+sell_quantity_depth = {}
+
+
+quote_buy = kite.quote(list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell)))
+
+for ticker in tickers_buy + tickers_sell:
+    buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
+    sell_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['sell_quantity']
+
 
 n = 900
 n_min = 15
@@ -69,6 +82,7 @@ r = redis.StrictRedis(host='redis_pubsub', port=6379, decode_responses=True)
 while True:
     positions = kite.positions()
     data = json.dumps(positions)
-    
+    # print(positions)
+
     r.publish('positions', data)
     time.sleep(n)

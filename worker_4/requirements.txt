@@ -2,3 +2,6 @@ kiteconnect
 pymongo
 dnspython
 redis
+websocket-client
+pandas
+statsmodels
