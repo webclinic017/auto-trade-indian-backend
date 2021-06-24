@@ -19,7 +19,7 @@ def send_notification(data):
         pass
 
 def start_trade(kite : KiteConnect, document, quantity):
-    # flag = False
+    flag = False
     
     CE_KEY = 'CE_Stikes'
     PE_KEY = 'PE_Stikes'
@@ -74,7 +74,13 @@ def start_trade(kite : KiteConnect, document, quantity):
                         'exchange': 'NFO',
                     }
                 })
+
+                flag = True
+
                 return
+    
+    if flag:
+        return
         
         
     for strike in pe_documents:

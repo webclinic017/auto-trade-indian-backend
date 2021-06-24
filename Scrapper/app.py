@@ -25,4 +25,4 @@ while True:
         print('[*] message send to queue..')
 
     channel.close()
-    time.sleep(250)
+    time.sleep(900)
