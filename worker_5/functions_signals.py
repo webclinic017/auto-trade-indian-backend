@@ -2,8 +2,15 @@ import json
 from zerodha_functions import *
 import websocket
 from kiteconnect import KiteConnect
-
+from pymongo import MongoClient
+import requests
 import os
+
+mongo_clients = MongoClient(
+    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+
+token_map = mongo_clients['tokens']['tokens_map'].find_one()
+
 
 PUBLISHER_HOST = os.environ['PUBLISHER_HOST']
 PUBLISHER_PATH = os.environ['PUBLISHER_PATH']
@@ -38,12 +45,16 @@ def start_trade(kite : KiteConnect, document, quantity):
             
             if ltp_pe >= min_ltp_ce and ltp_pe <= max_ltp_ce:
                 print(ce_documents[strike]['weekly_Options_CE'], pe_documents[strike_]['weekly_Options_PE'])
+                symbol = ce_documents[strike]['weekly_Options_CE']
                 market_buy_order(
                     kite=kite,
                     quantity=quantity,
-                    tradingsymbol=ce_documents[strike]['weekly_Options_CE'],
+                    tradingsymbol=symbol,
                     exchange=kite.EXCHANGE_NFO
                 )
+                
+                token = token_map[symbol]
+                requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
                         'title': 'ORDER PLACED HEDGE',
@@ -56,13 +67,16 @@ def start_trade(kite : KiteConnect, document, quantity):
                     }
                 })
                 
+                symbol = pe_documents[strike_]['weekly_Options_PE']
                 market_buy_order(
                     kite=kite,
-                    tradingsymbol=pe_documents[strike_]['weekly_Options_PE'],
+                    tradingsymbol=symbol,
                     quantity=quantity,
                     exchange=kite.EXCHANGE_NFO
                 )
                 
+                token = token_map[symbol]
+                requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
                         'title': 'ORDER PLACED HEDGE',
@@ -93,13 +107,16 @@ def start_trade(kite : KiteConnect, document, quantity):
             
             if ltp_ce >= min_ltp_pe and ltp_ce <= max_ltp_pe:
                 print(ce_documents[strike_]['weekly_Options_CE'], pe_documents[strike]['weekly_Options_PE'])
+                symbol = ce_documents[strike_]['weekly_Options_CE']
                 market_buy_order(
                     kite=kite,
-                    tradingsymbol=ce_documents[strike_]['weekly_Options_CE'],
+                    tradingsymbol=symbol,
                     quantity=quantity,
                     exchange=kite.EXCHANGE_NFO
                 )
                 
+                token = token_map[symbol]
+                requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
                         'title': 'ORDER PLACED HEDGE',
@@ -112,13 +129,17 @@ def start_trade(kite : KiteConnect, document, quantity):
                     }
                 })
                 
+                
+                symbol = pe_documents[strike]['weekly_Options_PE']
                 market_buy_order(
                     kite=kite,
-                    tradingsymbol=pe_documents[strike]['weekly_Options_PE'],
+                    tradingsymbol=symbol,
                     quantity=quantity,
                     exchange=kite.EXCHANGE_NFO
                 )
                 
+                token = token_map[symbol]
+                requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
                         'title': 'ORDER PLACED HEDGE',

@@ -9,6 +9,8 @@ import os
 mongo_clients = MongoClient(
     'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
+token_map = mongo_clients['tokens']['tokens_map'].find_one()
+
 worker = 'worker_5'
 
 zerodha_id = os.environ['USERNAME']

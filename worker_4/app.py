@@ -14,7 +14,7 @@ mongo = MongoClient('mongodb://db')
 db = mongo['intraday'+str(datetime.date.today())]
 collection = mongo['orders']
 
-mongo_clients = mongo_clients = MongoClient(
+mongo_clients = MongoClient(
     'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
 zerodha_id = os.environ['USERNAME']
