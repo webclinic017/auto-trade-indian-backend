@@ -86,21 +86,21 @@ services:
   #     # - 'token_server:192.168.1.10'
   #     - 'token_server:192.168.100.3'
   # - 'token_server:0.0.0.0'
-  # worker_4:
-  #   build: ./worker_4
-  #   command: ["python", "app.py"]
-  #   volumes:
-  #     - ./worker_4:/app
-  #   env_file:
-  #     - .env
-  #     - auth.env
-  worker_5:
-    build: ./worker_5
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  worker_4:
+    build: ./worker_4
+    command: ["python", "app.py"]
     volumes:
-      - ./worker_5:/app
+      - ./worker_4:/app
     env_file:
       - .env
       - auth.env
-    depends_on:
-      - calculator
+  # worker_5:
+  #   build: ./worker_5
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   volumes:
+  #     - ./worker_5:/app
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   depends_on:
+  #     - calculator

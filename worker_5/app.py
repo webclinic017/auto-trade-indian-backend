@@ -37,9 +37,11 @@ def main():
         elif document['ticker'] == 'BANKNIFTY':
             quantity = bf_quantity
         
-        
-        start_trade(kite, document['data'].pop(), quantity)
-    
+        try:
+            start_trade(kite, document['data'].pop(), quantity)
+        except:
+            pass
+
     channel.basic_consume(
         queue=worker, on_message_callback=callback, auto_ack=True
     )
