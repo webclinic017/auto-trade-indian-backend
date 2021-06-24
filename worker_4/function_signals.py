@@ -5,8 +5,15 @@ import datetime
 from zerodha_functions import *
 import redis
 import websocket
-
+from pymongo import MongoClient
+import requests
 import os
+
+
+mongo_clients = MongoClient(
+    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+token_map = mongo_clients['tokens']['tokens_map'].find_one()
+
 
 PUBLISHER_HOST = os.environ['PUBLISHER_HOST']
 PUBLISHER_PATH = os.environ['PUBLISHER_PATH']
@@ -84,6 +91,8 @@ def scalp_buy(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub'
                         quantity
                     )
                     total_quantity += quantity
+                    token = token_map[symbol]
+                    requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')    
                     print(f'[***] Buy ORDER PLACED {symbol} [***]')
                 # elif last_rsi < 40:
                 #     exit_all_positions(kite, positions)
@@ -126,6 +135,8 @@ def scalp_sell(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub
                         quantity
                     )
                     total_quantity += quantity
+                    token = token_map[symbol]
+                    requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                     print(f'[***] Sell ORDER PLACED {symbol} [***]')
                 # elif last_rsi > 40:
                 #     exit_all_positions(kite, positions)
