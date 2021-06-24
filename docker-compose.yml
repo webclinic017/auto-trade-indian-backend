@@ -104,3 +104,13 @@ services:
   #     - auth.env
   #   depends_on:
   #     - calculator
+  exit_worker:
+    build: ./exit_worker
+    command: ["python", "app.py"]
+    volumes:
+      - ./exit_worker:/app
+    env_file:
+      - .env
+      - auth.env
+    extra_hosts:
+      - "token_server:192.168.100.3"
