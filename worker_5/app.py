@@ -17,6 +17,7 @@ def main():
     )
     channel = connection.channel()
     channel.queue_declare(queue=worker)
+    channel.queue_declare(queue='zerodha_worker')
     
     def callback(ch, method, properties, body):
         print('[*] Message Received')
@@ -29,7 +30,7 @@ def main():
             quantity = bf_quantity
         
         try:
-            start_trade(document['data'].pop(), quantity)
+            start_trade(document['data'].pop(), quantity, channel)
         except:
             pass
 

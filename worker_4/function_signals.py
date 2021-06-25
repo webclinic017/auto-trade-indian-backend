@@ -1,13 +1,8 @@
-import datetime
-import json
-import redis
-import requests
-
+import datetime, json, redis, requests
 
 token_map = requests.get("http://zerodha_worker/get/token_map").json()
-
         
-def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
+def scalp_buy(symbol, quantity, n, channel, redis_host='redis_server', redis_port=6379):
     x = datetime.time(6,45)
     
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -31,10 +26,14 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                     }
                     
                     # publish trade to zerodha worker queue
-                    print(json.dumps(trade, indent=2))
+                    channel.basic_publish(
+                        exchange='',
+                        routing_key='zerodha_worker',
+                        body=json.dumps(trade).encode()
+                    )
 
 
-def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
+def scalp_sell(symbol, quantity, n, channel, redis_host='redis_server', redis_port=6379):
     x = datetime.time(6,45)
     
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -58,4 +57,8 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                         'quantity': quantity
                     }
                     # publish trade to zerodha_worker queue
-                    print(json.dumps(trade, indent=2))
+                    channel.basic_publish(
+                        exchange='',
+                        routing_key='zerodha_worker',
+                        body=json.dumps(trade).encode()
+                    )
