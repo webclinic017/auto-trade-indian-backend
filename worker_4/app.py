@@ -27,7 +27,7 @@ scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
 #10557186
-tickers_buy = ['NIFTY2170115800CE']
+tickers_buy = ['NIFTY2170115900CE']
 
 tickers_sell = []
 
