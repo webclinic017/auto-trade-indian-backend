@@ -25,17 +25,18 @@ services:
       - db
     command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
     restart: always
-  # calculator:
-  #   build: ./Calculator
-  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-  #   volumes:
-  #     - ./Calculator:/app
-  #   depends_on:
-  #     - scrapper
-  #   restart: always
-  #   env_file:
-  #     - .env
-  #     - auth.env
+  calculator:
+    build: ./Calculator
+    command:
+      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+    volumes:
+      - ./Calculator:/app
+    depends_on:
+      - scrapper
+    restart: always
+    env_file:
+      - .env
+      - auth.env
   # compare:
   #   build: ./Compare
   #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
@@ -55,6 +56,15 @@ services:
       ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
     volumes:
       - ./worker_4:/app
+    env_file:
+      - .env
+      - auth.env
+  worker_5:
+    build: ./worker_5
+    command:
+      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+    volumes:
+      - ./worker_5:/app
     env_file:
       - .env
       - auth.env
