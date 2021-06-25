@@ -7,7 +7,7 @@ import requests
 token_map = requests.get("http://zerodha_worker/get/token_map").json()
 
         
-def scalp_buy(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
     x = datetime.time(6,45)
     
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -17,7 +17,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
     for message in p.listen():
         if message['type'] != 'subscribe':
             positions = json.loads(message['data'])
-            rsi = requests.get(f'http://zerodha_api/get/rsi/{symbol}/7').json()
+            rsi = requests.get(f'http://zerodha_worker/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
 
             print(datetime.datetime.now().time())
@@ -31,9 +31,10 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
                     }
                     
                     # publish trade to zerodha worker queue
+                    print(json.dumps(trade, indent=2))
 
 
-def scalp_sell(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
     x = datetime.time(6,45)
     
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -45,7 +46,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
             positions = json.loads(message['data'])
             # print(positions)
             
-            rsi = requests.get(f'http://zerodha_api/get/rsi/{symbol}/7').json()
+            rsi = requests.get(f'http://zerodha_worker/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
@@ -57,3 +58,4 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
                         'quantity': quantity
                     }
                     # publish trade to zerodha_worker queue
+                    print(json.dumps(trade, indent=2))
