@@ -1,11 +1,12 @@
 import requests
 import redis
+import json
 
 
 token_map = requests.get('http://zerodha_worker/get/token_map').json()
 
 
-redis_host = 'redis_pubsub'
+redis_host = 'redis_server'
 redis_port = 6379
 r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
 
@@ -36,6 +37,7 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
+                print(json.dumps(trade, indent=2))
                                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -43,6 +45,7 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
+                print(json.dumps(trade, indent=2))
 
                 # send the trade to zerodha_worker queue
                 return
@@ -65,6 +68,7 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
+                print(json.dumps(trade, indent=2))
 
                 # send trade to zerodha_worker queue
                 
@@ -74,6 +78,7 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
+                print(json.dumps(trade, indent=2))
                 
                 # send trade to zerodha_worker queue
                 return

@@ -1,5 +1,3 @@
 pika
 pymongo
 requests
-kiteconnect
-pandas
