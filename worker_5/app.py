@@ -1,23 +1,12 @@
 import json
 import pika
-from functions_db import get_key_token
+import requests
 from functions_signals import start_trade
-from pymongo import MongoClient
-from kiteconnect import KiteConnect
 import os
 
-mongo_clients = MongoClient(
-    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-
-token_map = mongo_clients['tokens']['tokens_map'].find_one()
+token_map = requests.get('http://zerodha_worker/get/token_map').json()
 
 worker = 'worker_5'
-
-zerodha_id = os.environ['USERNAME']
-api_key, access_token = get_key_token(
-    zerodha_id, mongo_clients['client_details']['clients'])
-
-kite = KiteConnect(api_key=api_key, access_token=access_token)
 
 nf_quantity = int(os.environ['NF_QUANTITY'])
 bf_quantity = int(os.environ['BF_QUANTITY'])
@@ -40,7 +29,7 @@ def main():
             quantity = bf_quantity
         
         try:
-            start_trade(kite, document['data'].pop(), quantity)
+            start_trade(document['data'].pop(), quantity)
         except:
             pass
 
