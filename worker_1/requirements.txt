@@ -1,6 +1,4 @@
 pika
 requests
 kiteconnect
-pymongo
-dnspython
 websocket-client

@@ -14,7 +14,5 @@ WORKDIR /app
 COPY requirements.txt .
 # installs the packages mentioned in requirements.txt
 RUN pip install -r requirements.txt
-
-
 # COPY localdirectory remote_directory
 COPY . .
