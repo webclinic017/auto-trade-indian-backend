@@ -1,30 +1,18 @@
 import pika
 import json
 from streamer import Streamer
-from pymongo import MongoClient
-from functions_db import get_key_token
-import datetime
 import os
+import requests
 
-
-mongo = MongoClient('mongodb://db')
-db = mongo['intraday'+str(datetime.date.today())]
-collection = mongo['orders']
-
-mongo_clients = MongoClient(
-    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
 worker = 'worker_1'
 
-zerodha_id = os.environ['USERNAME']
-api_key, access_token = get_key_token(
-    zerodha_id, mongo_clients['client_details']['clients'])
-
-# access_token = "PSTIVkiKnMIYot42uTXnF9LbBKLqBeT4"
+credentials = requests.get('http://zerodha_worker/get_api_key_token').json()
+api_key = credentials['api_key']
+access_token = credentials['access_token']
 
 ws_host = os.environ['WS_HOST']
 publisher_host = os.environ['PUBLISHER_HOST']
-# publisher_port = os.environ['PUBLISHER_PORT']
 publisher_path = os.environ['PUBLISHER_PATH']
 
 publisher_uri = f'{publisher_host}{publisher_path}'
