@@ -1,19 +1,13 @@
-import requests
-import redis
-import json
-
+import json, redis, requests
 
 token_map = requests.get('http://zerodha_worker/get/token_map').json()
-
 
 redis_host = 'redis_server'
 redis_port = 6379
 r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
 
 
-def start_trade(document, quantity):
-    flag = False
-    
+def start_trade(document, quantity, channel):
     CE_KEY = 'CE_Stikes'
     PE_KEY = 'PE_Stikes'
     PERCENTAGE = 5/100
@@ -37,7 +31,13 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
-                print(json.dumps(trade, indent=2))
+                
+                # send trade to zerodha_worker queue
+                channel.basic_publish(
+                    exchange='',
+                    routing_key='zerodha_worker',
+                    body=json.dumps(trade).encode()
+                )
                                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -45,9 +45,13 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
-                print(json.dumps(trade, indent=2))
-
+                
                 # send the trade to zerodha_worker queue
+                channel.basic_publish(
+                    exchange='',
+                    routing_key='zerodha_worker',
+                    body=json.dumps(trade).encode()
+                )
                 return
     
         
@@ -68,9 +72,14 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
-                print(json.dumps(trade, indent=2))
+                
 
                 # send trade to zerodha_worker queue
+                channel.basic_publish(
+                    exchange='',
+                    routing_key='zerodha_worker',
+                    body=json.dumps(trade).encode()
+                )
                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -78,9 +87,14 @@ def start_trade(document, quantity):
                     'exchange': 'NFO',
                     'quantity':quantity
                 }
-                print(json.dumps(trade, indent=2))
+                
                 
                 # send trade to zerodha_worker queue
+                channel.basic_publish(
+                    exchange='',
+                    routing_key='zerodha_worker',
+                    body=json.dumps(trade).encode()
+                )
                 return
     
     return
