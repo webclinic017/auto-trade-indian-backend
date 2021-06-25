@@ -228,9 +228,10 @@ def get_historical_data():
 def get_rsi(symbol, n):
     n = int(n)
     token = token_map[symbol]['token']
+    print(token)
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
-    df = requests.post('http://zerodha_worker/get/historical_data', data={
+    df = requests.post('http://zerodha_worker/get/historical_data', json={
         'fdate':str(fday),
         'tdate':str(tday),
         'token': token,
@@ -238,25 +239,33 @@ def get_rsi(symbol, n):
     }).json()
     
     df = pd.DataFrame(df)
-    df['rsi']=tb.RSI(df["close"],14)
-
-    df_slope=df.copy()
-    df_slope = df_slope.iloc[-1*n:,:]
-    df_slope['slope']=tb.LINEARREG_SLOPE(df["rsi"], n)
-    df_slope['slope_deg'] = df_slope['slope'].apply(math.atan).apply(np.rad2deg)
+    print(df)
     
+    try:
+        df['rsi']=tb.RSI(df["close"],14)
 
-    last_rsi, last_deg =  df_slope.tail(1)['rsi'].values[0], df_slope.tail(1)['slope_deg'].values[0]
-    print("RSI",last_rsi, "& RSI_Slope", last_deg)
-    
-    return jsonify({
-        'last_rsi':last_rsi, 
-        'last_deg': last_deg 
-    })
+        df_slope=df.copy()
+        df_slope = df_slope.iloc[-1*n:,:]
+        df_slope['slope']=tb.LINEARREG_SLOPE(df["rsi"], n)
+        df_slope['slope_deg'] = df_slope['slope'].apply(math.atan).apply(np.rad2deg)
+        
+
+        last_rsi, last_deg =  df_slope.tail(1)['rsi'].values[0], df_slope.tail(1)['slope_deg'].values[0]
+        print("RSI",last_rsi, "& RSI_Slope", last_deg)
+        
+        return jsonify({
+            'last_rsi':last_rsi, 
+            'last_slope': last_deg 
+        })
+    except:
+        return jsonify({
+            'last_rsi':0, 
+            'last_slope': 0
+        })
     
 
 # get the quotes
-@app.route('/get/quote', method=['POST'])
+@app.route('/get/quote', methods=['POST'])
 def get_quote():
     data = request.get_json()['tickers']
     quote = kite.quote(data)
