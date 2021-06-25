@@ -83,7 +83,7 @@ def validate_limit_api(data):
 # place a market buy order
 @app.route('/place/market_order/buy', methods=['POST'])
 def place_market_buy_order():
-    data = request.json
+    data = request.get_json()
     try:
         validate_market_api(data)
 
@@ -112,7 +112,7 @@ def place_market_buy_order():
 # place a market sell order
 @app.route('/place/market_order/sell', methods=['POST'])
 def place_market_sell_order():
-    data = request.json
+    data = request.get_json()
     try:
         validate_market_api(data)
         
@@ -144,7 +144,7 @@ def place_market_sell_order():
 # place limit buy order
 @app.route('/place/limit_order/buy', methods=['POST'])
 def place_limit_buy_order():
-    data = request.json
+    data = request.get_json()
     try:
         validate_limit_api(data)
         
@@ -175,7 +175,7 @@ def place_limit_buy_order():
 # place limit sell order
 @app.route('/place/limit_order/sell', methods=['POST'])
 def place_limit_sell_order():
-    data = request.json
+    data = request.get_json()
     try:
         validate_limit_api(data)
         
@@ -217,7 +217,7 @@ def get_token_map():
 # get historical data
 @app.route('/get/historical_data', methods=['POST'])
 def get_historical_data():
-    data = request.json
+    data = request.get_json()
     fdate = datetime.datetime.strptime(data['fdate'], DATE_FORMAT)
     tdate = datetime.datetime.strptime(data['tdate'], DATE_FORMAT)
     historical_data = kite.historical_data(data['token'], fdate, tdate, data['interval'], False, False)
@@ -258,7 +258,7 @@ def get_rsi(symbol, n):
 # get the quotes
 @app.route('/get/quote', method=['POST'])
 def get_quote():
-    data = request.json['tickers']
+    data = request.get_json()['tickers']
     quote = kite.quote(data)
     return jsonify(quote)
 
