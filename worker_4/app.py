@@ -1,8 +1,4 @@
-from kiteconnect.connect import KiteConnect
-from pymongo import MongoClient
-from functions_db import get_key_token
 from function_signals import *
-import datetime
 import os
 import threading
 import time
@@ -10,18 +6,6 @@ import time
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
-mongo = MongoClient('mongodb://db')
-db = mongo['intraday'+str(datetime.date.today())]
-collection = mongo['orders']
-
-mongo_clients = MongoClient(
-    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-
-zerodha_id = os.environ['USERNAME']
-api_key, access_token = get_key_token(
-    zerodha_id, mongo_clients['client_details']['clients'])
-
-kite = KiteConnect(api_key=api_key, access_token=access_token)
 
 scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
@@ -36,8 +20,9 @@ tickers_sell_depth = list(map(lambda x : f'NFO:{x}', tickers_sell))
 buy_quantity_depth = {}
 sell_quantity_depth = {}
 
+buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
+quote_buy = requests.post('http://zerodha_worker/get/quote', data={'tickers':buy_tickers_quote}).json()
 
-quote_buy = kite.quote(list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell)))
 
 for ticker in tickers_buy + tickers_sell:
     buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
@@ -67,11 +52,11 @@ print('Worker 4 started')
 print(buy_quantity)
 
 for ticker in tickers_buy:
-    t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n, kite])
+    t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n])
     t.start()
 
 for ticker in tickers_sell:
-    t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n, kite])
+    t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n])
     t.start()
     
 import redis
@@ -80,9 +65,8 @@ import json
 r = redis.StrictRedis(host='redis_pubsub', port=6379, decode_responses=True)
 
 while True:
-    positions = kite.positions()
+    positions = requests.get('http://zerodha_worker/get/positions').json()
     data = json.dumps(positions)
-    # print(positions)
 
     r.publish('positions', data)
     time.sleep(n)
