@@ -8,6 +8,7 @@ import websocket
 from pymongo import MongoClient
 import requests
 import os
+import time
 
 
 mongo_clients = MongoClient(
@@ -84,12 +85,26 @@ def scalp_buy(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub'
                         }
                     })
                     
-                    market_buy_order(
+                    order_id = market_buy_order(
                         kite,
                         symbol,
                         kite.EXCHANGE_NFO,
                         quantity
                     )
+
+                    time.sleep(1)
+                    order_details = kite.order_history(order_id).pop()
+                    
+                    data = r.get(f'{symbol}_ORDERS')
+                    
+                    if data == None:
+                        data = []
+                    else:
+                        data = json.loads(data)
+                    data.append(order_details)
+                    
+                    r.set(f'{symbol}_ORDERS', json.dumps(data))
+                    
                     total_quantity += quantity
                     token = token_map[symbol]
                     requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')    
@@ -128,12 +143,23 @@ def scalp_sell(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub
                         }
                     })
                     
-                    market_sell_order(
+                    order_id = market_sell_order(
                         kite,
                         symbol,
                         kite.EXCHANGE_NSE,
                         quantity
                     )
+                    
+                    time.sleep(1)
+                    order_details = kite.order_history(order_id).pop()
+                    data = r.get(f'{symbol}_ORDERS')
+                    if data == None:
+                        data = []
+                    else:
+                        data = json.loads(data)
+                    data.append(order_details)
+                    r.set(f'{symbol}_ORDERS', json.dumps(data))
+                    
                     total_quantity += quantity
                     token = token_map[symbol]
                     requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
