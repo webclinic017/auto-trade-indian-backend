@@ -2,6 +2,12 @@ from function_signals import *
 import os
 import threading
 import time
+import pika
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='rabbit_mq'))
+channel = connection.channel()
+channel.queue_declare(queue='zerodha_worker')
 
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
@@ -50,11 +56,11 @@ print('Worker 4 started')
 print(buy_quantity)
 
 for ticker in tickers_buy:
-    t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n])
+    t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n, channel])
     t.start()
 
 for ticker in tickers_sell:
-    t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n])
+    t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n, channel])
     t.start()
     
 import redis
