@@ -2,12 +2,42 @@ from pymongo import MongoClient
 from functions_db import get_key_token
 from flask import Flask, jsonify, request
 from zerodha_functions import *
-import threading, os, pika, json, kiteconnect, requests
+import threading, os, pika, json, kiteconnect, requests, datetime, websocket
+import math
+import pandas as pd
+import talib as tb # type: ignore
+import numpy as np
+
+
+PUBLISHER_HOST = os.environ['PUBLISHER_HOST']
+PUBLISHER_PATH = os.environ['PUBLISHER_PATH']
+
+PUBLISHER_URI = f'{PUBLISHER_HOST}{PUBLISHER_PATH}'
+
+
+def send_notification(data):
+    # send_notification({
+    #     'notification': {
+    #         'title': 'ORDER PLACED HEDGE',
+    #         'body': ce_documents[strike]['weekly_Options_CE']
+    #     },
+    #     'trade': trade 
+    # })
+    try:
+        ws_publisher = websocket.create_connection(PUBLISHER_URI)
+        ws_publisher.send(json.dumps(data))
+        ws_publisher.close()
+    except:
+        pass
+
+
+
 
 mongo_clients = MongoClient(
     'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
 token_map = mongo_clients['tokens']['tokens_map'].find_one()
+token_map["_id"] = str(token_map["_id"])
 
 worker = 'worker_5'
 
@@ -15,6 +45,8 @@ zerodha_id = os.environ['USERNAME']
 api_key, access_token = get_key_token(
     zerodha_id, mongo_clients['client_details']['clients'])
 
+
+DATE_FORMAT = '%Y-%M-%d'
 
 # kite object
 kite = kiteconnect.KiteConnect(api_key=api_key, access_token=access_token)
@@ -177,6 +209,58 @@ def get_positions():
     positions = kite.positions()
     return jsonify(positions)
 
+# get the token map
+@app.route('/get/token_map')
+def get_token_map():
+    return jsonify(token_map)
+
+# get historical data
+@app.route('/get/historical_data', methods=['POST'])
+def get_historical_data():
+    data = request.json
+    fdate = datetime.datetime.strptime(data['fdate'], DATE_FORMAT)
+    tdate = datetime.datetime.strptime(data['tdate'], DATE_FORMAT)
+    historical_data = kite.historical_data(data['token'], fdate, tdate, data['interval'], False, False)
+    return jsonify(historical_data)
+
+# get rsi
+@app.route('/get/rsi/<symbol>/<n>')
+def get_rsi(symbol, n):
+    n = int(n)
+    token = token_map[symbol]['token']
+    tday = datetime.date.today()
+    fday = datetime.date.today()-datetime.timedelta(days=4)
+    df = requests.post('http://zerodha_worker/get/historical_data', data={
+        'fdate':str(fday),
+        'tdate':str(tday),
+        'token': token,
+        'interval':'15minute'
+    }).json()
+    
+    df = pd.DataFrame(df)
+    df['rsi']=tb.RSI(df["close"],14)
+
+    df_slope=df.copy()
+    df_slope = df_slope.iloc[-1*n:,:]
+    df_slope['slope']=tb.LINEARREG_SLOPE(df["rsi"], n)
+    df_slope['slope_deg'] = df_slope['slope'].apply(math.atan).apply(np.rad2deg)
+    
+
+    last_rsi, last_deg =  df_slope.tail(1)['rsi'].values[0], df_slope.tail(1)['slope_deg'].values[0]
+    print("RSI",last_rsi, "& RSI_Slope", last_deg)
+    
+    return jsonify({
+        'last_rsi':last_rsi, 
+        'last_deg': last_deg 
+    })
+    
+
+# get the quotes
+@app.route('/get/quote', method=['POST'])
+def get_quote():
+    data = request.json['tickers']
+    quote = kite.quote(data)
+    return jsonify(quote)
 
 t = threading.Thread(target=app.run, args=['0.0.0.0', 80])
 t.start()

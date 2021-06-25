@@ -49,6 +49,14 @@ services:
   #     - auth.env
   #   extra_hosts:
   #     - "token_server:192.168.100.3"
+  worker_4:
+    build: ./worker_4
+    command: ["python", "app.py"]
+    volumes:
+      - ./worker_4:/app
+    env_file:
+      - .env
+      - auth.env
   zerodha_worker:
     build: ./zerodha_worker
     volumes:
