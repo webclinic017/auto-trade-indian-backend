@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import os
 from functions_db import get_key_token
 from streamer import ExitStreamer
-
+import threading
 from flask import Flask
 
 mongo_clients = MongoClient(
@@ -30,11 +30,13 @@ streamers = [
 def start_exit_streamer(token, ticker):
     if ticker not in streamers:
         streamer = ExitStreamer(ticker, token, 'token_server', r)
-        streamer.start()
         streamers.append(ticker)
+
+        thread = threading.Thread(target=streamer.start)
+        thread.start()
         return 'started the streamer'
     else:
         return 'streamer already running'
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=80, host='0.0.0.0')

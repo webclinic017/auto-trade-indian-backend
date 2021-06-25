@@ -69,9 +69,9 @@ def start_trade(kite : KiteConnect, document, quantity):
                 else:
                     data = json.loads(data)
                 data.append(order_details)
-                r.set(f'{symbol}_ORDERS', json.dumps(data))
+                r.set(f'{symbol}_ORDERS', json.dumps(data, default=str))
                 
-                token = token_map[symbol]
+                token = token_map[symbol]['token']
                 requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
@@ -101,9 +101,9 @@ def start_trade(kite : KiteConnect, document, quantity):
                 else:
                     data = json.loads(data)
                 data.append(order_details)
-                r.set(f'{symbol}_ORDERS', json.dumps(data))
+                r.set(f'{symbol}_ORDERS', json.dumps(data, default=str))
                 
-                token = token_map[symbol]
+                token = token_map[symbol]['token']
                 requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
@@ -151,9 +151,9 @@ def start_trade(kite : KiteConnect, document, quantity):
                 else:
                     data = json.loads(data)
                 data.append(order_details)
-                r.set(f'{symbol}_ORDERS', json.dumps(data))
+                r.set(f'{symbol}_ORDERS', json.dumps(data, default=str))
                 
-                token = token_map[symbol]
+                token = token_map[symbol]['token']
                 requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {
@@ -184,9 +184,9 @@ def start_trade(kite : KiteConnect, document, quantity):
                 else:
                     data = json.loads(data)
                 data.append(order_details)
-                r.set(f'{symbol}_ORDERS', json.dumps(data))
+                r.set(f'{symbol}_ORDERS', json.dumps(data, default=str))
                 
-                token = token_map[symbol]
+                token = token_map[symbol]['token']
                 requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                 send_notification({
                     'notification': {

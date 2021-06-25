@@ -103,10 +103,10 @@ def scalp_buy(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub'
                         data = json.loads(data)
                     data.append(order_details)
                     
-                    r.set(f'{symbol}_ORDERS', json.dumps(data))
+                    r.set(f'{symbol}_ORDERS', json.dumps(data, default=str))
                     
                     total_quantity += quantity
-                    token = token_map[symbol]
+                    token = token_map[symbol]['token']
                     requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')    
                     print(f'[***] Buy ORDER PLACED {symbol} [***]')
                 # elif last_rsi < 40:
@@ -158,10 +158,10 @@ def scalp_sell(symbol, quantity, n, kite : KiteConnect, redis_host='redis_pubsub
                     else:
                         data = json.loads(data)
                     data.append(order_details)
-                    r.set(f'{symbol}_ORDERS', json.dumps(data))
+                    r.set(f'{symbol}_ORDERS', json.dumps(data, default=str))
                     
                     total_quantity += quantity
-                    token = token_map[symbol]
+                    token = token_map[symbol]['token']
                     requests.get(f'http://exit_worker/start_exit_streamer/{token}/{symbol}')
                     print(f'[***] Sell ORDER PLACED {symbol} [***]')
                 # elif last_rsi > 40:
