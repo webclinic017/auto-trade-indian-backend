@@ -1,6 +1,0 @@
-kiteconnect
-pymongo
-dnspython
-websocket-client
-redis
-Flask
