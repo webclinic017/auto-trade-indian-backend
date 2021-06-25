@@ -3,3 +3,4 @@ pymongo
 dnspython
 websocket-client
 pika
+redis
