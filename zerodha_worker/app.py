@@ -218,9 +218,9 @@ def get_token_map():
 @app.route('/get/historical_data', methods=['POST'])
 def get_historical_data():
     data = request.get_json()
-    fdate = datetime.datetime.strptime(data['fdate'], DATE_FORMAT)
-    tdate = datetime.datetime.strptime(data['tdate'], DATE_FORMAT)
-    historical_data = kite.historical_data(data['token'], fdate, tdate, data['interval'], False, False)
+    # fdate = datetime.datetime.strptime(data['fdate'], DATE_FORMAT)
+    # tdate = datetime.datetime.strptime(data['tdate'], DATE_FORMAT)
+    historical_data = kite.historical_data(data['token'], data['fdate'], data['tdate'], data['interval'], False, False)
     return jsonify(historical_data)
 
 # get rsi
@@ -230,7 +230,7 @@ def get_rsi(symbol, n):
     token = token_map[symbol]['token']
     print(token)
     tday = datetime.date.today()
-    fday = datetime.date.today()-datetime.timedelta(days=4)
+    fday = tday - datetime.timedelta(days=4)
     df = requests.post('http://zerodha_worker/get/historical_data', json={
         'fdate':str(fday),
         'tdate':str(tday),
@@ -271,40 +271,34 @@ def get_quote():
     quote = kite.quote(data)
     return jsonify(quote)
 
-t = threading.Thread(target=app.run, args=['0.0.0.0', 80])
+# t = threading.Thread(target=app.run, args=['0.0.0.0', 80])
+# t.start()
+
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='rabbit_mq')
+)
+channel = connection.channel()
+channel.queue_declare(queue='zerodha_worker')
+
+def callback(ch, method, properties, body):
+    print('[**] ORDER RECEIVED [**]')
+    json_data = json.loads(body.decode('utf-8'))
+    end_point = json_data['endpoint']
+    response = json.dumps(requests.post('http://zerodha_worker' + end_point, json=json_data).json(), indent=2)
+    
+    print(f'RESPONSE : {response}')
+    print('ORDER')
+    print(json.dumps(json_data, indent=2))
+    
+
+
+channel.basic_consume(queue='zerodha_worker', on_message_callback=callback, auto_ack=True)
+print('WAITING FOR ORDERS')
+
+t = threading.Thread(target=channel.start_consuming)
 t.start()
 
-queue_list = [
-    
-]
-
-def main():
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='rabbit_mq')
-    )
-    channel = connection.channel()
-    channel.queue_declare(queue='zerodha_worker')
-    for queue in queue_list:
-        channel.queue_declare(queue=queue)
-    
-    def callback(ch, method, properties, body):
-        print('[**] ORDER RECEIVED [**]')
-        json_data = json.loads(body.decode('utf-8'))
-        end_point = json_data['endpoint']
-        message = requests.post('http://zerodha_worker' + end_point, data=json_data).json()['message']
-        
-        print(f'MESSAGE : {message}')
-        print('ORDER')
-        print(json.dumps(json_data, indent=2))
-        
-    
-    
-    channel.basic_consume(queue='zerodha_worker', on_message_callback=callback, auto_ack=True)
-    print('WAITING FOR ORDERS')
-    channel.start_consuming()
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        exit()
+    app.run('0.0.0.0', 80)
