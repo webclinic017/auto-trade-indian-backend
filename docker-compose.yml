@@ -51,7 +51,8 @@ services:
   #     - "token_server:192.168.100.3"
   worker_4:
     build: ./worker_4
-    command: ["python", "app.py"]
+    command:
+      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
     volumes:
       - ./worker_4:/app
     env_file:
@@ -65,6 +66,7 @@ services:
     env_file:
       - .env
       - auth.env
+    restart: always
     extra_hosts:
       - "token_server:192.168.100.3"
   exit_worker:

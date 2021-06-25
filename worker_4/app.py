@@ -10,7 +10,6 @@ time.tzset()
 scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-#10557186
 tickers_buy = ['NIFTY2170115900CE']
 
 tickers_sell = []
@@ -21,8 +20,7 @@ buy_quantity_depth = {}
 sell_quantity_depth = {}
 
 buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
-quote_buy = requests.post('http://zerodha_worker/get/quote', data={'tickers':buy_tickers_quote}).json()
-
+quote_buy = requests.post('http://zerodha_worker/get/quote', json={'tickers':buy_tickers_quote}).json()
 
 for ticker in tickers_buy + tickers_sell:
     buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
@@ -62,7 +60,7 @@ for ticker in tickers_sell:
 import redis
 import json
 
-r = redis.StrictRedis(host='redis_pubsub', port=6379, decode_responses=True)
+r = redis.StrictRedis(host='redis_server', port=6379, decode_responses=True)
 
 while True:
     positions = requests.get('http://zerodha_worker/get/positions').json()
