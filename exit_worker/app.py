@@ -26,7 +26,7 @@ streamers = [
     
 ]
 
-@app.route('start_exit_streamer/<str:token>/<str:ticker>')
+@app.route('/start_exit_streamer/<token>/<ticker>')
 def start_exit_streamer(token, ticker):
     if ticker not in streamers:
         streamer = ExitStreamer(ticker, token, 'token_server', r)
