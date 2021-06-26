@@ -1,6 +1,20 @@
 import datetime, json, redis, requests, pika
 
-token_map = requests.get("http://zerodha_worker/get/token_map").json()
+def send_trade(trade):
+    connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='rabbit_mq'))
+    channel = connection.channel()
+    channel.queue_declare(queue='zerodha_worker')
+    
+    # publish trade to zerodha worker queue
+    channel.basic_publish(
+        exchange='',
+        routing_key='zerodha_worker',
+        body=json.dumps(trade).encode()
+    )
+    connection.close()
+
+
         
 def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
     x = datetime.time(6,45)
@@ -25,19 +39,9 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                         'quantity': quantity
                     }
                     
-                    connection = pika.BlockingConnection(
-                    pika.ConnectionParameters(host='rabbit_mq'))
-                    channel = connection.channel()
-                    channel.queue_declare(queue='zerodha_worker')
+                    # publish trade to zerodha worker
+                    send_trade(trade)
                     
-                    # publish trade to zerodha worker queue
-                    channel.basic_publish(
-                        exchange='',
-                        routing_key='zerodha_worker',
-                        body=json.dumps(trade).encode()
-                    )
-                    connection.close()
-
 
 def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
     x = datetime.time(6,45)
@@ -64,14 +68,4 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                     }
                     
                     # publish trade to zerodha_worker queue
-                    connection = pika.BlockingConnection(
-                    pika.ConnectionParameters(host='rabbit_mq'))
-                    channel = connection.channel()
-                    channel.queue_declare(queue='zerodha_worker')
-                    
-                    channel.basic_publish(
-                        exchange='',
-                        routing_key='zerodha_worker',
-                        body=json.dumps(trade).encode()
-                    )
-                    connection.close()
+                    send_trade(trade)
