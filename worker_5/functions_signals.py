@@ -1,11 +1,15 @@
-import json, redis, requests
-
-token_map = requests.get('http://zerodha_worker/get/token_map').json()
+import json, redis
 
 redis_host = 'redis_server'
 redis_port = 6379
 r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
 
+def send_trade(trade, channel):
+    channel.basic_publish(
+        exchange='',
+        routing_key='zerodha_worker',
+        body=json.dumps(trade).encode()
+    )
 
 def start_trade(document, quantity, channel):
     CE_KEY = 'CE_Stikes'
@@ -33,11 +37,7 @@ def start_trade(document, quantity, channel):
                 }
                 
                 # send trade to zerodha_worker queue
-                channel.basic_publish(
-                    exchange='',
-                    routing_key='zerodha_worker',
-                    body=json.dumps(trade).encode()
-                )
+                send_trade(trade, channel)
                                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -47,11 +47,7 @@ def start_trade(document, quantity, channel):
                 }
                 
                 # send the trade to zerodha_worker queue
-                channel.basic_publish(
-                    exchange='',
-                    routing_key='zerodha_worker',
-                    body=json.dumps(trade).encode()
-                )
+                send_trade(trade, channel)
                 return
     
         
@@ -75,11 +71,7 @@ def start_trade(document, quantity, channel):
                 
 
                 # send trade to zerodha_worker queue
-                channel.basic_publish(
-                    exchange='',
-                    routing_key='zerodha_worker',
-                    body=json.dumps(trade).encode()
-                )
+                send_trade(trade, channel)
                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -90,11 +82,7 @@ def start_trade(document, quantity, channel):
                 
                 
                 # send trade to zerodha_worker queue
-                channel.basic_publish(
-                    exchange='',
-                    routing_key='zerodha_worker',
-                    body=json.dumps(trade).encode()
-                )
+                send_trade(trade, channel)
                 return
     
     return
