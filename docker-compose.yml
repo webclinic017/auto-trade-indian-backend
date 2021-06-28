@@ -79,5 +79,14 @@ services:
       - .env
       - auth.env
     restart: always
-    extra_hosts:
-      - "token_server:192.168.100.3"
+  exit_worker:
+    build: ./exit_worker
+    volumes: 
+      - ./zerodha_worker:/app
+    command: ['sh', './wait-for.sh', 'zerodha_worker:80', '--', 'python', 'app.py']
+    env_file: 
+      - .env
+      - .env.auth
+    extra_hosts: :
+      - 'token_server:192.168.100.3'
+    restart: always
