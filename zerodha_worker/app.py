@@ -273,10 +273,14 @@ def get_quote():
 
 @app.route('/get/ltp', methods=['POST'])
 def get_ltp():
-    data = request.get_json()
-    ltp = kite.ltp(data)
+    tickers = request.get_json()['tickers']
     
-    return jsonify(ltp)
+    if len(tickers) == 0:
+        return jsonify({'ltp':[]})
+    
+    ltp = kite.ltp(tickers)
+    
+    return jsonify({'ltp':ltp})
 
 # t = threading.Thread(target=app.run, args=['0.0.0.0', 80])
 # t.start()
