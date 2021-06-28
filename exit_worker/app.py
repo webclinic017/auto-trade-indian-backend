@@ -42,7 +42,8 @@ def exit_process():
     }
     
     while True:
-        ltp_dict = requests.post('http://zerodha_worker/get_ltp', json=tickers)
+        ltp_dict = requests.post('http://zerodha_worker/get/ltp', json={'tickers':list(tickers)}).json()['ltp']
+        print(ltp_dict)
         
         for ticker in orders:
             if len(orders[ticker]) > 0:
