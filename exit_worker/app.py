@@ -1,6 +1,56 @@
-import pika, os, json, requests, time, threading
+from flask.app import Flask
+import pika, os, json, requests, time, threading, redis
 from websocket import WebSocketApp
 from collections import defaultdict
+
+
+
+class RedisDictonary:
+    def __init__(self):
+        self.r = redis.StrictRedis(host='redis_server', port=6379, decode_responses=True)
+        orders = self.r.get('orders')
+        if orders == None:
+            self.r.set('orders', json.dumps({}))
+    
+    def insert(self, key, data):
+        orders = json.loads(self.r.get('orders'))
+        
+        if key in orders:
+            orders[key].append(data)
+        else:
+            orders[key] = [data]
+        self.r.set('orders', json.dumps(orders))
+    
+    
+    def clear(self, key):
+        orders = json.loads(self.r.get('orders'))
+        del orders[key]
+        self.r.set('orders', json.dumps(orders))
+        
+    
+    def get(self, key):
+        orders = json.loads(self.r.get('orders'))
+        return orders[key]
+
+    def get_all(self):
+        orders = json.loads(self.r.get('orders'))
+        return orders
+    
+    def get_tickers(self):
+        orders = self.get_all()
+        
+        if orders == {}:
+            return []
+        
+        tickers = []
+        list(map(lambda x : f'NFO:{x}', orders.keys()))
+        
+        for order in orders:
+            order_ = orders[order][0]
+            tickers.append(order_['exchange'] + ":" + order_["tradingsymbol"])
+        
+        return tickers
+
 
 def send_trade(trade):
     connection = pika.BlockingConnection(
@@ -17,32 +67,31 @@ def send_trade(trade):
     connection.close()
 
 
-TOKEN_SERVER = os.environ['TOKEN_SERVER']
-ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
+TOKEN_SERVER = os.environ['WS_HOST']
+TOKEN_PORT = os.environ['WS_PORT']
+ORDERS_URI = f'ws://{TOKEN_SERVER}:{TOKEN_PORT}/ws/orders'
 
-orders = defaultdict(list)
-tickers = set()
 
-def stocket_process():
+def on_message(ws, message):
+    order = json.loads(message)
+    RedisDictonary().insert(order['tradingsymbol'], order)
+    print(RedisDictonary().get_all())
     
-    def on_message(ws, message):
-        order = json.loads(message)
-        orders[order['tradingsymbol']].append(order)
-        tickers.add(f"{order['exchange']}:{order['tradingsymbol']}")
-    
-    
-    ws = WebSocketApp(ORDERS_URI, on_message=on_message)
-    ws.run_forever()
 
+
+def on_open(ws):
+    print('CONNECTION OPEN')
 
 def exit_process():
-    
+        
     profit = {
         
     }
     
     while True:
-        ltp_dict = requests.post('http://zerodha_worker/get/ltp', json={'tickers':list(tickers)}).json()['ltp']
+        orders = RedisDictonary().get_all()
+        tickers = RedisDictonary().get_tickers()
+        ltp_dict = requests.post('http://zerodha_worker/get/ltp', json={'tickers': tickers}).json()['ltp']
         print(ltp_dict)
         
         for ticker in orders:
@@ -91,7 +140,9 @@ def exit_process():
                     
                         'buy':profit_percentage_buy,
                         'sell':profit_percentage_sell
-                } 
+                }
+                
+                print(profit)
 
                 if profit[ticker]['buy'] != 0:
                     if profit[ticker]['buy'] > 4:
@@ -104,7 +155,7 @@ def exit_process():
                                 'quantity': total_trade_buy_quantity
                             }
                             
-                            orders[ticker] = []
+                            RedisDictonary().clear(ticker)
                             send_trade(trade)
                 
                 if profit[ticker]['sell'] != 0:
@@ -118,16 +169,30 @@ def exit_process():
                                 'quantity': total_trade_sell_quantity
                             }
                             
-                            orders[ticker] = []
+                            RedisDictonary().clear(ticker)
                             send_trade(trade)
         
         # sleep for 10 seconds
         time.sleep(10)
 
 
-if __name__:
-    t_socket = threading.Thread(target=stocket_process)
-    t_exit = threading.Thread(target=exit_process)
+ws = WebSocketApp(ORDERS_URI, on_message=on_message, on_open=on_open)
+app = Flask(__name__)
 
-    t_socket.start()
-    t_exit.start()
+@app.route('/')
+def index():
+    return ""
+
+
+t_socket = threading.Thread(target=ws.run_forever)
+t_socket.start()
+
+time.sleep(5)
+t = threading.Thread(target=app.run, args=['0.0.0.0', 80])
+t.start()
+
+t_exit = threading.Thread(target=exit_process)
+t_exit.start()
+
+
+
