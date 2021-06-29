@@ -16,6 +16,27 @@ services:
     image: redis:alpine
     logging:
       driver: none
+  zerodha_worker:
+    build: ./zerodha_worker
+    volumes:
+      - ./zerodha_worker:/app
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    env_file:
+      - .env
+      - auth.env
+    restart: always
+  exit_worker:
+    build: ./exit_worker
+    volumes:
+      - ./exit_worker:/app
+    command:
+      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+    env_file:
+      - .env
+      - auth.env
+    extra_hosts:
+      - "token_server:192.168.100.3"
+    restart: always
   scrapper:
     build: ./Scrapper
     volumes:
@@ -28,7 +49,18 @@ services:
   calculator:
     build: ./Calculator
     command:
-      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+      [
+        "sh",
+        "./wait-for.sh",
+        "zerodha_worker:80",
+        "--",
+        "sh",
+        "./wait-for.sh",
+        "exit_worker:80",
+        "--",
+        "python",
+        "app.py",
+      ]
     volumes:
       - ./Calculator:/app
     depends_on:
@@ -53,41 +85,35 @@ services:
   worker_4:
     build: ./worker_4
     command:
-      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+      [
+        "sh",
+        "./wait-for.sh",
+        "zerodha_worker:80",
+        "--",
+        "sh",
+        "./wait-for.sh",
+        "exit_worker:80",
+        "--",
+        "python",
+        "app.py",
+      ]
     volumes:
       - ./worker_4:/app
     restart: always
     env_file:
       - .env
       - auth.env
-  worker_5:
-    build: ./worker_5
-    command:
-      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
-    volumes:
-      - ./worker_5:/app
-    restart: always
-    env_file:
-      - .env
-      - auth.env
-  zerodha_worker:
-    build: ./zerodha_worker
-    volumes:
-      - ./zerodha_worker:/app
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-    env_file:
-      - .env
-      - auth.env
-    restart: always
-  exit_worker:
-    build: ./exit_worker
-    volumes:
-      - ./exit_worker:/app
-    command:
-      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
-    env_file:
-      - .env
-      - auth.env
-    extra_hosts:
-      - "token_server:192.168.100.3"
-    restart: always
+    depends_on:
+      - exit_worker
+  # worker_5:
+  #   build: ./worker_5
+  #   command:
+  #     ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+  #   volumes:
+  #     - ./worker_5:/app
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   depends_on:
+  #     - exit_worker
