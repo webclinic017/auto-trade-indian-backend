@@ -1,8 +1,6 @@
 from flask.app import Flask
 import pika, os, json, requests, time, threading, redis
 from websocket import WebSocketApp
-from collections import defaultdict
-
 
 
 class RedisDictonary:
@@ -68,8 +66,7 @@ def send_trade(trade):
 
 
 TOKEN_SERVER = os.environ['WS_HOST']
-TOKEN_PORT = os.environ['WS_PORT']
-ORDERS_URI = f'ws://{TOKEN_SERVER}:{TOKEN_PORT}/ws/orders'
+ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
 
 
 def on_message(ws, message):
