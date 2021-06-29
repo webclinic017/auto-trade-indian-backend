@@ -42,7 +42,7 @@ except:
     sell_quantity = 0
 
 if buy_quantity < 1:
-    buy_quantity = 300
+    buy_quantity = 75
 
 if sell_quantity < 1:
     sell_quantity = 1
