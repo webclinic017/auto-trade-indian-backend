@@ -34,8 +34,6 @@ services:
     env_file:
       - .env
       - auth.env
-    extra_hosts:
-      - "token_server:192.168.100.3"
     restart: always
   scrapper:
     build: ./Scrapper
@@ -80,8 +78,6 @@ services:
   #   env_file:
   #     - .env
   #     - auth.env
-  #   extra_hosts:
-  #     - "token_server:192.168.100.3"
   worker_4:
     build: ./worker_4
     command:
@@ -117,3 +113,9 @@ services:
   #     - auth.env
   #   depends_on:
   #     - exit_worker
+
+# don't touch this
+networks:
+  default:
+    external:
+      name: auto-trade
