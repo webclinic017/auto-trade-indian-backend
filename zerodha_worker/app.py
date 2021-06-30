@@ -95,7 +95,8 @@ def place_market_buy_order():
             raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            order_id = market_buy_order(kite, data['trading_symbol'], exchange, data['quantity'])
+            tag = data.get('tag', None)
+            order_id = market_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
@@ -124,7 +125,8 @@ def place_market_sell_order():
             raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'])
+            tag = data.get('tag', None)
+            order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
@@ -156,7 +158,8 @@ def place_limit_buy_order():
             raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'])
+            tag = data.get('tag', None)
+            order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
@@ -187,7 +190,8 @@ def place_limit_sell_order():
             raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'])
+            tag = data.get('tag', None)
+            order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
