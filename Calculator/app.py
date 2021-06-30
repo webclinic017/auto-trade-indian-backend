@@ -6,10 +6,16 @@ from pymongo import MongoClient
 import os
 import datetime
 
-mongo = MongoClient("mongodb://db")
-db = mongo['intraday_'+str(datetime.date.today())]
-collection = db['index_master']
+today = str(datetime.date.today())
+yesterday = str(datetime.date.today() - datetime.timedelta(days=1))
 
+stock_market_end = datetime.time(15, 30, 0)
+
+mongo = MongoClient("mongodb://db")
+db = mongo['intraday_' + today]
+collection = db['index_master']
+db_ = mongo['intraday_' + yesterday]
+collection_ = db_['index_master']
 
 def main(expiry_date):
     connection = pika.BlockingConnection(
@@ -26,24 +32,40 @@ def main(expiry_date):
         # print(json_data)
 
         data = gen_data(json_data, expiry_date)
-        should_send = insert_data(collection, data, json_data['ticker'])
-
-        if should_send:
-            doc = collection.find_one(
-                {"ticker": ticker}, {"data": {"$slice": -2}})
-            doc["_id"] = str(doc["_id"])
-
-            channel.basic_publish(
-                exchange='',
-                routing_key='compare',
-                body=json.dumps(doc).encode()
-            )
-
-            print("[*] Message send to Compare")
-        else:
-            print("[*] Need 2 documents to compare")
         
+        # should_send = insert_data(collection, data, json_data['ticker'])
+        insert_data(collection, data, json_data['ticker'])
         
+        # if should_send:
+        #     doc = collection.find_one(
+        #         {"ticker": ticker}, {"data": {"$slice": -2}})
+        #     doc["_id"] = str(doc["_id"])
+
+        #     channel.basic_publish(
+        #         exchange='',
+        #         routing_key='compare',
+        #         body=json.dumps(doc).encode()
+        #     )
+
+        #     print("[*] Message send to Compare")
+        # else:
+        #     print("[*] Need 2 documents to compare")
+        
+        if datetime.datetime.now().time >= (stock_market_end - datetime.timedelta(minutes=15)) and datetime.datetime.now().time <= (stock_market_end - datetime.timedelta(minutes=13)):
+            doc_today = collection.find_one({'ticker':ticker}, {"data":{"$slice":-1}})
+            doc_yesterday = collection.find_one({'ticker':ticker}, {"data":{"$slice":-1}})
+            
+            if doc_yesterday != None and doc_today != None:
+                # send to compare to perform the trading
+                data = {"data":[doc_yesterday, doc_today]}
+                channel.basic_publish(
+                    exchange='',
+                    routing_key='compare',
+                    body=json.dumps(data).encode()
+                )
+            else:
+                print('[**] Needed Yesterday\'s Data for Compare')
+            
         doc = collection.find_one(
             {'ticker':ticker}, {"data":{"$slice":-1}}
         )
