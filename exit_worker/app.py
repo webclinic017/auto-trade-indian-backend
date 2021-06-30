@@ -1,7 +1,8 @@
 from flask.app import Flask
-import pika, os, json, requests, time, threading, redis
+import pika, os, json, time, threading, redis, requests
 from websocket import WebSocketApp
 
+r_ticker = redis.StrictRedis(host='redis_server', port=6379, decode_responses=True)
 
 class RedisDictonary:
     def __init__(self):
@@ -67,6 +68,8 @@ def send_trade(trade):
 
 TOKEN_SERVER = os.environ['WS_HOST']
 ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
+tickers_streamed = {}
+
 
 
 def on_message(ws, message):
@@ -74,10 +77,17 @@ def on_message(ws, message):
     order = json.loads(message)
     
     if order['status'] == 'COMPLETE' and order['tag'] == 'ENTRY':
+        
+        if order['tradingsymbol'] not in tickers_streamed:
+            token = order['instrument_token']
+            t = threading.Thread(target=requests.get, args=[f'http://exit_worker/stream_ticker/{token}'])
+            t.start()
+            tickers_streamed[token] = True
+            
         RedisDictonary().insert(order['tradingsymbol'], order)
         print(RedisDictonary().get_all())
     
-
+        
 
 def on_open(ws):
     print('CONNECTION OPEN')
@@ -90,9 +100,10 @@ def exit_process():
     
     while True:
         orders = RedisDictonary().get_all()
-        tickers = RedisDictonary().get_tickers()
-        ltp_dict = requests.post('http://zerodha_worker/get/ltp', json={'tickers': tickers}).json()['ltp']
-        print(ltp_dict)
+        # tickers = RedisDictonary().get_tickers()
+        # ltp_dict = requests.post('http://zerodha_worker/get/ltp', json={'tickers': tickers}).json()['ltp']
+        # ltp_dict = r_ticker.get('')
+        # print(ltp_dict)
         
         for ticker in orders:
             if len(orders[ticker]) > 0:
@@ -121,7 +132,14 @@ def exit_process():
                 
                 
                 exchange = order['exchange']
-                ltp = ltp_dict[f'{exchange}:{ticker}']['last_price']
+                # ltp = ltp_dict[f'{exchange}:{ticker}']['last_price']
+                try:
+                    ltp = json.loads(r_ticker.get(order['instrument_token']))
+                except:
+                    continue
+                
+                print(ltp)
+                ltp = ltp['last_price']
                 
                 try:
                     total_current_buy_price=total_trade_buy_quantity*ltp
@@ -173,6 +191,9 @@ def exit_process():
                             
                             RedisDictonary().clear(ticker)
                             send_trade(trade)
+                
+                rsi = requests.get(f'http://zerodha_worker/get/rsi/{ticker}/7').json()
+                print(rsi)
         
         # sleep for 10 seconds
         time.sleep(10)
@@ -181,8 +202,18 @@ def exit_process():
 ws = WebSocketApp(ORDERS_URI, on_message=on_message, on_open=on_open)
 app = Flask(__name__)
 
-@app.route('/')
-def index():
+def on_message_ticker(ws, message):
+    # t = threading.Thread(target=r_ticker.set, args=[ticker, json.dumps(message)])
+    # r_ticker.set(ticker, json.dumps(message))
+    data = json.loads(message)
+    r_ticker.set(data['instrument_token'], message)
+
+@app.route('/stream_ticker/<token>')
+def index(token):
+    ws = WebSocketApp(f'ws://{TOKEN_SERVER}/ws/ticker/{token}', on_message=on_message_ticker)
+    t = threading.Thread(target=ws.run_forever)
+    t.start()
+    requests.get(f'http://zerodha_consumer_1/subscribe/{token}')
     return ""
 
 
