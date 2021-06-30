@@ -152,7 +152,8 @@ def exit_process():
                                 'endpoint': '/place/market_order/sell',
                                 'trading_symbol': ticker,
                                 'exchange': exchange,
-                                'quantity': total_trade_buy_quantity
+                                'quantity': total_trade_buy_quantity,
+                                'tag': 'ENTRY'
                             }
                             
                             RedisDictonary().clear(ticker)
@@ -166,7 +167,8 @@ def exit_process():
                                 'endpoint': '/place/market_order/buy',
                                 'trading_symbol': ticker,
                                 'exchange': exchange,
-                                'quantity': total_trade_sell_quantity
+                                'quantity': total_trade_sell_quantity,
+                                'tag': 'ENTRY'
                             }
                             
                             RedisDictonary().clear(ticker)
