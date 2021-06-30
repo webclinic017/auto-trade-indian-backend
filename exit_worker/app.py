@@ -73,7 +73,7 @@ def on_message(ws, message):
     
     order = json.loads(message)
     
-    if order['status'] == 'COMPLETE':
+    if order['status'] == 'COMPLETE' and order['tag'] == 'ENTRY':
         RedisDictonary().insert(order['tradingsymbol'], order)
         print(RedisDictonary().get_all())
     
