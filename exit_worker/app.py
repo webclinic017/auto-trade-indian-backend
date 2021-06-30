@@ -156,7 +156,7 @@ def exit_process():
                             send_trade(trade)
                 
                 if profit[ticker]['sell'] != 0:
-                    if profit[ticker]['buy'] > 4:
+                    if profit[ticker]['sell'] > 4:
                         print(f'Exit {ticker} by BUYING it')
                         if exchange == 'NFO':
                             trade = {
