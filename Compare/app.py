@@ -11,11 +11,7 @@ mongo = MongoClient("mongodb://db")
 db = mongo['intraday_'+str(datetime.date.today())]
 collection = db['index_compare']
 
-# take tokens from the online mongo db
-mongo_clients = MongoClient(
-    'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
-token_map = mongo_clients['tokens']['tokens_map'].find_one()
-
+token_map = requests.get('http://zerodha_worker/get/token_map').json()
 
 nf_quantity = int(os.environ['NF_QUANTITY'])
 bf_quantity = int(os.environ['BF_QUANTITY'])
@@ -51,14 +47,27 @@ def main():
         UP_TREND = 'uptrend'
         DOWN_TREND = 'downtrend'
 
-        atr_PE = get_atr(latest_compare['weekly_Options_PE'])
-        atr_CE = get_atr(latest_compare['weekly_Options_CE'])
+
+        symbol_PE = latest_compare['weekly_Options_PE']
+        atr_PE = requests.get(f'http://zerodha_worker/get/atr/{symbol_PE}').json()['atr']
+        symbol_CE = latest_compare['weekly_Options_CE']
+        atr_CE = requests.get(f'http://zerodha_worker/get/atr/{symbol_CE}').json()['atr']
+        
         # ema5_ce,ema8_ce,ema13_ce,ema20_ce=ema_5813(latest_compare['weekly_Options_CE'])
         # ema5_pe,ema8_pe,ema13_pe,ema20_pe=ema_5813(latest_compare['weekly_Options_PE'])
-        slope_ce, trend_ce = slope(latest_compare['weekly_Options_CE'], 7)
+        
+        symbol_CE = latest_compare['weekly_Options_CE']
+        data = requests.get(f'http://zerodha_worker/get/slope/{symbol_CE}/7').json()
+        slope_ce, trend_ce = data['slope'], data['trend']
+        
         print("slope",latest_compare['weekly_Options_CE'], slope_ce)
         print("trend",latest_compare['weekly_Options_CE'], trend_ce)
-        slope_pe, trend_pe = slope(latest_compare['weekly_Options_PE'], 7)
+        
+        
+        symbol_PE = latest_compare['weekly_Options_PE']
+        data = requests.get(f'http://zerodha_worker/get/slope/{symbol_PE}/7').json()
+        slope_pe, trend_pe = data['slope'], data['trend']
+        
         print("slope",latest_compare['weekly_Options_PE'], slope_pe)
         print("trend",latest_compare['weekly_Options_PE'], trend_pe)
         
