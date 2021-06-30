@@ -70,9 +70,12 @@ ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
 
 
 def on_message(ws, message):
+    
     order = json.loads(message)
-    RedisDictonary().insert(order['tradingsymbol'], order)
-    print(RedisDictonary().get_all())
+    
+    if order['status'] == 'COMPLETE':
+        RedisDictonary().insert(order['tradingsymbol'], order)
+        print(RedisDictonary().get_all())
     
 
 
