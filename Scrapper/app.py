@@ -3,15 +3,14 @@ from scraper import fetch_data_from_api
 import pika
 import json
 
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq'))
-channel = connection.channel()
-channel.queue_declare(queue='trader')
 
 while True:
     tickers = ['NIFTY', 'BANKNIFTY']
-    if channel.is_closed:
-        exit(0)
+    
+    connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='rabbit_mq'))
+    channel = connection.channel()
+    channel.queue_declare(queue='trader')
 
     for ticker in tickers:
         url = f"https://www.nseindia.com/api/option-chain-indices?symbol={ticker}"
