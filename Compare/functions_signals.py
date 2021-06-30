@@ -359,7 +359,6 @@ def ema_5813(symbol):
     return requirement
 
 def slope(symbol, n):
-    "function to calculate the slope of regression line for n consecutive points on a plot"
     token = tokens_dict[symbol]['token']
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
