@@ -69,17 +69,17 @@ services:
     env_file:
       - .env
       - auth.env
-  compare:
-    build: ./Compare
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-    volumes:
-      - ./Compare:/app
-    depends_on:
-      - calculator
-    restart: always
-    env_file:
-      - .env
-      - auth.env
+  # compare:
+  #   build: ./Compare
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   volumes:
+  #     - ./Compare:/app
+  #   depends_on:
+  #     - calculator
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #     - auth.env
   worker_4:
     build: ./worker_4
     command:
