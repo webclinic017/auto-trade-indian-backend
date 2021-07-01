@@ -171,7 +171,7 @@ def exit_process():
                                 'trading_symbol': ticker,
                                 'exchange': exchange,
                                 'quantity': total_trade_buy_quantity,
-                                'tag': 'ENTRY'
+                                'tag': 'EXIT'
                             }
                             
                             RedisDictonary().clear(ticker)
@@ -186,7 +186,7 @@ def exit_process():
                                 'trading_symbol': ticker,
                                 'exchange': exchange,
                                 'quantity': total_trade_sell_quantity,
-                                'tag': 'ENTRY'
+                                'tag': 'EXIT'
                             }
                             
                             RedisDictonary().clear(ticker)

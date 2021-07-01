@@ -50,8 +50,12 @@ def main(expiry_date):
         #     print("[*] Message send to Compare")
         # else:
         #     print("[*] Need 2 documents to compare")
+    
+        min_time = datetime.time(stock_market_end.hour, stock_market_end.minute - 15)
+        max_time = datetime.time(stock_market_end.hour, stock_market_end.minute - 13)
+        now = datetime.datetime.now().time()
         
-        if datetime.datetime.now().time >= (stock_market_end - datetime.timedelta(minutes=15)) and datetime.datetime.now().time <= (stock_market_end - datetime.timedelta(minutes=13)):
+        if now >= min_time and now <= max_time:
             doc_today = collection.find_one({'ticker':ticker}, {"data":{"$slice":-1}})
             doc_yesterday = collection.find_one({'ticker':ticker}, {"data":{"$slice":-1}})
             
