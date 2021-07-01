@@ -194,6 +194,19 @@ def exit_process():
                 
                 rsi = requests.get(f'http://zerodha_worker/get/rsi/{ticker}/7').json()
                 print(rsi)
+                # if rsi['rsi'] < 40:
+                #     if exchange == 'NFO':
+                #             trade = {
+                #                 'endpoint': '/place/market_order/buy',
+                #                 'trading_symbol': ticker,
+                #                 'exchange': exchange,
+                #                 'quantity': total_trade_sell_quantity,
+                #                 'tag': 'EXIT'
+                #             }
+                            
+                #             RedisDictonary().clear(ticker)
+                #             send_trade(trade)
+
         
         # sleep for 10 seconds
         time.sleep(10)
