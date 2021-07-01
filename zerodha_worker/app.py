@@ -318,7 +318,7 @@ def get_atr(symbol):
     })
 
 # get ema_5813
-@app.route('get/ema_5813/<symbol>')
+@app.route('/get/ema_5813/<symbol>')
 def ema_5813(symbol):
     token = token_map[symbol]['token']
     tday = datetime.date.today()

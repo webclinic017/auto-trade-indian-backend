@@ -11,7 +11,7 @@ time.tzset()
 scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-tickers_buy = ['NIFTY2170115900CE']
+tickers_buy = ['NIFTY2170115500CE']
 
 tickers_sell = []
 
