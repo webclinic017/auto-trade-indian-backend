@@ -76,7 +76,7 @@ def on_message(ws, message):
     
     order = json.loads(message)
     
-    if order['status'] == 'COMPLETE' and order['tag'] == 'ENTRY':
+    if order['status'] == 'COMPLETE' and order['tag'] == 'ENTRY_INDEX':
         
         if order['tradingsymbol'] not in tickers_streamed:
             token = order['instrument_token']
