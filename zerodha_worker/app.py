@@ -273,8 +273,11 @@ def get_rsi(symbol, n):
 @app.route('/get/quote', methods=['POST'])
 def get_quote():
     data = request.get_json()['tickers']
-    quote = kite.quote(data)
-    return jsonify(quote)
+    try:
+        quote = kite.quote(data)
+        return jsonify(quote)
+    except:
+        return jsonify({})
 
 # get ltp
 @app.route('/get/ltp', methods=['POST'])
