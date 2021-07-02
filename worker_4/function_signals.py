@@ -37,7 +37,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
-                        'tag': 'ENTRY'
+                        'tag': 'ENTRY_INDEX'
                     }
                     
                     # publish trade to zerodha worker
@@ -66,7 +66,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
-                        'tag':'ENTRY'
+                        'tag':'ENTRY_INDEX'
                     }
                     
                     # publish trade to zerodha_worker queue

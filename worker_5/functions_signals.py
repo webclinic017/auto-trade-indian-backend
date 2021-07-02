@@ -34,7 +34,7 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': ce_documents[strike]['weekly_Options_CE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY'
+                    'tag': 'ENTRY_INDEX'
                 }
                 
                 # send trade to zerodha_worker queue
@@ -45,7 +45,7 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': pe_documents[strike_]['weekly_Options_PE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY'
+                    'tag': 'ENTRY_INDEX'
                 }
                 
                 # send the trade to zerodha_worker queue
@@ -69,7 +69,7 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': ce_documents[strike_]['weekly_Options_CE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY'
+                    'tag': 'ENTRY_INDEX'
                 }
                 
 
@@ -81,7 +81,7 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': pe_documents[strike]['weekly_Options_PE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY'
+                    'tag': 'ENTRY_INDEX'
                 }
                 
                 
