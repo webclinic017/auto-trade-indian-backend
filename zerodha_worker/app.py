@@ -17,13 +17,6 @@ PUBLISHER_URI = f'{PUBLISHER_HOST}{PUBLISHER_PATH}'
 
 
 def send_notification(data):
-    # send_notification({
-    #     'notification': {
-    #         'title': 'ORDER PLACED HEDGE',
-    #         'body': ce_documents[strike]['weekly_Options_CE']
-    #     },
-    #     'trade': trade 
-    # })
     try:
         ws_publisher = websocket.create_connection(PUBLISHER_URI)
         ws_publisher.send(json.dumps(data))
@@ -430,9 +423,17 @@ channel.queue_declare(queue='zerodha_worker')
 
 def callback(ch, method, properties, body):
     print('[**] ORDER RECEIVED [**]')
-    json_data = json.loads(body.decode('utf-8'))
+    json_data = json.loads(body.decode('utf-8')) # the trade object is received here
     end_point = json_data['endpoint']
     response = json.dumps(requests.post('http://zerodha_worker' + end_point, json=json_data).json(), indent=2)
+    
+    send_notification({
+        'notification': {
+            'title': 'ORDER PLACED HEDGE',
+            'body': json_data['trading_symbol'],
+        },
+        'trade': json_data 
+    })
     
     print(f'RESPONSE : {response}')
     print('ORDER')
