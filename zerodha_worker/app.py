@@ -427,6 +427,7 @@ def callback(ch, method, properties, body):
     end_point = json_data['endpoint']
     response = json.dumps(requests.post('http://zerodha_worker' + end_point, json=json_data).json(), indent=2)
     
+    # send notification to frontend
     send_notification({
         'notification': {
             'title': 'ORDER PLACED HEDGE',
