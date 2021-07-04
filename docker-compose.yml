@@ -106,7 +106,18 @@ services:
   # worker_5:
   #   build: ./worker_5
   #   command:
-  #     ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+  #     [
+  #       "sh",
+  #       "./wait-for.sh",
+  #       "zerodha_worker:80",
+  #       "--",
+  #       "sh",
+  #       "./wait-for.sh",
+  #       "exit_worker:80",
+  #       "--",
+  #       "python",
+  #       "app.py",
+  #     ]
   #   volumes:
   #     - ./worker_5:/app
   #   restart: always
