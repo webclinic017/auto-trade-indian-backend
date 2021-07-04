@@ -25,15 +25,9 @@ def send_notification(data):
         pass
 
 
-
-
 mongo_clients = MongoClient(
     'mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
-token_map = mongo_clients['tokens']['tokens_map'].find_one()
-token_map["_id"] = str(token_map["_id"])
-
-worker = 'worker_5'
 
 zerodha_id = os.environ['USERNAME']
 api_key, access_token = get_key_token(
@@ -41,9 +35,14 @@ api_key, access_token = get_key_token(
 
 
 DATE_FORMAT = '%Y-%M-%d'
-
 # kite object
 kite = kiteconnect.KiteConnect(api_key=api_key, access_token=access_token)
+
+instruments = kite.instruments()
+token_map = {}
+for instrument in instruments:
+    token_map[instrument['tradingsymbol']] = instrument
+
 # start the flask server
 app = Flask(__name__)
 
