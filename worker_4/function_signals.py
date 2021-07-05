@@ -4,14 +4,11 @@ def send_trade(trade):
     connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='rabbit_mq'))
     channel = connection.channel()
-    channel.exchange_declare(exchange='index', exchange_type='fanout')
-    result = channel.queue_declare(queue='zerodha_worker')
-    channel.queue_bind(exchange='index', queue=result.method.queue)
-    
-    
+    channel.queue_declare(queue='zerodha_worker')
+  
     # publish trade to zerodha worker queue
     channel.basic_publish(
-        exchange='index',
+        exchange='',
         routing_key='zerodha_worker',
         body=json.dumps(trade).encode()
     )
