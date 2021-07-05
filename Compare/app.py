@@ -7,6 +7,7 @@ def main():
     )
     channel = connection.channel()
     channel.exchange_declare(exchange='index', exchange_type='fanout')
+    channel.exchange_declare(exchange='index', exchange_type='fanout')
     result = channel.queue_declare(queue='compare')
     channel.queue_bind(exchange='index', queue=result.method.queue)
     
