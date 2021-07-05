@@ -16,8 +16,12 @@ def main():
         
         latest_compare = compareResult(prev, current, True)
         
-        print('COMPARE FILE IS')
-        print(latest_compare)
+        # send the latest compare to worker 6
+        channel.basic_publish(
+            exchange='',
+            routing_key='worker_6',
+            body=json.dumps(latest_compare).encode(),
+        )
     
     channel.basic_consume(queue='compare', on_message_callback=callback, auto_ack=True)
     channel.consume()
