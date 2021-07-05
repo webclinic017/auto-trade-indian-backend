@@ -421,6 +421,7 @@ connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='rabbit_mq')
 )
 channel = connection.channel()
+channel.exchange_declare(exchange='index', exchange_type='fanout')
 result = channel.queue_declare(queue='zerodha_worker')
 channel.queue_bind(exchange='index', queue=result.method.queue)
 
