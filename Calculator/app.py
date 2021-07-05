@@ -66,7 +66,7 @@ def main(expiry_date):
                 # send to compare to perform the trading
                 data = {"raw":{"data":[doc_yesterday, doc_today]}, "eod":True}
                 channel.basic_publish(
-                    exchange='index',
+                    exchange='',
                     routing_key='compare',
                     body=json.dumps(data).encode()
                 )
@@ -80,7 +80,7 @@ def main(expiry_date):
         doc["_id"] = str(doc["_id"])
         
         channel.basic_publish(
-            exchange='index',
+            exchange='',
             routing_key='worker_5',
             body=json.dumps(doc).encode()
         )

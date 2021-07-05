@@ -1,4 +1,7 @@
-import datetime, json, redis, requests, pika
+import datetime, json, redis, requests, pika, os
+
+
+PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 
 def send_trade(trade):
     connection = pika.BlockingConnection(
@@ -37,7 +40,8 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
-                        'tag': 'ENTRY_INDEX'
+                        'tag': 'ENTRY_INDEX',
+                        'endpoint': PUBLISHER_URI_INDEX_OPT
                     }
                     
                     # publish trade to zerodha worker
@@ -66,7 +70,8 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
-                        'tag':'ENTRY_INDEX'
+                        'tag':'ENTRY_INDEX',
+                        'endpoint': PUBLISHER_URI_INDEX_OPT
                     }
                     
                     # publish trade to zerodha_worker queue
