@@ -50,7 +50,7 @@ services:
     volumes:
       - ./Scrapper:/app
     depends_on:
-      - rabbit_mq
+      - rabbit_mq_index
       - db
     command:
       ["sh", "./wait-for.sh", "rabbit_mq_index:5672", "--", "python", "app.py"]
