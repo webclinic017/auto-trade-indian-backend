@@ -33,23 +33,24 @@ def main(expiry_date):
 
         data = gen_data(json_data, expiry_date)
         
-        # should_send = insert_data(collection, data, json_data['ticker'])
-        insert_data(collection, data, json_data['ticker'])
+        should_send = insert_data(collection, data, json_data['ticker'])
+        # insert_data(collection, data, json_data['ticker'])
         
-        # if should_send:
-        #     doc = collection.find_one(
-        #         {"ticker": ticker}, {"data": {"$slice": -2}})
-        #     doc["_id"] = str(doc["_id"])
+        if should_send:
+            doc = collection.find_one(
+                {"ticker": ticker}, {"data": {"$slice": -2}})
+            doc["_id"] = str(doc["_id"])
+            doc["eod"] = False
 
-        #     channel.basic_publish(
-        #         exchange='',
-        #         routing_key='compare',
-        #         body=json.dumps(doc).encode()
-        #     )
+            channel.basic_publish(
+                exchange='',
+                routing_key='compare',
+                body=json.dumps(doc).encode()
+            )
 
-        #     print("[*] Message send to Compare")
-        # else:
-        #     print("[*] Need 2 documents to compare")
+            print("[*] Message send to Compare")
+        else:
+            print("[*] Need 2 documents to compare")
     
         min_time = datetime.time(stock_market_end.hour, stock_market_end.minute - 15)
         max_time = datetime.time(stock_market_end.hour, stock_market_end.minute - 13)
@@ -61,7 +62,7 @@ def main(expiry_date):
             
             if doc_yesterday != None and doc_today != None:
                 # send to compare to perform the trading
-                data = {"data":[doc_yesterday, doc_today]}
+                data = {"data":[doc_yesterday, doc_today], "eod":True}
                 channel.basic_publish(
                     exchange='',
                     routing_key='compare',
