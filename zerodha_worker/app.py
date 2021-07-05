@@ -43,6 +43,9 @@ token_map = {}
 for instrument in instruments:
     token_map[instrument['tradingsymbol']] = instrument
 
+
+print(token_map[instrument['tradingsymbol']])
+
 # start the flask server
 app = Flask(__name__)
 
@@ -224,7 +227,7 @@ def get_historical_data():
 @app.route('/get/rsi/<symbol>/<n>')
 def get_rsi(symbol, n):
     n = int(n)
-    token = token_map[symbol]['token']
+    token = token_map[symbol]['instrument_token']
     print(token)
     tday = datetime.date.today()
     fday = tday - datetime.timedelta(days=4)
@@ -287,7 +290,7 @@ def get_ltp():
 # get atr
 @app.route('/get/atr/<symbol>')
 def get_atr(symbol):
-    token = token_map[symbol]['token']
+    token = token_map[symbol]['instrument_token']
     tday = datetime.date.today()
     fday = datetime.date.today() - datetime.timedelta(days=4)
     
@@ -315,7 +318,7 @@ def get_atr(symbol):
 # get ema_5813
 @app.route('/get/ema_5813/<symbol>')
 def ema_5813(symbol):
-    token = token_map[symbol]['token']
+    token = token_map[symbol]['instrument_token']
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
     
@@ -369,7 +372,7 @@ def ema_5813(symbol):
 @app.route('/get/slope/<symbol>/<n>')
 def slope(symbol, n):
     n = int(n)
-    token = token_map[symbol]['token']
+    token = token_map[symbol]['instrument_token']
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
     
