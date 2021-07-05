@@ -8,7 +8,7 @@ def send_trade(trade):
     
     # publish trade to zerodha worker queue
     channel.basic_publish(
-        exchange='',
+        exchange='index',
         routing_key='zerodha_worker',
         body=json.dumps(trade).encode()
     )

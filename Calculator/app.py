@@ -21,9 +21,17 @@ def main(expiry_date):
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='rabbit_mq'))
     channel = connection.channel()
-    channel.queue_declare(queue='trader')
-    channel.queue_declare(queue='compare')
+    
+    channel.exchange_declare(exchange='index', exchange_type='fanout')
+    
+    result = channel.queue_declare(queue='trader')
+    channel.queue_bind(exchange='index', queue=result.method.queue)
+    
+    result = channel.queue_declare(queue='compare')
+    channel.queue_bind(exchange='index', queue=result.method.queue)
+    
     channel.queue_declare(queue='worker_5')
+    channel.queue_bind(exchange='index', queue=result.method.queue)
 
     def callback(ch, method, properties, body):
         print("[*] Message Received")
@@ -44,7 +52,7 @@ def main(expiry_date):
             data_ = {"raw": doc, "eod": False}
 
             channel.basic_publish(
-                exchange='',
+                exchange='index',
                 routing_key='compare',
                 body=json.dumps(data_).encode()
             )
@@ -65,7 +73,7 @@ def main(expiry_date):
                 # send to compare to perform the trading
                 data = {"raw":{"data":[doc_yesterday, doc_today]}, "eod":True}
                 channel.basic_publish(
-                    exchange='',
+                    exchange='index',
                     routing_key='compare',
                     body=json.dumps(data).encode()
                 )
@@ -79,7 +87,7 @@ def main(expiry_date):
         doc["_id"] = str(doc["_id"])
         
         channel.basic_publish(
-            exchange='',
+            exchange='index',
             routing_key='worker_5',
             body=json.dumps(doc).encode()
         )

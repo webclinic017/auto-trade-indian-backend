@@ -6,7 +6,9 @@ def main():
         pika.ConnectionParameters(host='rabbit_mq')
     )
     channel = connection.channel()
-    channel.queue_declare(queue='compare')
+    channel.exchange_declare(exchange='index', exchange_type='fanout')
+    result = channel.queue_declare(queue='compare')
+    channel.queue_bind(exchange='index', queue=result.method.queue)
     
     def callback(ch, method, properties, body):
         print('[*] Message Received')
@@ -22,7 +24,7 @@ def main():
         # send the latest compare to worker 6
         if json_data['eod']:
             channel.basic_publish(
-                exchange='',
+                exchange='index',
                 routing_key='worker_6',
                 body=json.dumps(latest_compare).encode(),
             )
