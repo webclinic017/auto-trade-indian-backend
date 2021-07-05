@@ -25,7 +25,7 @@ def main():
             )
     
     channel.basic_consume(queue='compare', on_message_callback=callback, auto_ack=True)
-    channel.consume()
+    channel.start_consuming()
 
 if __name__ == '__main__':
     main()
