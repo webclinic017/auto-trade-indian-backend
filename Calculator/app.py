@@ -40,12 +40,13 @@ def main(expiry_date):
             doc = collection.find_one(
                 {"ticker": ticker}, {"data": {"$slice": -2}})
             doc["_id"] = str(doc["_id"])
-            doc["eod"] = False
+            
+            data_ = {"raw": doc, "eod": False}
 
             channel.basic_publish(
                 exchange='',
                 routing_key='compare',
-                body=json.dumps(doc).encode()
+                body=json.dumps(data_).encode()
             )
 
             print("[*] Message send to Compare")
@@ -62,7 +63,7 @@ def main(expiry_date):
             
             if doc_yesterday != None and doc_today != None:
                 # send to compare to perform the trading
-                data = {"data":[doc_yesterday, doc_today], "eod":True}
+                data = {"raw":{"data":[doc_yesterday, doc_today]}, "eod":True}
                 channel.basic_publish(
                     exchange='',
                     routing_key='compare',
