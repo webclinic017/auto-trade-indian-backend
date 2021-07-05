@@ -44,7 +44,7 @@ for instrument in instruments:
     token_map[instrument['tradingsymbol']] = instrument
 
 
-print(token_map[instrument['tradingsymbol']])
+# print(token_map[instrument['tradingsymbol']])
 
 # start the flask server
 app = Flask(__name__)
@@ -228,7 +228,7 @@ def get_historical_data():
 def get_rsi(symbol, n):
     n = int(n)
     token = token_map[symbol]['instrument_token']
-    print(token)
+    # print(token)
     tday = datetime.date.today()
     fday = tday - datetime.timedelta(days=4)
     df = requests.post('http://zerodha_worker/get/historical_data', json={
@@ -239,7 +239,7 @@ def get_rsi(symbol, n):
     }).json()
     
     df = pd.DataFrame(df)
-    print(df)
+    # print(df)
     
     try:
         df['rsi']=tb.RSI(df["close"],14)
@@ -391,8 +391,8 @@ def slope(symbol, n):
     y_scaled = (y - y.min())/(y.max() - y.min())
     x_scaled = (x - x.min())/(x.max() - x.min())
     x_scaled = sm.add_constant(x_scaled)
-    print(x_scaled.shape)
-    print(y_scaled.shape)
+    # print(x_scaled.shape)
+    # print(y_scaled.shape)
     model = sm.OLS(y_scaled,x_scaled)
     results = model.fit()
     slope = np.rad2deg(np.arctan(results.params[-1]))
@@ -409,7 +409,7 @@ def slope(symbol, n):
     else:
         trend=None
     
-    print("(slope, trend) ", end="")
+    # print("(slope, trend) ", end="")
     print(slope, trend)
     
     return jsonify({
