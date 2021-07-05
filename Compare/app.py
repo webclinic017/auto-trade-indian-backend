@@ -11,10 +11,13 @@ def main():
     def callback(ch, method, properties, body):
         print('[*] Message Received')
         json_data = json.loads(body.decode('utf-8'))
+        # print(json_data)
         
-        current = json_data['data'].pop()
-        prev = json_data['data'].pop()
+        current = json_data['raw']['data'].pop()
+        prev = json_data['raw']['data'].pop()
         latest_compare = compareResult(prev, current, True)
+        
+        # print(json_data)
         
         # send the latest compare to worker 6
         if json_data['eod']:

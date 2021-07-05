@@ -33,7 +33,7 @@ def main():
                     'quantity': bf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
                 print("i can buy" , latest_compare['futures'])
                 trade = {
@@ -43,7 +43,7 @@ def main():
                     'quantity': bf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
             elif latest_compare['symbol'] == 'NIFTY':
                 print("i can buy" , latest_compare['weekly_Options_CE'])
@@ -54,7 +54,7 @@ def main():
                     'quantity': nf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
                 print("i can buy" , latest_compare['futures'])
                 trade = {
@@ -64,7 +64,7 @@ def main():
                     'quantity': nf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
         elif (latest_compare['total_power'] < -quantity):
             
@@ -77,7 +77,7 @@ def main():
                     'quantity': bf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
                 print("i can sell" , latest_compare['futures'])
                 trade = {
@@ -87,7 +87,7 @@ def main():
                     'quantity': bf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
             elif latest_compare['symbol'] == 'NIFTY':
                 print("i can buy" , latest_compare['weekly_Options_PE'])
@@ -98,7 +98,7 @@ def main():
                     'quantity': nf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
                 
                 print("i can sell" , latest_compare['futures'])
                 trade = {
@@ -108,7 +108,7 @@ def main():
                     'quantity': nf_quantity,
                     'tag': 'ENTRY_INDEX'
                 }
-                send_trade(trade)
+                send_trade(trade, channel)
             
         else:
             #print("i did nothing for" , jsonObject[-1]['symbol'])
