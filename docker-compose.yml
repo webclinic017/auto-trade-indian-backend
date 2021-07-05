@@ -6,8 +6,8 @@ services:
     ports:
       - "27018:27017"
     command: mongod
-    # volumes:
-    #   - ./db:/data/db
+    volumes:
+      - ./db:/data/db
     logging:
       driver: none
   rabbit_mq:
