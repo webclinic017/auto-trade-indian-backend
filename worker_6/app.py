@@ -3,6 +3,10 @@ import pika
 from functions_signals import send_trade
 import os
 
+PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
+PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
+
+
 worker = 'worker_6'
 
 nf_quantity = int(os.environ['NF_QUANTITY'])
@@ -31,7 +35,8 @@ def main():
                     'trading_symbol': latest_compare['weekly_Options_CE'],
                     'exchange': 'NFO',
                     'quantity': bf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 send_trade(trade, channel)
                 
@@ -41,7 +46,8 @@ def main():
                     'trading_symbol': latest_compare['futures'],
                     'exchange': 'NFO',
                     'quantity': bf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_FUT
                 }
                 send_trade(trade, channel)
                 
@@ -52,7 +58,8 @@ def main():
                     'trading_symbol': latest_compare['weekly_Options_CE'],
                     'exchange': 'NFO',
                     'quantity': nf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 send_trade(trade, channel)
                 
@@ -62,7 +69,8 @@ def main():
                     'trading_symbol': latest_compare['futures'],
                     'exchange': 'NFO',
                     'quantity': nf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_FUT
                 }
                 send_trade(trade, channel)
                 
@@ -75,7 +83,8 @@ def main():
                     'trading_symbol': latest_compare['weekly_Options_PE'],
                     'exchange': 'NFO',
                     'quantity': bf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 send_trade(trade, channel)
                 
@@ -85,7 +94,8 @@ def main():
                     'trading_symbol': latest_compare['futures'],
                     'exchange': 'NFO',
                     'quantity': bf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_FUT
                 }
                 send_trade(trade, channel)
                 
@@ -96,7 +106,8 @@ def main():
                     'trading_symbol': latest_compare['weekly_Options_PE'],
                     'exchange': 'NFO',
                     'quantity': nf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 send_trade(trade, channel)
                 
@@ -106,7 +117,8 @@ def main():
                     'trading_symbol': latest_compare['futures'],
                     'exchange': 'NFO',
                     'quantity': nf_quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_FUT
                 }
                 send_trade(trade, channel)
             

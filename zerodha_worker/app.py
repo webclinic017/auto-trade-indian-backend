@@ -10,15 +10,10 @@ import numpy as np
 import statsmodels.api as sm
 
 
-PUBLISHER_HOST = os.environ['PUBLISHER_HOST']
-PUBLISHER_PATH = os.environ['PUBLISHER_PATH']
 
-PUBLISHER_URI = f'{PUBLISHER_HOST}{PUBLISHER_PATH}'
-
-
-def send_notification(data):
+def send_notification(data, uri):
     try:
-        ws_publisher = websocket.create_connection(PUBLISHER_URI)
+        ws_publisher = websocket.create_connection(uri)
         ws_publisher.send(json.dumps(data))
         ws_publisher.close()
     except:
@@ -436,7 +431,7 @@ def callback(ch, method, properties, body):
             'body': json_data['trading_symbol'],
         },
         'trade': json_data 
-    })
+    }, json_data['uri'])
     
     print(f'RESPONSE : {response}')
     print('ORDER')

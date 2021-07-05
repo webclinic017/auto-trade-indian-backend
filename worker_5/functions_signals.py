@@ -1,4 +1,7 @@
-import json, redis
+import json, redis, os
+
+
+PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 
 redis_host = 'redis_server'
 redis_port = 6379
@@ -34,7 +37,8 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': ce_documents[strike]['weekly_Options_CE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 
                 # send trade to zerodha_worker queue
@@ -45,7 +49,8 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': pe_documents[strike_]['weekly_Options_PE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 
                 # send the trade to zerodha_worker queue
@@ -69,7 +74,8 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': ce_documents[strike_]['weekly_Options_CE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 
 
@@ -81,7 +87,8 @@ def start_trade(document, quantity, channel):
                     'trading_symbol': pe_documents[strike]['weekly_Options_PE'],
                     'exchange': 'NFO',
                     'quantity':quantity,
-                    'tag': 'ENTRY_INDEX'
+                    'tag': 'ENTRY_INDEX',
+                    'uri': PUBLISHER_URI_INDEX_OPT
                 }
                 
                 
