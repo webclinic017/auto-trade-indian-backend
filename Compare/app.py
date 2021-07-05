@@ -11,17 +11,18 @@ def main():
     def callback(ch, method, properties, body):
         print('[*] Message Received')
         json_data = json.loads(body.decode('utf-8'))
+        
         current = json_data['data'].pop()
         prev = json_data['data'].pop()
-        
         latest_compare = compareResult(prev, current, True)
         
         # send the latest compare to worker 6
-        channel.basic_publish(
-            exchange='',
-            routing_key='worker_6',
-            body=json.dumps(latest_compare).encode(),
-        )
+        if json_data['eod']:
+            channel.basic_publish(
+                exchange='',
+                routing_key='worker_6',
+                body=json.dumps(latest_compare).encode(),
+            )
     
     channel.basic_consume(queue='compare', on_message_callback=callback, auto_ack=True)
     channel.consume()
