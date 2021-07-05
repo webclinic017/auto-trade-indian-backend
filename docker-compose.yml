@@ -69,40 +69,40 @@ services:
     env_file:
       - .env
       - auth.env
-  # compare:
-  #   build: ./Compare
-  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-  #   volumes:
-  #     - ./Compare:/app
-  #   depends_on:
-  #     - calculator
-  #   restart: always
-  #   env_file:
-  #     - .env
-  #     - auth.env
-  worker_4:
-    build: ./worker_4
-    command:
-      [
-        "sh",
-        "./wait-for.sh",
-        "zerodha_worker:80",
-        "--",
-        "sh",
-        "./wait-for.sh",
-        "exit_worker:80",
-        "--",
-        "python",
-        "app.py",
-      ]
+  compare:
+    build: ./Compare
+    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
     volumes:
-      - ./worker_4:/app
+      - ./Compare:/app
+    depends_on:
+      - calculator
     restart: always
     env_file:
       - .env
       - auth.env
-    depends_on:
-      - exit_worker
+  # worker_4:
+  #   build: ./worker_4
+  #   command:
+  #     [
+  #       "sh",
+  #       "./wait-for.sh",
+  #       "zerodha_worker:80",
+  #       "--",
+  #       "sh",
+  #       "./wait-for.sh",
+  #       "exit_worker:80",
+  #       "--",
+  #       "python",
+  #       "app.py",
+  #     ]
+  #   volumes:
+  #     - ./worker_4:/app
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   depends_on:
+  #     - exit_worker
   # worker_5:
   #   build: ./worker_5
   #   command:
@@ -126,6 +126,29 @@ services:
   #     - auth.env
   #   depends_on:
   #     - exit_worker
+  worker_6:
+    build: ./worker_6
+    command:
+      [
+        "sh",
+        "./wait-for.sh",
+        "zerodha_worker:80",
+        "--",
+        "sh",
+        "./wait-for.sh",
+        "exit_worker:80",
+        "--",
+        "python",
+        "app.py",
+      ]
+    volumes:
+      - ./worker_6:/app
+    restart: always
+    env_file:
+      - .env
+      - auth.env
+    depends_on:
+      - exit_worker
 
 # don't touch this
 networks:
