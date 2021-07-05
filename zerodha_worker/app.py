@@ -413,7 +413,7 @@ def slope(symbol, n):
     })
 
 connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq')
+    pika.ConnectionParameters(host='rabbit_mq_index')
 )
 channel = connection.channel()
 result = channel.queue_declare(queue='zerodha_worker')
