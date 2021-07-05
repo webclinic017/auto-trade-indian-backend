@@ -5,7 +5,7 @@ PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 
 def send_trade(trade):
     connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq'))
+    pika.ConnectionParameters(host='rabbit_mq_index'))
     channel = connection.channel()
     channel.queue_declare(queue='zerodha_worker')
   
@@ -19,7 +19,7 @@ def send_trade(trade):
 
 
         
-def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
+def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -29,7 +29,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
     for message in p.listen():
         if message['type'] != 'subscribe':
             positions = json.loads(message['data'])
-            rsi = requests.get(f'http://zerodha_worker/get/rsi/{symbol}/7').json()
+            rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
 
             print(datetime.datetime.now().time())
@@ -48,7 +48,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
                     send_trade(trade)
                     
 
-def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
+def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -60,7 +60,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server', redis_port=6379):
             positions = json.loads(message['data'])
             # print(positions)
             
-            rsi = requests.get(f'http://zerodha_worker/get/rsi/{symbol}/7').json()
+            rsi = requests.get(f'http://zerodha_worker__index/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:

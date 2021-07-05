@@ -8,7 +8,7 @@ while True:
     tickers = ['NIFTY', 'BANKNIFTY']
     
     connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq'))
+    pika.ConnectionParameters(host='rabbit_mq_index'))
     channel = connection.channel()
     channel.queue_declare(queue='trader')
 

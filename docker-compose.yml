@@ -10,29 +10,37 @@ services:
       - ./db:/data/db
     logging:
       driver: none
-  rabbit_mq:
+  rabbit_mq_index:
     image: rabbitmq:3-management
     logging:
       driver: none
-  redis_server:
+  redis_server_index:
     image: redis:alpine
     logging:
       driver: none
-  zerodha_worker:
+  zerodha_worker_index:
     build: ./zerodha_worker
     volumes:
       - ./zerodha_worker:/app
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    command:
+      ["sh", "./wait-for.sh", "rabbit_mq_index:5672", "--", "python", "app.py"]
     env_file:
       - .env
       - auth.env
     restart: always
-  exit_worker:
+  exit_worker_index:
     build: ./exit_worker
     volumes:
       - ./exit_worker:/app
     command:
-      ["sh", "./wait-for.sh", "zerodha_worker:80", "--", "python", "app.py"]
+      [
+        "sh",
+        "./wait-for.sh",
+        "zerodha_worker_index:80",
+        "--",
+        "python",
+        "app.py",
+      ]
     env_file:
       - .env
       - auth.env
@@ -44,7 +52,8 @@ services:
     depends_on:
       - rabbit_mq
       - db
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    command:
+      ["sh", "./wait-for.sh", "rabbit_mq_index:5672", "--", "python", "app.py"]
     restart: always
   calculator:
     build: ./Calculator
@@ -52,11 +61,11 @@ services:
       [
         "sh",
         "./wait-for.sh",
-        "zerodha_worker:80",
+        "zerodha_worker_index:80",
         "--",
         "sh",
         "./wait-for.sh",
-        "exit_worker:80",
+        "exit_worker_index:80",
         "--",
         "python",
         "app.py",
@@ -71,7 +80,8 @@ services:
       - auth.env
   compare:
     build: ./Compare
-    command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+    command:
+      ["sh", "./wait-for.sh", "rabbit_mq_index:5672", "--", "python", "app.py"]
     volumes:
       - ./Compare:/app
     depends_on:
@@ -86,11 +96,11 @@ services:
   #     [
   #       "sh",
   #       "./wait-for.sh",
-  #       "zerodha_worker:80",
+  #       "zerodha_worker_index:80",
   #       "--",
   #       "sh",
   #       "./wait-for.sh",
-  #       "exit_worker:80",
+  #       "exit_worker_index:80",
   #       "--",
   #       "python",
   #       "app.py",
@@ -102,18 +112,18 @@ services:
   #     - .env
   #     - auth.env
   #   depends_on:
-  #     - exit_worker
+  #     - exit_worker_index
   # worker_5:
   #   build: ./worker_5
   #   command:
   #     [
   #       "sh",
   #       "./wait-for.sh",
-  #       "zerodha_worker:80",
+  #       "zerodha_worker_index:80",
   #       "--",
   #       "sh",
   #       "./wait-for.sh",
-  #       "exit_worker:80",
+  #       "exit_worker_index:80",
   #       "--",
   #       "python",
   #       "app.py",
@@ -125,18 +135,18 @@ services:
   #     - .env
   #     - auth.env
   #   depends_on:
-  #     - exit_worker
+  #     - exit_worker_index
   worker_6:
     build: ./worker_6
     command:
       [
         "sh",
         "./wait-for.sh",
-        "zerodha_worker:80",
+        "zerodha_worker_index:80",
         "--",
         "sh",
         "./wait-for.sh",
-        "exit_worker:80",
+        "exit_worker_index:80",
         "--",
         "python",
         "app.py",
@@ -148,7 +158,7 @@ services:
       - .env
       - auth.env
     depends_on:
-      - exit_worker
+      - exit_worker_index
 
 # don't touch this
 networks:

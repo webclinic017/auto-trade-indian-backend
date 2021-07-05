@@ -16,7 +16,7 @@ quantity = int(os.environ['W6_QUANTITY'])
 
 def main():
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='rabbit_mq')
+        pika.ConnectionParameters(host='rabbit_mq_index')
     )
     channel = connection.channel()
     channel.queue_declare(queue=worker)

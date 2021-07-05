@@ -2,11 +2,11 @@ from flask.app import Flask
 import pika, os, json, time, threading, redis, requests
 from websocket import WebSocketApp
 
-r_ticker = redis.StrictRedis(host='redis_server', port=6379, decode_responses=True)
+r_ticker = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
 
 class RedisDictonary:
     def __init__(self):
-        self.r = redis.StrictRedis(host='redis_server', port=6379, decode_responses=True)
+        self.r = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
         orders = self.r.get('orders')
         if orders == None:
             self.r.set('orders', json.dumps({}))
@@ -192,7 +192,7 @@ def exit_process():
                             RedisDictonary().clear(ticker)
                             send_trade(trade)
                 
-                rsi = requests.get(f'http://zerodha_worker/get/rsi/{ticker}/7').json()
+                rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()
                 print(rsi)
         
         # sleep for 10 seconds
