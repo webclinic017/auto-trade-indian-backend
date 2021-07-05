@@ -4,7 +4,7 @@ import requests
 from functions_signals import start_trade
 import os
 
-token_map = requests.get('http://zerodha_worker/get/token_map').json()
+token_map = requests.get('http://zerodha_worker_index/get/token_map').json()
 
 worker = 'worker_5'
 
@@ -13,7 +13,7 @@ bf_quantity = int(os.environ['BF_QUANTITY'])
 
 def main():
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='rabbit_mq')
+        pika.ConnectionParameters(host='rabbit_mq_index')
     )
     channel = connection.channel()
     channel.queue_declare(queue=worker)

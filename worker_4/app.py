@@ -22,7 +22,7 @@ buy_quantity_depth = {}
 sell_quantity_depth = {}
 
 buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
-quote_buy = requests.post('http://zerodha_worker/get/quote', json={'tickers':buy_tickers_quote}).json()
+quote_buy = requests.post('http://zerodha_worker_index/get/quote', json={'tickers':buy_tickers_quote}).json()
 
 for ticker in tickers_buy + tickers_sell:
     buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
@@ -62,10 +62,10 @@ for ticker in tickers_sell:
 import redis
 import json
 
-r = redis.StrictRedis(host='redis_server', port=6379, decode_responses=True)
+r = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
 
 while True:
-    positions = requests.get('http://zerodha_worker/get/positions').json()
+    positions = requests.get('http://zerodha_worker_index/get/positions').json()
     data = json.dumps(positions)
 
     r.publish('positions', data)

@@ -226,7 +226,7 @@ def get_rsi(symbol, n):
     # print(token)
     tday = datetime.date.today()
     fday = tday - datetime.timedelta(days=4)
-    df = requests.post('http://zerodha_worker/get/historical_data', json={
+    df = requests.post('http://zerodha_worker_index/get/historical_data', json={
         'fdate':str(fday),
         'tdate':str(tday),
         'token': token,
@@ -289,7 +289,7 @@ def get_atr(symbol):
     tday = datetime.date.today()
     fday = datetime.date.today() - datetime.timedelta(days=4)
     
-    df = requests.post('http://zerodha_worker/get/historical_data', json={
+    df = requests.post('http://zerodha_worker_index/get/historical_data', json={
         'fdate':str(fday),
         'tdate':str(tday),
         'token': token,
@@ -317,7 +317,7 @@ def ema_5813(symbol):
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
     
-    df = requests.post('http://zerodha_worker/get/historical_data', json={
+    df = requests.post('http://zerodha_worker_index/get/historical_data', json={
         'fdate':str(fday),
         'tdate':str(tday),
         'token': token,
@@ -371,7 +371,7 @@ def slope(symbol, n):
     tday = datetime.date.today()
     fday = datetime.date.today()-datetime.timedelta(days=4)
     
-    df = requests.post('http://zerodha_worker/get/historical_data', json={
+    df = requests.post('http://zerodha_worker_index/get/historical_data', json={
         'fdate':str(fday),
         'tdate':str(tday),
         'token': token,
@@ -422,7 +422,7 @@ def callback(ch, method, properties, body):
     print('[**] ORDER RECEIVED [**]')
     json_data = json.loads(body.decode('utf-8')) # the trade object is received here
     end_point = json_data['endpoint']
-    response = json.dumps(requests.post('http://zerodha_worker' + end_point, json=json_data).json(), indent=2)
+    response = json.dumps(requests.post('http://zerodha_worker_index' + end_point, json=json_data).json(), indent=2)
     
     # send notification to frontend
     send_notification({
