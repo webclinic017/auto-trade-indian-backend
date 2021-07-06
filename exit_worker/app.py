@@ -4,6 +4,9 @@ from websocket import WebSocketApp
 
 r_ticker = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
 
+PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
+PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
+
 class RedisDictonary:
     def __init__(self):
         self.r = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
@@ -53,7 +56,7 @@ class RedisDictonary:
 
 def send_trade(trade):
     connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq'))
+    pika.ConnectionParameters(host='rabbit_mq_index'))
     channel = connection.channel()
     channel.queue_declare(queue='zerodha_worker')
     
@@ -80,7 +83,7 @@ def on_message(ws, message):
         
         if order['tradingsymbol'] not in tickers_streamed:
             token = order['instrument_token']
-            t = threading.Thread(target=requests.get, args=[f'http://exit_worker/stream_ticker/{token}'])
+            t = threading.Thread(target=requests.get, args=[f'http://exit_worker_index/stream_ticker/{token}'])
             t.start()
             tickers_streamed[token] = True
             
@@ -162,16 +165,25 @@ def exit_process():
                 
                 print(profit)
 
+                if 'FUT' in ticker:
+                    uri = PUBLISHER_URI_INDEX_FUT
+                else:
+                    uri = PUBLISHER_URI_INDEX_OPT
+
+
                 if profit[ticker]['buy'] != 0:
                     if profit[ticker]['buy'] > 4:
                         print(f'Exit {ticker} by SELLING it')
                         if exchange == 'NFO':
+
+                            
                             trade = {
                                 'endpoint': '/place/market_order/sell',
                                 'trading_symbol': ticker,
                                 'exchange': exchange,
                                 'quantity': total_trade_buy_quantity,
-                                'tag': 'EXIT'
+                                'tag': 'EXIT',
+                                'uri': uri
                             }
                             
                             RedisDictonary().clear(ticker)
@@ -186,7 +198,8 @@ def exit_process():
                                 'trading_symbol': ticker,
                                 'exchange': exchange,
                                 'quantity': total_trade_sell_quantity,
-                                'tag': 'EXIT'
+                                'tag': 'EXIT',
+                                'uri': uri
                             }
                             
                             RedisDictonary().clear(ticker)
