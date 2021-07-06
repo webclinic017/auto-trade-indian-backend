@@ -41,7 +41,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6
                         'exchange': 'NFO',
                         'quantity': quantity,
                         'tag': 'ENTRY_INDEX',
-                        'endpoint': PUBLISHER_URI_INDEX_OPT
+                        'uri': PUBLISHER_URI_INDEX_OPT
                     }
                     
                     # publish trade to zerodha worker
@@ -71,7 +71,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
                         'exchange': 'NFO',
                         'quantity': quantity,
                         'tag':'ENTRY_INDEX',
-                        'endpoint': PUBLISHER_URI_INDEX_OPT
+                        'uri': PUBLISHER_URI_INDEX_OPT
                     }
                     
                     # publish trade to zerodha_worker queue

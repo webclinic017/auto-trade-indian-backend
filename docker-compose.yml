@@ -90,29 +90,29 @@ services:
     env_file:
       - .env
       - auth.env
-  # worker_4:
-  #   build: ./worker_4
-  #   command:
-  #     [
-  #       "sh",
-  #       "./wait-for.sh",
-  #       "zerodha_worker_index:80",
-  #       "--",
-  #       "sh",
-  #       "./wait-for.sh",
-  #       "exit_worker_index:80",
-  #       "--",
-  #       "python",
-  #       "app.py",
-  #     ]
-  #   volumes:
-  #     - ./worker_4:/app
-  #   restart: always
-  #   env_file:
-  #     - .env
-  #     - auth.env
-  #   depends_on:
-  #     - exit_worker_index
+  worker_4:
+    build: ./worker_4
+    command:
+      [
+        "sh",
+        "./wait-for.sh",
+        "zerodha_worker_index:80",
+        "--",
+        "sh",
+        "./wait-for.sh",
+        "exit_worker_index:80",
+        "--",
+        "python",
+        "app.py",
+      ]
+    volumes:
+      - ./worker_4:/app
+    restart: always
+    env_file:
+      - .env
+      - auth.env
+    depends_on:
+      - exit_worker_index
   # worker_5:
   #   build: ./worker_5
   #   command:
