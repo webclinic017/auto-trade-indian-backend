@@ -170,9 +170,14 @@ def exit_process():
                 else:
                     uri = PUBLISHER_URI_INDEX_OPT
 
+                try:
+                    rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()['last_rsi']
+                    print(rsi)
+                except:
+                    rsi = 999
 
                 if profit[ticker]['buy'] != 0:
-                    if profit[ticker]['buy'] > 4:
+                    if profit[ticker]['buy'] > 4 or rsi < 30:
                         print(f'Exit {ticker} by SELLING it')
                         if exchange == 'NFO':
 
@@ -190,7 +195,7 @@ def exit_process():
                             send_trade(trade)
                 
                 if profit[ticker]['sell'] != 0:
-                    if profit[ticker]['sell'] > 4:
+                    if profit[ticker]['sell'] > 4 or rsi < 30:
                         print(f'Exit {ticker} by BUYING it')
                         if exchange == 'NFO':
                             trade = {
@@ -205,8 +210,8 @@ def exit_process():
                             RedisDictonary().clear(ticker)
                             send_trade(trade)
                 
-                rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()
-                print(rsi)
+                # rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()
+                # print(rsi)
         
         # sleep for 10 seconds
         time.sleep(10)
