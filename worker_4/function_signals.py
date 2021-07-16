@@ -34,7 +34,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6
 
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
-                if last_rsi > 40:
+                if last_rsi > 31:
                     trade = {
                         'endpoint': '/place/market_order/buy',
                         'trading_symbol': symbol,
