@@ -28,6 +28,7 @@ zerodha_id = os.environ['USERNAME']
 api_key, access_token = get_key_token(
     zerodha_id, mongo_clients['client_details']['clients'])
 
+print(api_key, access_token)
 
 DATE_FORMAT = '%Y-%M-%d'
 # kite object
@@ -217,6 +218,27 @@ def get_historical_data():
     # tdate = datetime.datetime.strptime(data['tdate'], DATE_FORMAT)
     historical_data = kite.historical_data(data['token'], data['fdate'], data['tdate'], data['interval'], False, False)
     return jsonify(historical_data)
+
+# get ema
+@app.route('/get/ema/<symbol>')
+def get_ema(symbol):
+    token = token_map[symbol]['instrument_token']
+    tday = datetime.date.today()
+    fday = tday - datetime.timedelta(days=4)
+    df = requests.post('http://zerodha_worker_index/get/historical_data', json={
+        'fdate':str(fday),
+        'tdate':str(tday),
+        'token': token,
+        'interval':'5minute'
+    }).json()
+    
+    df = pd.DataFrame(df)
+    df['volume_ema'] = tb.EMA(df['volume'], 7)
+    ema = df.tail(1)['volume_ema'].values[0]
+    
+    return jsonify({
+        'ema': ema
+    })
 
 # get rsi
 @app.route('/get/rsi/<symbol>/<n>')
