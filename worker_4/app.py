@@ -12,7 +12,7 @@ scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
 scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
 
-tickers_buy = ['NIFTY2171515700CE','NIFTY2171515600PE']
+tickers_buy = ['NIFTY2172216000CE']
 
 tickers_sell = []
 
@@ -29,7 +29,7 @@ for ticker in tickers_buy + tickers_sell:
     sell_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['sell_quantity']
 
 
-n = 900
+n = 300
 n_min = 15
 
 try:
