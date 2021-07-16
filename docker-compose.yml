@@ -159,6 +159,28 @@ services:
       - auth.env
     depends_on:
       - exit_worker_index
+  worker_8:
+    build: ./worker_8
+    command: [
+        "sh",
+        "./wait-for.sh",
+        "zerodha_worker_index:80",
+        "--",
+        # "sh",
+        # "./wait-for.sh",
+        # "exit_worker_index:80",
+        # "--",
+        "python",
+        "app.py",
+      ]
+    volumes:
+      - ./worker_8:/app
+    restart: always
+    env_file:
+      - .env
+      - auth.env
+    # depends_on:
+    #   - exit_worker_index
 
 # don't touch this
 networks:
