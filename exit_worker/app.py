@@ -1,6 +1,9 @@
 from flask.app import Flask
-import pika, os, json, time, threading, redis, requests
+import pika, os, json, time, threading, redis, requests, datetime
 from websocket import WebSocketApp
+
+os.environ['TZ'] = 'Asia/Kolkata'
+time.tzset()
 
 r_ticker = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
 
@@ -177,7 +180,7 @@ def exit_process():
                     rsi = 999
 
                 if profit[ticker]['buy'] != 0:
-                    if profit[ticker]['buy'] > 4 or rsi < 30:
+                    if profit[ticker]['buy'] > 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(15, 25):
                         print(f'Exit {ticker} by SELLING it')
                         if exchange == 'NFO':
 
@@ -195,7 +198,7 @@ def exit_process():
                             send_trade(trade)
                 
                 if profit[ticker]['sell'] != 0:
-                    if profit[ticker]['sell'] > 4 or rsi < 30:
+                    if profit[ticker]['sell'] > 4 or rsi < 30 or datetime.datetime.now().date() >= datetime.time(15, 25):
                         print(f'Exit {ticker} by BUYING it')
                         if exchange == 'NFO':
                             trade = {
