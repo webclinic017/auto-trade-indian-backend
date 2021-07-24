@@ -15,7 +15,7 @@ quantity = int(os.environ['W6_QUANTITY'])
 today = str(datetime.date.today())
 yesterday = str(datetime.date.today() - datetime.timedelta(days=1))
 
-stock_market_end = datetime.time(15, 30, 0)
+stock_market_end = datetime.time(15, 10, 0)
 
 mongo = MongoClient("mongodb://db")
 db = mongo['intraday_' + today]
