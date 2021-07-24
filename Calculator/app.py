@@ -1,21 +1,16 @@
 import pika
 import json
-from functions_signals import gen_data
+
+import requests
 from functions_db import insert_data
 from pymongo import MongoClient
 import os
 import datetime
 
 today = str(datetime.date.today())
-yesterday = str(datetime.date.today() - datetime.timedelta(days=1))
-
-stock_market_end = datetime.time(15, 30, 0)
-
 mongo = MongoClient("mongodb://db")
 db = mongo['intraday_' + today]
 collection = db['index_master']
-db_ = mongo['intraday_' + yesterday]
-collection_ = db_['index_master']
 
 def main(expiry_date):
     connection = pika.BlockingConnection(
@@ -32,7 +27,7 @@ def main(expiry_date):
         ticker = json_data['ticker']
         # print(json_data)
 
-        data = gen_data(json_data, expiry_date)
+        data = requests.post('http://zerodha_worker_index/gen_data', json_data={'data':json_data, 'expiry':expiry_date}).json()
         
         should_send = insert_data(collection, data, json_data['ticker'])
         # insert_data(collection, data, json_data['ticker'])
@@ -54,24 +49,6 @@ def main(expiry_date):
         else:
             print("[*] Need 2 documents to compare")
     
-        min_time = datetime.time(stock_market_end.hour, stock_market_end.minute - 15)
-        max_time = datetime.time(stock_market_end.hour, stock_market_end.minute - 13)
-        now = datetime.datetime.now().time()
-        
-        if now >= min_time and now <= max_time:
-            doc_today = collection.find_one({'ticker':ticker}, {"data":{"$slice":-1}})
-            doc_yesterday = collection.find_one({'ticker':ticker}, {"data":{"$slice":-1}})
-            
-            if doc_yesterday != None and doc_today != None:
-                # send to compare to perform the trading
-                data = {"raw":{"data":[doc_yesterday, doc_today]}, "eod":True}
-                channel.basic_publish(
-                    exchange='',
-                    routing_key='compare',
-                    body=json.dumps(data).encode()
-                )
-            else:
-                print('[**] Needed Yesterday\'s Data for Compare')
             
         doc = collection.find_one(
             {'ticker':ticker}, {"data":{"$slice":-1}}

@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from functions_db import get_key_token
 from flask import Flask, jsonify, request
 from zerodha_functions import *
+from functions_signals import compareResult, gen_data
 import threading, os, pika, json, kiteconnect, requests, datetime, websocket
 import math
 import pandas as pd
@@ -303,6 +304,23 @@ def get_ltp():
     
     return jsonify({'ltp':ltp})
 
+# generate the comparision file
+@app.route('/compare_results', methods=['POST'])
+def compare_results():
+    data = request.get_json()
+    cur = data['raw']['data'].pop()
+    prev = data['raw']['data'].pop()
+    latest_compare = compareResult(prev, cur)
+    return jsonify(latest_compare)
+
+# generate the calculations data
+@app.route('/gen_data', methods=['POST'])
+def generate_data():
+    data = request.get_json()
+    json_data = data['data']
+    expiry = data['expiry_date']
+    data = gen_data(json_data, expiry)
+    return jsonify(data)
 
 # get atr
 @app.route('/get/atr/<symbol>')
