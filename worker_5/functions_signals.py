@@ -17,7 +17,7 @@ def send_trade(trade, channel):
 def start_trade(document, quantity, channel):
     CE_KEY = 'CE_Stikes'
     PE_KEY = 'PE_Stikes'
-    PERCENTAGE = 5/100
+    PERCENTAGE = 2/100
     
     ce_documents = document[CE_KEY]
     pe_documents = document[PE_KEY]
