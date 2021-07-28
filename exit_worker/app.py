@@ -37,6 +37,17 @@ class RedisDictonary:
         
         if key in orders:
             orders[key].append(data)
+        #     max_quantity = 4500
+        #     total_quantity = 0
+            
+        #     for order in orders[key][-1]:
+        #         total_quantity += order['filled_quantity']
+            
+        #     if total_quantity >= max_quantity:
+        #         orders[key].append([data])
+        #     else:
+        #         orders[key][-1].append(data)
+            
         else:
             orders[key] = [data]
         self.r.set('orders', json.dumps(orders))
