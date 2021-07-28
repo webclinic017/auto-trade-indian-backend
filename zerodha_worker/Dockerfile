@@ -9,7 +9,7 @@ RUN apt-get install -y netcat wget tar gcc build-essential
 
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
 RUN tar -xzf ta-lib-0.4.0-src.tar.gz
-WORKDIR ta-lib/
+WORKDIR /ta-lib
 RUN ./configure
 RUN make
 RUN make install
