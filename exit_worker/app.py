@@ -10,6 +10,21 @@ r_ticker = redis.StrictRedis(host='redis_server_index', port=6379, decode_respon
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
 
+
+# def exit_all_positions():
+#     current_time = datetime.datetime.now()
+#     time_delta = datetime.timedelta(minutes=10)
+#     stock_market_start = datetime.datetime(current_time.year, current_time.month, current_time.day, 9, 15)
+    
+#     while True:
+#         current_time = datetime.datetime.now()
+
+#         if current_time >= stock_market_start and current_time <= stock_market_start + time_delta:
+#             # exit all positions
+#             break
+        
+#         continue
+
 class RedisDictonary:
     def __init__(self):
         self.r = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
@@ -26,7 +41,11 @@ class RedisDictonary:
             orders[key] = [data]
         self.r.set('orders', json.dumps(orders))
     
-    
+    def set(self, key, data):
+        orders = json.loads(self.r.get('orders'))
+        orders[key] = data
+        self.r.set('orders', json.dumps(orders))   
+
     def clear(self, key):
         orders = json.loads(self.r.get('orders'))
         del orders[key]
@@ -183,7 +202,9 @@ def exit_process():
                     if profit[ticker]['buy'] > 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(15, 25):
                         print(f'Exit {ticker} by SELLING it')
                         if exchange == 'NFO':
-
+                            
+                            if total_trade_buy_quantity >= 4500:
+                                total_trade_buy_quantity = 4500
                             
                             trade = {
                                 'endpoint': '/place/market_order/sell',
@@ -194,13 +215,32 @@ def exit_process():
                                 'uri': uri
                             }
                             
+                            orders_list = RedisDictonary().get(ticker)
+                            trades_to_exit = []
+                            trades_to_keep = []
+                            total_quantity = 0
+
+                            for order in orders_list:
+                                total_quantity += order['filled_quantity']
+                                
+                                if total_quantity <= 4500:
+                                    trades_to_exit.append(order)
+                                else:
+                                    trades_to_keep.append(order)
+                            
+                            
                             RedisDictonary().clear(ticker)
+                            RedisDictonary().set(ticker, trades_to_keep)
                             send_trade(trade)
                 
                 if profit[ticker]['sell'] != 0:
                     if profit[ticker]['sell'] > 4 or rsi < 30 or datetime.datetime.now().date() >= datetime.time(15, 25):
                         print(f'Exit {ticker} by BUYING it')
                         if exchange == 'NFO':
+                            
+                            if total_trade_sell_quantity >= 4500:
+                                total_trade_sell_quantity = 4500
+                            
                             trade = {
                                 'endpoint': '/place/market_order/buy',
                                 'trading_symbol': ticker,
@@ -209,8 +249,22 @@ def exit_process():
                                 'tag': 'EXIT',
                                 'uri': uri
                             }
+                            orders_list = RedisDictonary().get(ticker)
+                            trades_to_exit = []
+                            trades_to_keep = []
+                            total_quantity = 0
+
+                            for order in orders_list:
+                                total_quantity += order['filled_quantity']
+                                
+                                if total_quantity <= 4500:
+                                    trades_to_exit.append(order)
+                                else:
+                                    trades_to_keep.append(order)
+                            
                             
                             RedisDictonary().clear(ticker)
+                            RedisDictonary().set(ticker, trades_to_keep)
                             send_trade(trade)
                 
                 # rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()
@@ -237,6 +291,8 @@ def index(token):
     requests.get(f'http://zerodha_consumer_1/subscribe/{token}')
     return ""
 
+# t_exit_all_positions = threading.Thread(target=exit_all_positions)
+# t_exit_all_positions.start()
 
 t_socket = threading.Thread(target=ws.run_forever)
 t_socket.start()
