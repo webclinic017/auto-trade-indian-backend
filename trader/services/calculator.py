@@ -63,11 +63,3 @@ def main(expiry_date):
         queue='trader', on_message_callback=callback, auto_ack=True)
     print('[*] Waiting for Message')
     channel.start_consuming()
-
-
-if __name__ == '__main__':
-    try:
-        print(os.environ['EXPIRY_DATE'])
-        main(expiry_date=os.environ['EXPIRY_DATE'])
-    except KeyboardInterrupt:
-        exit()

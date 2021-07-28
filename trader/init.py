@@ -12,7 +12,7 @@ services = [
     {'name':'exit_service', 'script': main_exit, 'args':[]},
     {'name':'scrapper', 'script':main_scraper, 'args':[]},
     {'name':'calculator', 'script':main_calculator, 'args':[os.environ['EXPIRY_DATE']]},
-    {'name':'compare', 'script':'', 'args':[]},
+    # {'name':'compare', 'script':'', 'args':[]},
     {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4', 'script':main_wk4, 'args':[]},
     # {'name':'worker_6', 'script':'', 'args':[]},
