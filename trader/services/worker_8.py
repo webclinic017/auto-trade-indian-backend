@@ -6,13 +6,14 @@ tickers = ['NIFTY2172216000CE']
 quantity = 75
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 
 while True:
     data = {'tickers':list(map(lambda x : f'NFO:{x}', tickers))}
-    quotes = requests.post('http://zerodha_worker_index/get/quote', json=data).json()
+    quotes = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json=data).json()
     print(quotes)
     for ticker in tickers:
-        ema = requests.get(f'http://zerodha_worker_index/get/ema/{ticker}').json()
+        ema = requests.get(f'http://{ZERODHA_SERVER}/get/ema/{ticker}').json()
         # print(ticker, ema)
         
         if quotes[f'NFO:{ticker}']['volume'] > ema:

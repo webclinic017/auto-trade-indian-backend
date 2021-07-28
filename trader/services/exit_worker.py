@@ -1,5 +1,6 @@
 from flask.app import Flask
-import pika, os, json, time, threading, redis, requests, datetime
+import os, json, time, threading, redis, requests, datetime
+from .function_signals import send_trade
 from websocket import WebSocketApp
 
 os.environ['TZ'] = 'Asia/Kolkata'
@@ -9,25 +10,12 @@ r_ticker = redis.StrictRedis(host='redis_server_index', port=6379, decode_respon
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
-
-
-# def exit_all_positions():
-#     current_time = datetime.datetime.now()
-#     time_delta = datetime.timedelta(minutes=10)
-#     stock_market_start = datetime.datetime(current_time.year, current_time.month, current_time.day, 9, 15)
-    
-#     while True:
-#         current_time = datetime.datetime.now()
-
-#         if current_time >= stock_market_start and current_time <= stock_market_start + time_delta:
-#             # exit all positions
-#             break
-        
-#         continue
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
+REDIS_SERVER = os.environ['REDIS_HOST']
 
 class RedisDictonary:
     def __init__(self):
-        self.r = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
+        self.r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
         orders = self.r.get('orders')
         if orders == None:
             self.r.set('orders', json.dumps({}))
@@ -74,21 +62,6 @@ class RedisDictonary:
             tickers.append(order_['exchange'] + ":" + order_["tradingsymbol"])
         
         return tickers
-
-
-def send_trade(trade):
-    connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq_index'))
-    channel = connection.channel()
-    channel.queue_declare(queue='zerodha_worker')
-    
-    # publish trade to zerodha worker queue
-    channel.basic_publish(
-        exchange='',
-        routing_key='zerodha_worker',
-        body=json.dumps(trade).encode()
-    )
-    connection.close()
 
 
 TOKEN_SERVER = os.environ['WS_HOST']
