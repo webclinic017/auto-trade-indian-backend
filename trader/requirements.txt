@@ -1,0 +1,7 @@
+dnspython
+pika
+requests
+pymongo
+websocket-client
+flask
+redis

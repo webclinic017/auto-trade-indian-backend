@@ -11,6 +11,13 @@ import numpy as np
 import statsmodels.api as sm
 
 
+# send_notification({
+#     'notification': {
+#         'title': 'ORDER PLACED HEDGE',
+#         'body': json_data['trading_symbol'],
+#     },
+#     'trade': json_data 
+# }, json_data['uri'])
 
 def send_notification(data, uri):
     try:
@@ -318,7 +325,7 @@ def compare_results():
 def generate_data():
     data = request.get_json()
     json_data = data['data']
-    expiry = data['expiry_date']
+    expiry = data['expiry']
     data = gen_data(json_data, expiry)
     return jsonify(data)
 
@@ -451,39 +458,6 @@ def slope(symbol, n):
         'slope':slope,
         'trend':trend
     })
-
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq_index')
-)
-channel = connection.channel()
-result = channel.queue_declare(queue='zerodha_worker')
-
-def callback(ch, method, properties, body):
-    print('[**] ORDER RECEIVED [**]')
-    json_data = json.loads(body.decode('utf-8')) # the trade object is received here
-    end_point = json_data['endpoint']
-    response = json.dumps(requests.post('http://zerodha_worker_index' + end_point, json=json_data).json(), indent=2)
-    
-    # send notification to frontend
-    send_notification({
-        'notification': {
-            'title': 'ORDER PLACED HEDGE',
-            'body': json_data['trading_symbol'],
-        },
-        'trade': json_data 
-    }, json_data['uri'])
-    
-    print(f'RESPONSE : {response}')
-    print('ORDER')
-    print(json.dumps(json_data, indent=2))
-    
-
-
-channel.basic_consume(queue='zerodha_worker', on_message_callback=callback, auto_ack=True)
-print('WAITING FOR ORDERS')
-
-t = threading.Thread(target=channel.start_consuming)
-t.start()
 
 
 if __name__ == '__main__':
