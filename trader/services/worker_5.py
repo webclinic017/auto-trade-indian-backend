@@ -40,10 +40,3 @@ def main():
     )
     print('[*] Waiting for Message')
     channel.start_consuming()
-
-
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        exit()

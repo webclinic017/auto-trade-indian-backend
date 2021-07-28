@@ -3,9 +3,9 @@ import logging
 from time import sleep
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
-ZERODHA_SERVER = 'zerodha_worker_index'
-REDIS_SERVER = 'redis_server_index'
-RABBIT_MQ_SERVER = 'rabbit_mq_index'
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
+REDIS_SERVER = os.environ['REDIS_HOST']
+RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 def send_trade(trade):
     response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
