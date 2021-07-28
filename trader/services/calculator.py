@@ -4,6 +4,7 @@ from pymongo import MongoClient
 
 MONGO_DB_URI = os.environ['MONGO_URI']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 
 today = str(datetime.date.today())
 mongo = MongoClient(MONGO_DB_URI)
@@ -24,7 +25,7 @@ def main(expiry_date):
         json_data = json.loads(body.decode('utf-8'))
         ticker = json_data['ticker']
 
-        data = requests.post('http://zerodha_worker_index/gen_data', json={'data':json_data, 'expiry':expiry_date}).json()
+        data = requests.post(f'http://{ZERODHA_SERVER}/gen_data', json={'data':json_data, 'expiry':expiry_date}).json()
         should_send = insert_data(collection, data, json_data['ticker'])
         
         if should_send:

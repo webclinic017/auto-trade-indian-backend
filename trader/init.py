@@ -22,12 +22,12 @@ services = [
 
 processes = {}
 
+# start each process from init.d as children
 for service in services:
     processes[service['name']] = Process(
         target=service['script'],
         args=service['args']
     )
-
 print('starting services ...')
 
 # start all processes
@@ -35,7 +35,6 @@ for process in processes:
     print(f'starting {process}')
     processes[process].start()
     time.sleep(1)
-
 
 for process in processes:
     processes[process].join()
