@@ -1,15 +1,14 @@
-import time
+import time, pika, json, os
 from .function_signals import fetch_data_from_api
-import pika
-import json
 
+RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 def main():
     while True:
         tickers = ['NIFTY', 'BANKNIFTY']
         
         connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='rabbit_mq_index'))
+        pika.ConnectionParameters(host=RABBIT_MQ_SERVER))
         channel = connection.channel()
         channel.queue_declare(queue='trader')
 

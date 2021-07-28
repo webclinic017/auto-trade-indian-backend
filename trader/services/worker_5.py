@@ -4,16 +4,17 @@ import requests
 from .function_signals import start_trade
 import os
 
-token_map = requests.get('http://zerodha_worker_index/get/token_map').json()
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
+
+token_map = requests.get(f'http://{ZERODHA_SERVER}/get/token_map').json()
 
 worker = 'worker_5'
-
 nf_quantity = int(os.environ['NF_QUANTITY'])
 bf_quantity = int(os.environ['BF_QUANTITY'])
 
 def main():
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='rabbit_mq_index')
+        pika.ConnectionParameters(host=ZERODHA_SERVER)
     )
     channel = connection.channel()
     channel.queue_declare(queue=worker)

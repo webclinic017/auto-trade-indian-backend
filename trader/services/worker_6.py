@@ -5,6 +5,8 @@ import os, requests
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
+MONGO_DB_URI = os.environ['MONGO_URI']
 
 nf_quantity = int(os.environ['NF_QUANTITY'])
 bf_quantity = int(os.environ['BF_QUANTITY'])
@@ -17,7 +19,7 @@ yesterday = str(datetime.date.today() - datetime.timedelta(days=1))
 
 stock_market_end = datetime.time(15, 10, 0)
 
-mongo = MongoClient("mongodb://db")
+mongo = MongoClient(MONGO_DB_URI)
 db = mongo['intraday_' + today]
 collection = db['index_master']
 db_ = mongo['intraday_' + yesterday]
@@ -41,7 +43,7 @@ def main():
                 
                 data = {"raw":{"data":[doc_yesterday, doc_today]}, "eod":True}
                 # compare the results of two documents here
-                latest_compare = requests.post('http://zerodha_worker_index/compare_results', json=data).json()
+                latest_compare = requests.post(f'http://{ZERODHA_SERVER}/compare_results', json=data).json()
                 # logic for auto trade goes here
                 
                 if (latest_compare['total_power'] > quantity):
@@ -138,10 +140,9 @@ def main():
                             'tag': 'ENTRY_INDEX',
                             'uri': PUBLISHER_URI_INDEX_FUT
                         }
-                        send_trade(trade)
-                
+                        send_trade(trade)        
             break
-        
+                
         continue
 
 

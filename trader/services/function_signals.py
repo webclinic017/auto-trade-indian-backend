@@ -50,7 +50,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
         if message['type'] != 'subscribe':
             positions = json.loads(message['data'])
             
-            rsi = requests.get(f'http://zerodha_worker__index/get/rsi/{symbol}/7').json()
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
