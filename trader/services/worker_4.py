@@ -48,10 +48,12 @@ def main():
 
     for ticker in tickers_buy:
         t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n])
+        print(f"starting thread for {ticker} worker 4 scalp buy")
         t.start()
 
     for ticker in tickers_sell:
         t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n])
+        print(f"starting thread for {ticker} worker 4 scalp sell")
         t.start()
         
     import redis
