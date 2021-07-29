@@ -136,6 +136,15 @@ def place_market_sell_order():
         try:
             tag = data.get('tag', None)
             order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
@@ -169,6 +178,15 @@ def place_limit_buy_order():
         try:
             tag = data.get('tag', None)
             order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
@@ -201,6 +219,15 @@ def place_limit_sell_order():
         try:
             tag = data.get('tag', None)
             order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
             return jsonify({
                 'message': f'order id is {order_id}'
             }), 200
