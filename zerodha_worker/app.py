@@ -53,6 +53,11 @@ for instrument in instruments:
 # start the flask server
 app = Flask(__name__)
 
+# root url for checking the connection
+@app.route('/')
+def index():
+    return '', 200
+
 @app.route('/get_api_key_token')
 def get_api_key_token():
     return jsonify({

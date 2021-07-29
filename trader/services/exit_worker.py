@@ -12,6 +12,8 @@ PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
+EXIT_SERVER = os.environ['EXIT_HOST']
+ZERODHA_CONSUMER = os.environ['ZERODHA_CONSUMER']
 
 class RedisDictonary:
     def __init__(self):
@@ -78,7 +80,7 @@ def on_message(ws, message):
         
         if order['tradingsymbol'] not in tickers_streamed:
             token = order['instrument_token']
-            t = threading.Thread(target=requests.get, args=[f'http://exit_worker_index/stream_ticker/{token}'])
+            t = threading.Thread(target=requests.get, args=[f'http://{EXIT_SERVER}/stream_ticker/{token}'])
             t.start()
             tickers_streamed[token] = True
             
@@ -162,7 +164,7 @@ def exit_process():
                     uri = PUBLISHER_URI_INDEX_OPT
 
                 try:
-                    rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()['last_rsi']
+                    rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()['last_rsi']
                     print(rsi)
                 except:
                     rsi = 999
@@ -250,12 +252,16 @@ def on_message_ticker(ws, message):
     data = json.loads(message)
     r_ticker.set(data['instrument_token'], message)
 
+@app.route('/')
+def home():
+    return '', 200
+
 @app.route('/stream_ticker/<token>')
 def index(token):
     ws = WebSocketApp(f'ws://{TOKEN_SERVER}/ws/ticker/{token}', on_message=on_message_ticker)
     t = threading.Thread(target=ws.run_forever)
     t.start()
-    requests.get(f'http://zerodha_consumer_1/subscribe/{token}')
+    requests.get(f'http://{ZERODHA_CONSUMER}/subscribe/{token}')
     return ""
 
 
@@ -264,7 +270,7 @@ def main():
     t_socket.start()
 
     time.sleep(5)
-    t = threading.Thread(target=app.run, args=['0.0.0.0', 80])
+    t = threading.Thread(target=app.run, args=['0.0.0.0', 8888])
     t.start()
 
     t_exit = threading.Thread(target=exit_process)

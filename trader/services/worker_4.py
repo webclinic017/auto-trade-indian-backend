@@ -4,7 +4,7 @@ import threading
 import time
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
-RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
+REDIS_SERVER = os.environ['REDIS_HOST']
 
 def main():
     os.environ['TZ'] = 'Asia/Kolkata'
@@ -13,7 +13,7 @@ def main():
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    tickers_buy = ['NIFTY21JUL16000CE']
+    tickers_buy = ['NIFTY21JUL15800CE','NIFTY21JUL15700PE']
     tickers_sell = []
 
     buy_quantity_depth = {}
@@ -39,7 +39,7 @@ def main():
         sell_quantity = 0
         
     if buy_quantity < 1:
-        buy_quantity = 75
+        buy_quantity = 50
     if sell_quantity < 1:
         sell_quantity = 1
 
@@ -57,7 +57,7 @@ def main():
     import redis
     import json
 
-    r = redis.StrictRedis(host=RABBIT_MQ_SERVER, port=6379, decode_responses=True)
+    r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
 
     while True:
         positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()

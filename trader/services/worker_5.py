@@ -5,6 +5,7 @@ from .function_signals import start_trade
 import os
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
+RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 token_map = requests.get(f'http://{ZERODHA_SERVER}/get/token_map').json()
 
@@ -14,7 +15,7 @@ bf_quantity = int(os.environ['BF_QUANTITY'])
 
 def main():
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host=ZERODHA_SERVER)
+        pika.ConnectionParameters(host=RABBIT_MQ_SERVER)
     )
     channel = connection.channel()
     channel.queue_declare(queue=worker)
