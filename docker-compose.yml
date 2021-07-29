@@ -35,25 +35,23 @@ services:
       - .env
       - auth.env
     restart: always
+    depends_on:
+      - rabbit_mq_index
+      - db
+      - redis_server_index
 
   # trader operating system
   trader_index:
     build: ./trader
     volumes:
       - ./trader:/app
-    command:
-      [
-        "sh",
-        "./wait-for.sh",
-        "zerodha_worker_index:80",
-        "--",
-        "python",
-        "init.py",
-      ]
+    command: ["python", "init.py"]
     env_file:
       - .env
       - auth.env
     restart: always
+    depends_on:
+      - zerodha_worker_index
 
 # network interfacing external socket server removed in future
 networks:
