@@ -27,36 +27,34 @@ print('services are up running ...')
 # import the object with aliase name Process
 from threading import Thread as Process # <-- change the type of process here to threading.Thread or multiprocess.Process
 from services.exit_worker import main as main_exit
+from services.exit_worker_2 import main as main_exit2
+from services.orders import main as main_orders
 from services.worker_4 import main as main_wk4
 from services.worker_5 import main as main_wk5
 from services.scraper import main as main_scraper
 from services.calculator import main as main_calculator
 
-# list of all exit workers
-exit_processes = {}
-
-exit_services = [
-    {'name':'exit_service', 'script': main_exit, 'args':[]},
+# orders service start
+orders_process = {}
+orders_services = [
+    {'name':'orders_service', 'script':main_orders, 'args': []}
 ]
 
-for service in exit_services:
-    exit_processes[service['name']] = Process(
-        target=service['script'],
+for service in orders_services:
+    orders_process[service['name']] = Process(
+        target=main_orders,
         args=service['args']
     )
-    
-print('starting services ...')
 
-# start all exit processes
-for process in exit_processes:
-    print(f'starting {process}')
-    exit_processes[process].start()
+for process in orders_process:
+    process.start()
     time.sleep(1)
     
-for process in exit_processes:
-    exit_processes[process].join()
+for process in orders_process:
+    process.join()
+# orders service stop
 
-# wait for exit workers
+# wait for orders service to start
 while True:
     try:
         requests.get(f"http://{EXIT_SERVER}/")
@@ -65,8 +63,13 @@ while True:
         time.sleep(1)
         continue
 
+
+
+
 # add service as {'name':'foo', 'script':'./a.out'}
 services = [
+    {'name':'exit_service', 'script': main_exit, 'args':[]},
+    # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
     {'name':'scrapper', 'script':main_scraper, 'args':[]},
     {'name':'calculator', 'script':main_calculator, 'args':[os.environ['EXPIRY_DATE']]},
     # {'name':'compare', 'script':'', 'args':[]},

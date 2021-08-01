@@ -1,50 +1,46 @@
-import os, json, time, threading, redis, requests, datetime
+from .utils import RedisOrderDictonary, RedisWorker5Dict, calculate_pnl_order
+import time, threading, datetime, os
 from .function_signals import send_trade
-from .utils import RedisOrderDictonary, calculate_pnl_order
-
-os.environ['TZ'] = 'Asia/Kolkata'
-time.tzset()
-
-r_ticker = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
-ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
-REDIS_SERVER = os.environ['REDIS_HOST']
-EXIT_SERVER = os.environ['EXIT_HOST']
-ZERODHA_CONSUMER = os.environ['ZERODHA_CONSUMER']
 
-
-def exit_process(): 
+def exit_process():
     profit = {
         
     }
+    
+    # run the exit process loop
     while True:
         orders = RedisOrderDictonary().get_all()
+        ticker_pairs = RedisWorker5Dict().get_all()
         
-        for ticker in orders:
-            pnl, exchange = calculate_pnl_order(orders, ticker)
+        for ticker_pair in ticker_pairs:
+            ticker_a, ticker_b = ticker_pair.split("-")
 
-            if pnl == {}:
+            # calculate pnl for ticker a and ticker b
+            pnl_a, exchange_a = calculate_pnl_order(orders, ticker_a)
+            pnl_b, exchange_b = calculate_pnl_order(orders, ticker_b)
+            
+            if ticker_a == {} or ticker_b == {} or exchange_a != exchange_b:
                 continue
             
-            profit[ticker] = pnl
+            profit[f'{ticker_a}-{ticker_b}'] = {
+                'buy': pnl_a['buy'] + pnl_b['buy'],
+                'sell': pnl_a['sell'] + pnl_b['sell']
+            }
             
-            print(profit)
-
+            ticker = f'{ticker_a}-{ticker_b}'
+            exchange = exchange_a
+            
             if 'FUT' in ticker:
                 uri = PUBLISHER_URI_INDEX_FUT
             else:
                 uri = PUBLISHER_URI_INDEX_OPT
 
-            try:
-                rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()['last_rsi']
-                print(rsi)
-            except:
-                rsi = 999
-
+            
             if profit[ticker]['buy'] != 0:
-                if profit[ticker]['buy'] > 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(15, 25):
+                if profit[ticker]['buy'] > 4 or datetime.datetime.now().time() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by SELLING it')
                     if exchange == 'NFO':
                         
@@ -79,7 +75,7 @@ def exit_process():
                         send_trade(trade)
             
             if profit[ticker]['sell'] != 0:
-                if profit[ticker]['sell'] > 4 or rsi < 30 or datetime.datetime.now().date() >= datetime.time(15, 25):
+                if profit[ticker]['sell'] > 4 or datetime.datetime.now().date() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by BUYING it')
                     if exchange == 'NFO':
                         
@@ -111,12 +107,10 @@ def exit_process():
                         RedisOrderDictonary().clear(ticker)
                         RedisOrderDictonary().set(ticker, trades_to_keep)
                         send_trade(trade)
-                
-                # rsi = requests.get(f'http://zerodha_worker_index/get/rsi/{ticker}/7').json()
-                # print(rsi)
-                
+        
         # sleep for 10 seconds
         time.sleep(10)
+
 
 def main():
     t_exit = threading.Thread(target=exit_process)
