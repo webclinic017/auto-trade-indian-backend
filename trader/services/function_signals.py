@@ -1,6 +1,7 @@
 import datetime, redis, requests, os, json
 import logging
 from time import sleep
+from .utils import RedisWorker5Dict
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
@@ -100,7 +101,11 @@ def start_trade(document, quantity):
                 }
                 
                 # send trade to zerodha_worker
-                send_trade(trade)
+                status, _ = send_trade(trade)
+                
+                if not status:
+                    continue
+                    
                                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -112,7 +117,17 @@ def start_trade(document, quantity):
                 }
                 
                 # send the trade to zerodha_worker
-                send_trade(trade)
+                status, _ = send_trade(trade)
+                
+                if not status:
+                    continue
+                
+                ticker1 = ce_documents[strike]['weekly_Options_CE']
+                ticker2 =  pe_documents[strike_]['weekly_Options_PE']
+                pair = f'{ticker1}-{ticker2}'
+                
+                # insert the pair into database
+                RedisWorker5Dict().insert(pair)
                 return
     
         
@@ -138,7 +153,10 @@ def start_trade(document, quantity):
                 
 
                 # send trade to zerodha_worker
-                send_trade(trade)
+                status, _ = send_trade(trade)
+                
+                if not status:
+                    continue
                 
                 trade = {
                     'endpoint': '/place/market_order/buy',
@@ -151,7 +169,17 @@ def start_trade(document, quantity):
                 
                 
                 # send trade to zerodha_worker
-                send_trade(trade)
+                status, _ = send_trade(trade)
+                
+                if not status:
+                    continue
+                
+                ticker1 = ce_documents[strike]['weekly_Options_CE']
+                ticker2 =  pe_documents[strike_]['weekly_Options_PE']
+                pair = f'{ticker1}-{ticker2}'
+                
+                # insert the pair into database
+                RedisWorker5Dict().insert(pair)
                 return
     
     return
