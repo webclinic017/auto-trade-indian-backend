@@ -19,7 +19,6 @@ def main():
     )
     channel = connection.channel()
     channel.queue_declare(queue=worker)
-    channel.queue_declare(queue='zerodha_worker')
     
     def callback(ch, method, properties, body):
         print('[*] Message Received')
@@ -28,13 +27,15 @@ def main():
         
         if document['ticker'] == 'NIFTY':
             quantity = nf_quantity
-        elif document['ticker'] == 'BANKNIFTY':
+            return
+        
+        if document['ticker'] == 'BANKNIFTY':
             quantity = bf_quantity
         
         try:
             start_trade(document['data'].pop(), quantity)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
     channel.basic_consume(
         queue=worker, on_message_callback=callback, auto_ack=True

@@ -7,9 +7,21 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 EXIT_SERVER = os.environ['EXIT_HOST']
 
 def wait_for_service():
+    
+    # queues = [
+    #     'trader',
+    #     'compare',
+    #     'worker_5',
+    # ]
+    
     while True:    
         try:
             p = pika.BlockingConnection(pika.ConnectionParameters(host=RABBIT_MQ_SERVER))
+            # channel = p.channel()
+            
+            # for queue in queues:
+            #     channel.queue_declare(queue=queue)
+            
             r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
             requests.get(f"http://{ZERODHA_SERVER}/")
             p.close()
@@ -68,13 +80,13 @@ while True:
 
 # add service as {'name':'foo', 'script':'./a.out'}
 services = [
-    {'name':'exit_service', 'script': main_exit, 'args':[]},
-    # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
+    # {'name':'exit_service', 'script': main_exit, 'args':[]},
+    {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
     {'name':'scrapper', 'script':main_scraper, 'args':[]},
     {'name':'calculator', 'script':main_calculator, 'args':[os.environ['EXPIRY_DATE']]},
-    # {'name':'compare', 'script':'', 'args':[]},
-    # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    {'name':'worker_4', 'script':main_wk4, 'args':[]},
+    {'name':'compare', 'script':'', 'args':[]},
+    {'name':'worker_5', 'script':main_wk5, 'args':[]},
+    # {'name':'worker_4', 'script':main_wk4, 'args':[]},
     # {'name':'worker_6', 'script':'', 'args':[]},
     # {'name':'worker_8', 'script':'', 'args':[]},
 ]

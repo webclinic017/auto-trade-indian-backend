@@ -82,6 +82,10 @@ class RedisWorker5Dict:
 
 
 def calculate_pnl_order(orders, ticker):
+    
+    if ticker not in orders:
+        return None, None, 0, 0, False
+    
     if len(orders[ticker]) > 0:
         total_trade_buy_quantity = 0
         total_trade_buy_price = 0
@@ -136,4 +140,4 @@ def calculate_pnl_order(orders, ticker):
                 'sell':profit_percentage_sell
         }
     
-        return profit, exchange, total_trade_buy_quantity, total_trade_sell_quantity
+        return profit, exchange, total_trade_buy_quantity, total_trade_sell_quantity, True

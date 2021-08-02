@@ -23,9 +23,9 @@ def exit_process():
         orders = RedisOrderDictonary().get_all()
         
         for ticker in orders:
-            pnl, exchange, total_trade_buy_quantity, total_trade_sell_quantity = calculate_pnl_order(orders, ticker)
+            pnl, exchange, total_trade_buy_quantity, total_trade_sell_quantity, status = calculate_pnl_order(orders, ticker)
 
-            if pnl == {}:
+            if pnl == {} or not status:
                 continue
             
             profit[ticker] = pnl

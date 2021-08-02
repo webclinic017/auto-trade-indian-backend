@@ -15,13 +15,19 @@ def exit_process():
         orders = RedisOrderDictonary().get_all()
         ticker_pairs = RedisWorker5Dict().get_all()
         
+        print(ticker_pairs)
+        
         for ticker_pair in ticker_pairs:
             ticker_a, ticker_b = ticker_pair.split("-")
 
             # calculate pnl for ticker a and ticker b
-            pnl_a, exchange_a, total_buy_quantity_a, total_sell_quantity_a = calculate_pnl_order(orders, ticker_a)
-            pnl_b, exchange_b, total_buy_quantity_b, total_sell_quantity_b = calculate_pnl_order(orders, ticker_b)
+            pnl_a, exchange_a, total_buy_quantity_a, total_sell_quantity_a, status_a = calculate_pnl_order(orders, ticker_a)
+            pnl_b, exchange_b, total_buy_quantity_b, total_sell_quantity_b, status_b = calculate_pnl_order(orders, ticker_b)
             
+            if not status_a or not status_b:
+                time.sleep(10)
+                continue
+                        
             if ticker_a == {} or ticker_b == {} or exchange_a != exchange_b:
                 continue
             
@@ -86,7 +92,7 @@ def exit_process():
                             'endpoint': '/place/market_order/sell',
                             'trading_symbol': ticker_a,
                             'exchange': exchange,
-                            'quantity': total_buy_quantity_a,
+                            'quantity': total_sell_quantity_a,
                             'tag': 'EXIT',
                             'uri': uri
                         }
@@ -99,7 +105,7 @@ def exit_process():
                             'endpoint': '/place/market_order/sell',
                             'trading_symbol': ticker_b,
                             'exchange': exchange,
-                            'quantity': total_buy_quantity_b,
+                            'quantity': total_sell_quantity_b,
                             'tag': 'EXIT',
                             'uri': uri
                         }
