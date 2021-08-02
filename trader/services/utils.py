@@ -58,9 +58,9 @@ class RedisWorker5Dict:
     
     # insert the new pair into the database 
     def insert(self, ticker_pair):
-        tickers = json.loads(self.r.get('ticker_pairs'))
-        tickers.append(ticker_pair)
-        self.r.set('ticker_pairs', json.dumps(tickers))
+        tickers = set(json.loads(self.r.get('ticker_pairs')))
+        tickers.add(ticker_pair)
+        self.r.set('ticker_pairs', json.dumps(list(tickers)))
     
     # remove the pair from the database
     def remove(self, ticker_pair):

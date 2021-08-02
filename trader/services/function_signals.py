@@ -152,6 +152,7 @@ def start_trade(document, quantity):
         if not status:
             print('rollbacking 1st trade')
             trade_a['endpoint'] = '/place/market_order/sell'
+            trade_a['tag'] = 'EXIT'
             status, _ = send_trade(trade_a)
             continue
         

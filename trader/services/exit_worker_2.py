@@ -48,7 +48,7 @@ def exit_process():
 
             
             if profit[ticker]['buy'] != 0:
-                if profit[ticker]['buy'] > 4 or datetime.datetime.now().time() >= datetime.time(15, 25):
+                if profit[ticker]['buy'] > 1 or datetime.datetime.now().time() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by SELLING it')
                     if exchange == 'NFO':
                          
@@ -82,7 +82,7 @@ def exit_process():
                         
             
             if profit[ticker]['sell'] != 0:
-                if profit[ticker]['sell'] > 4 or datetime.datetime.now().date() >= datetime.time(15, 25):
+                if profit[ticker]['sell'] > 1 or datetime.datetime.now().date() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by BUYING it')
                     if exchange == 'NFO':
                         
