@@ -24,5 +24,6 @@ def main():
             )
             print('[*] message send to queue..')
 
+        time.sleep(15)
         channel.close()
-        time.sleep(900)
+        time.sleep(900 - 15)

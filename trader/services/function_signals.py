@@ -9,10 +9,16 @@ REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 def send_trade(trade):
-    # response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
-    print(trade)
-    return True, {}
-    # return response.ok, response.json()
+    response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
+    # print(trade)
+    # return True, {}
+    
+    status, data = response.ok, response.json()
+    
+    if not status:
+        print(data)
+    
+    return status, data
 
 def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
@@ -75,13 +81,16 @@ redis_host = 'redis_server'
 redis_port = 6379
 r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
 
+# worker 5 logic
 def start_trade(document, quantity):
     CE_KEY = 'CE_Stikes'
     PE_KEY = 'PE_Stikes'
-    PERCENTAGE = 2/100
+    PERCENTAGE = 0.05
     
     ce_documents = document[CE_KEY]
     pe_documents = document[PE_KEY]
+    
+    pairs = set()
     
     for strike in ce_documents:
         ltp_ce = ce_documents[strike]['lastPrice']
@@ -92,45 +101,7 @@ def start_trade(document, quantity):
             ltp_pe = pe_documents[strike_]['lastPrice']
             
             if ltp_pe >= min_ltp_ce and ltp_pe <= max_ltp_ce:
-                print(ce_documents[strike]['weekly_Options_CE'], pe_documents[strike_]['weekly_Options_PE'])
-                trade = {
-                    'endpoint': '/place/market_order/buy',
-                    'trading_symbol': ce_documents[strike]['weekly_Options_CE'],
-                    'exchange': 'NFO',
-                    'quantity':quantity,
-                    'tag': 'ENTRY_INDEX',
-                    'uri': PUBLISHER_URI_INDEX_OPT
-                }
-                
-                # send trade to zerodha_worker
-                status, _ = send_trade(trade)
-                
-                if not status:
-                    continue
-                    
-                                
-                trade = {
-                    'endpoint': '/place/market_order/buy',
-                    'trading_symbol': pe_documents[strike_]['weekly_Options_PE'],
-                    'exchange': 'NFO',
-                    'quantity':quantity,
-                    'tag': 'ENTRY_INDEX',
-                    'uri': PUBLISHER_URI_INDEX_OPT
-                }
-                
-                # send the trade to zerodha_worker
-                status, _ = send_trade(trade)
-                
-                if not status:
-                    continue
-                
-                ticker1 = ce_documents[strike]['weekly_Options_CE']
-                ticker2 =  pe_documents[strike_]['weekly_Options_PE']
-                pair = f'{ticker1}-{ticker2}'
-                
-                # insert the pair into database
-                RedisWorker5Dict().insert(pair)
-                return
+                pairs.add((ce_documents[strike]['weekly_Options_CE'], pe_documents[strike_]['weekly_Options_PE']))
     
         
     for strike in pe_documents:
@@ -142,47 +113,52 @@ def start_trade(document, quantity):
             ltp_ce = ce_documents[strike_]['lastPrice']
             
             if ltp_ce >= min_ltp_pe and ltp_ce <= max_ltp_pe:
-                print(ce_documents[strike_]['weekly_Options_CE'], pe_documents[strike]['weekly_Options_PE'])
+                pairs.add((ce_documents[strike_]['weekly_Options_CE'], pe_documents[strike]['weekly_Options_PE']))
                 
-                trade = {
-                    'endpoint': '/place/market_order/buy',
-                    'trading_symbol': ce_documents[strike_]['weekly_Options_CE'],
-                    'exchange': 'NFO',
-                    'quantity':quantity,
-                    'tag': 'ENTRY_INDEX',
-                    'uri': PUBLISHER_URI_INDEX_OPT
-                }
-                
-
-                # send trade to zerodha_worker
-                status, _ = send_trade(trade)
-                
-                if not status:
-                    continue
-                
-                trade = {
-                    'endpoint': '/place/market_order/buy',
-                    'trading_symbol': pe_documents[strike]['weekly_Options_PE'],
-                    'exchange': 'NFO',
-                    'quantity':quantity,
-                    'tag': 'ENTRY_INDEX',
-                    'uri': PUBLISHER_URI_INDEX_OPT
-                }
-                
-                
-                # send trade to zerodha_worker
-                status, _ = send_trade(trade)
-                
-                if not status:
-                    continue
-                
-                ticker1 = ce_documents[strike]['weekly_Options_CE']
-                ticker2 =  pe_documents[strike_]['weekly_Options_PE']
-                pair = f'{ticker1}-{ticker2}'
-                
-                # insert the pair into database
-                RedisWorker5Dict().insert(pair)
-                return
+    
+    # remove duplicate elements from the set
+    pairs = set(pairs)
+    
+    for pair in pairs:
+        ticker_a, ticker_b = pair
+        
+        trade_a = {
+            'endpoint': '/place/market_order/buy',
+            'trading_symbol': ticker_a,
+            'exchange': 'NFO',
+            'quantity':quantity,
+            'tag': 'ENTRY_INDEX',
+            'uri': PUBLISHER_URI_INDEX_OPT
+        }
+    
+        # send trade to zerodha_worker
+        status, _ = send_trade(trade_a)
+        
+        if not status:
+            continue
+        
+        trade_b = {
+            'endpoint': '/place/market_order/buy',
+            'trading_symbol': ticker_b,
+            'exchange': 'NFO',
+            'quantity':quantity,
+            'tag': 'ENTRY_INDEX',
+            'uri': PUBLISHER_URI_INDEX_OPT
+        }
+        
+        status, _ = send_trade(trade_b)
+        
+        # if second trade dosen't execute then rollback previous trade
+        if not status:
+            print('rollbacking 1st trade')
+            trade_a['endpoint'] = '/place/market_order/sell'
+            status, _ = send_trade(trade_a)
+            continue
+        
+        pair = f'{ticker_a}-{ticker_b}'
+        RedisWorker5Dict().insert(pair)
+        
+        break
     
     return
 

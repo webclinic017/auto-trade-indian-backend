@@ -13,7 +13,7 @@ def main():
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    tickers_buy = ['NIFTY21JUL15800CE','NIFTY21JUL15700PE']
+    tickers_buy = ['NIFTY2180515850CE','NIFTY2180515850PE']
     tickers_sell = []
 
     buy_quantity_depth = {}
@@ -21,6 +21,7 @@ def main():
 
     buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
     quote_buy = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={'tickers':buy_tickers_quote}).json()
+    print(quote_buy)
 
     for ticker in tickers_buy + tickers_sell:
         buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
