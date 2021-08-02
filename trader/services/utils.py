@@ -116,7 +116,7 @@ def calculate_pnl_order(orders, ticker):
         try:
             ltp = json.loads(r_ticker.get(order['instrument_token']))
         except:
-            return {}
+            return None, None, 0, 0, False
         
         print(ltp)
         ltp = ltp['last_price']

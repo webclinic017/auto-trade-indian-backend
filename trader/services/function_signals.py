@@ -85,7 +85,7 @@ r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
 def start_trade(document, quantity):
     CE_KEY = 'CE_Stikes'
     PE_KEY = 'PE_Stikes'
-    PERCENTAGE = 0.05
+    PERCENTAGE = 0.1
     
     ce_documents = document[CE_KEY]
     pe_documents = document[PE_KEY]
