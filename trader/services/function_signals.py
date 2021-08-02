@@ -9,8 +9,10 @@ REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 def send_trade(trade):
-    response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
-    return response.ok, response.json()
+    # response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
+    print(trade)
+    return True, {}
+    # return response.ok, response.json()
 
 def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)

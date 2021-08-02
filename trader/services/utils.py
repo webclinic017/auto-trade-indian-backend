@@ -42,7 +42,7 @@ class RedisOrderDictonary:
         return orders[key]
     
     # get all orders
-    def get_all(self, key):
+    def get_all(self):
         orders = json.loads(self.r.get('orders'))
         return orders
 
@@ -136,4 +136,4 @@ def calculate_pnl_order(orders, ticker):
                 'sell':profit_percentage_sell
         }
     
-        return profit, exchange
+        return profit, exchange, total_trade_buy_quantity, total_trade_sell_quantity
