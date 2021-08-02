@@ -19,8 +19,8 @@ def exit_process():
             ticker_a, ticker_b = ticker_pair.split("-")
 
             # calculate pnl for ticker a and ticker b
-            pnl_a, exchange_a = calculate_pnl_order(orders, ticker_a)
-            pnl_b, exchange_b = calculate_pnl_order(orders, ticker_b)
+            pnl_a, exchange_a, total_buy_quantity_a, total_sell_quantity_a = calculate_pnl_order(orders, ticker_a)
+            pnl_b, exchange_b, total_buy_quantity_b, total_sell_quantity_b = calculate_pnl_order(orders, ticker_b)
             
             if ticker_a == {} or ticker_b == {} or exchange_a != exchange_b:
                 continue
@@ -29,6 +29,8 @@ def exit_process():
                 'buy': pnl_a['buy'] + pnl_b['buy'],
                 'sell': pnl_a['sell'] + pnl_b['sell']
             }
+            
+            print(profit)
             
             ticker = f'{ticker_a}-{ticker_b}'
             exchange = exchange_a
@@ -43,69 +45,66 @@ def exit_process():
                 if profit[ticker]['buy'] > 4 or datetime.datetime.now().time() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by SELLING it')
                     if exchange == 'NFO':
-                        
-                        if total_trade_buy_quantity >= 4500:
-                            total_trade_buy_quantity = 4500
-                        
+                         
+                        ticker_a, ticker_b = ticker.split('-')
+                         
                         trade = {
                             'endpoint': '/place/market_order/sell',
-                            'trading_symbol': ticker,
+                            'trading_symbol': ticker_a,
                             'exchange': exchange,
-                            'quantity': total_trade_buy_quantity,
+                            'quantity': total_buy_quantity_a,
                             'tag': 'EXIT',
                             'uri': uri
                         }
                         
-                        orders_list = RedisOrderDictonary().get(ticker)
-                        trades_to_exit = []
-                        trades_to_keep = []
-                        total_quantity = 0
-
-                        for order in orders_list:
-                            total_quantity += order['filled_quantity']
-                            
-                            if total_quantity <= 4500:
-                                trades_to_exit.append(order)
-                            else:
-                                trades_to_keep.append(order)
-                        
-                        
-                        RedisOrderDictonary().clear(ticker)
-                        RedisOrderDictonary().set(ticker, trades_to_keep)
+                        RedisOrderDictonary().clear(ticker_a)
                         send_trade(trade)
+                        
+                        
+                        trade = {
+                            'endpoint': '/place/market_order/sell',
+                            'trading_symbol': ticker_b,
+                            'exchange': exchange,
+                            'quantity': total_buy_quantity_b,
+                            'tag': 'EXIT',
+                            'uri': uri
+                        }
+                        
+                        RedisOrderDictonary().clear(ticker_b)
+                        send_trade(trade)
+                        
+                        
             
             if profit[ticker]['sell'] != 0:
                 if profit[ticker]['sell'] > 4 or datetime.datetime.now().date() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by BUYING it')
                     if exchange == 'NFO':
                         
-                        if total_trade_sell_quantity >= 4500:
-                            total_trade_sell_quantity = 4500
-                        
+                        ticker_a, ticker_b = ticker.split('-')
+                         
                         trade = {
-                            'endpoint': '/place/market_order/buy',
-                            'trading_symbol': ticker,
+                            'endpoint': '/place/market_order/sell',
+                            'trading_symbol': ticker_a,
                             'exchange': exchange,
-                            'quantity': total_trade_sell_quantity,
+                            'quantity': total_buy_quantity_a,
                             'tag': 'EXIT',
                             'uri': uri
                         }
-                        orders_list = RedisOrderDictonary().get(ticker)
-                        trades_to_exit = []
-                        trades_to_keep = []
-                        total_quantity = 0
-
-                        for order in orders_list:
-                            total_quantity += order['filled_quantity']
-                            
-                            if total_quantity <= 4500:
-                                trades_to_exit.append(order)
-                            else:
-                                trades_to_keep.append(order)
+                        
+                        RedisOrderDictonary().clear(ticker_a)
+                        send_trade(trade)
                         
                         
-                        RedisOrderDictonary().clear(ticker)
-                        RedisOrderDictonary().set(ticker, trades_to_keep)
+                        trade = {
+                            'endpoint': '/place/market_order/sell',
+                            'trading_symbol': ticker_b,
+                            'exchange': exchange,
+                            'quantity': total_buy_quantity_b,
+                            'tag': 'EXIT',
+                            'uri': uri
+                        }
+                        
+                        RedisOrderDictonary().clear(ticker_b)
                         send_trade(trade)
         
         # sleep for 10 seconds

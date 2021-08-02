@@ -2,7 +2,7 @@ from flask import Flask
 import os, json, time, threading, redis, requests
 from websocket import WebSocketApp
 
-from .utils import RedisDictonary
+from .utils import RedisOrderDictonary
 
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
@@ -29,7 +29,7 @@ def on_message(ws, message):
             tickers_streamed[token] = True
     
         # insert into redis database here
-        RedisDictonary().insert(order['tradingsymbol'], order)
+        RedisOrderDictonary().insert(order['tradingsymbol'], order)
 
 def on_open():
     print('CONNECTION OPENED')

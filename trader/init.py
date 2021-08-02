@@ -47,11 +47,11 @@ for service in orders_services:
     )
 
 for process in orders_process:
-    process.start()
+    orders_process[process].start()
     time.sleep(1)
     
 for process in orders_process:
-    process.join()
+    orders_process[process].join()
 # orders service stop
 
 # wait for orders service to start
