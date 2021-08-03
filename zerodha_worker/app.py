@@ -337,7 +337,8 @@ def get_quote():
     try:
         quote = kite.quote(data)
         return jsonify(quote)
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({})
 
 # get ltp
