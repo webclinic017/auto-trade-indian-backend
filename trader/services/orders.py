@@ -18,7 +18,6 @@ MONGO_DB_URI = os.environ['MONGO_URI']
 tickers_streamed = {}
 
 
-
 def on_message(ws, message):
     order = json.loads(message)
     
@@ -73,7 +72,7 @@ def save_orders():
             db = mongo['orders']
             collection = db['orders_' + date]
             orders = RedisOrderDictonary().get_all()
-            collection.insert_one({'orders':orders})
+            collection.insert_one({'orders':orders, 'status':0})
             break
         
         time.sleep(10)
@@ -84,14 +83,17 @@ def load_orders():
     date = str(datetime.date.today() - datetime.timedelta(days=1))
     db = mongo['orders']
     collection = db['orders_' + date]
-    orders = collection.find({})['orders']
+    orders = collection.find({})
     
-    for ticker in orders:
-        RedisOrderDictonary().insert(ticker, orders[ticker])
-        order = orders[ticker]
-        token = order['instrument_token']
-        requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
-        tickers_streamed[token] = True
+    if orders['status'] == 0:
+        for ticker in orders:
+            RedisOrderDictonary().insert(ticker, orders[ticker])
+            order = orders[ticker]
+            token = order['instrument_token']
+            requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
+            tickers_streamed[token] = True
+        
+        collection.update_one({'_id':orders['_id']}, {'status':1})
     
 
 def main():
