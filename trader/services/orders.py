@@ -1,7 +1,7 @@
 from flask import Flask
 import os, json, time, threading, redis, requests, datetime
 from websocket import WebSocketApp
-from pymongo import MongoClient, collection
+from pymongo import MongoClient
 
 from .utils import RedisOrderDictonary
 
