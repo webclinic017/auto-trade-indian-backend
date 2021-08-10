@@ -1,6 +1,7 @@
 from flask import Flask
-import os, json, time, threading, redis, requests
+import os, json, time, threading, redis, requests, datetime
 from websocket import WebSocketApp
+from pymongo import MongoClient, collection
 
 from .utils import RedisOrderDictonary
 
@@ -12,6 +13,7 @@ ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
 EXIT_SERVER = os.environ['EXIT_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 ZERODHA_CONSUMER = os.environ['ZERODHA_CONSUMER']
+MONGO_DB_URI = os.environ['MONGO_URI']
 
 tickers_streamed = {}
 
@@ -62,7 +64,36 @@ def index(token):
     requests.get(f'http://{ZERODHA_CONSUMER}/subscribe/{token}')
     return "", 200
 
+# thread for saving the holded orders to the database
+def save_orders():
+    while True:
+        if datetime.datetime.now().time() > datetime.time(15, 30):
+            mongo = MongoClient(MONGO_DB_URI)
+            date = str(datetime.date.today())
+            db = mongo['orders']
+            collection = db['orders_' + date]
+            orders = RedisOrderDictonary().get_all()
+            collection.insert_one({'orders':orders})
+            break
+        
+        time.sleep(10)
+
+# thread for loading the order
+def load_orders():
+    mongo = MongoClient(MONGO_DB_URI)
+    date = str(datetime.date.today() - datetime.timedelta(days=1))
+    db = mongo['orders']
+    collection = db['orders_' + date]
+    orders = collection.find({})['orders']
+    
+    for ticker in orders:
+        RedisOrderDictonary().insert(ticker, orders[ticker])
+    
+
 def main():
+    # load all the holded orders
+    load_orders()
+    
     # start the orders websocket thread 
     t_socket = threading.Thread(target=ws.run_forever)
     t_socket.start()
@@ -71,4 +102,8 @@ def main():
     
     # start the flask server
     t = threading.Thread(target=app.run, args=['0.0.0.0', 8888])
+    t.start()
+    
+    # run the database saving service
+    t = threading.Thread(target=save_orders)
     t.start()
