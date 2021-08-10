@@ -88,6 +88,10 @@ def load_orders():
     
     for ticker in orders:
         RedisOrderDictonary().insert(ticker, orders[ticker])
+        order = orders[ticker]
+        token = order['instrument_token']
+        requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
+        tickers_streamed[token] = True
     
 
 def main():
