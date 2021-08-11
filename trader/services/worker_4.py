@@ -1,14 +1,21 @@
 from .function_signals import *
 import os
 import threading
-import time
+import time, datetime
+from pymongo import MongoClient
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
+MONGO_DB_URI = os.environ['MONGO_URI']
+today = str(datetime.date.today())
 
 def main():
     os.environ['TZ'] = 'Asia/Kolkata'
     time.tzset()
+
+    mongo = MongoClient(MONGO_DB_URI)
+    db = mongo['intraday_' + today]
+    collection = db['index_master']
 
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
@@ -63,6 +70,11 @@ def main():
     r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
 
     while True:
+        
+        # pull the latest documents
+        latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {'$slice':{-1}})
+        latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {'$slice':{-1}})
+        
         positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()
         data = json.dumps(positions)
         r.publish('positions', data)
