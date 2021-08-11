@@ -38,13 +38,16 @@ def exit_process():
                 uri = PUBLISHER_URI_INDEX_OPT
 
             try:
-                rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()['last_rsi']
+                data = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()
+                rsi = data['last_rsi']
+                rsi_slope = data['last_slope']
                 print(rsi)
             except:
                 rsi = 999
+                rsi_slope = 999
 
             if profit[ticker]['buy'] != 0:
-                if profit[ticker]['buy'] > 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(15, 25):
+                if profit[ticker]['buy'] > 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(15, 25):
                     print(f'Exit {ticker} by SELLING it')
                     if exchange == 'NFO':
                         
