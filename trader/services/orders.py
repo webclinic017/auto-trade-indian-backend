@@ -1,6 +1,7 @@
 from flask import Flask
-import os, json, time, threading, redis, requests
+import os, json, time, threading, redis, requests, datetime
 from websocket import WebSocketApp
+from pymongo import MongoClient
 
 from .utils import RedisOrderDictonary
 
@@ -12,9 +13,9 @@ ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
 EXIT_SERVER = os.environ['EXIT_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 ZERODHA_CONSUMER = os.environ['ZERODHA_CONSUMER']
+MONGO_DB_URI = os.environ['MONGO_URI']
 
 tickers_streamed = {}
-
 
 
 def on_message(ws, message):
@@ -62,7 +63,49 @@ def index(token):
     requests.get(f'http://{ZERODHA_CONSUMER}/subscribe/{token}')
     return "", 200
 
+# thread for saving the holded orders to the database
+def save_orders():
+    while True:
+        if datetime.datetime.now().time() > datetime.time(15, 30):
+            try:
+                mongo = MongoClient(MONGO_DB_URI)
+                date = str(datetime.date.today())
+                db = mongo['orders']
+                collection = db['orders_' + date]
+                orders = RedisOrderDictonary().get_all()
+                collection.insert_one({'orders':orders, 'status':0})
+                break
+            except:
+                break
+        
+        time.sleep(10)
+
+# thread for loading the order
+def load_orders():
+    mongo = MongoClient(MONGO_DB_URI)
+    date = str(datetime.date.today() - datetime.timedelta(days=1))
+    db = mongo['orders']
+    collection = db['orders_' + date]
+    orders = collection.find({})
+    
+    if orders['status'] == 0:
+        for ticker in orders:
+            RedisOrderDictonary().insert(ticker, orders[ticker])
+            order = orders[ticker]
+            token = order['instrument_token']
+            requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
+            tickers_streamed[token] = True
+        
+        collection.update_one({'_id':orders['_id']}, {'status':1})
+    
+
 def main():
+    # load all the holded orders
+    try:
+        load_orders()
+    except:
+        pass
+    
     # start the orders websocket thread 
     t_socket = threading.Thread(target=ws.run_forever)
     t_socket.start()
@@ -71,4 +114,8 @@ def main():
     
     # start the flask server
     t = threading.Thread(target=app.run, args=['0.0.0.0', 8888])
+    t.start()
+    
+    # run the database saving service
+    t = threading.Thread(target=save_orders)
     t.start()
