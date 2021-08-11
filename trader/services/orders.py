@@ -67,13 +67,16 @@ def index(token):
 def save_orders():
     while True:
         if datetime.datetime.now().time() > datetime.time(15, 30):
-            mongo = MongoClient(MONGO_DB_URI)
-            date = str(datetime.date.today())
-            db = mongo['orders']
-            collection = db['orders_' + date]
-            orders = RedisOrderDictonary().get_all()
-            collection.insert_one({'orders':orders, 'status':0})
-            break
+            try:
+                mongo = MongoClient(MONGO_DB_URI)
+                date = str(datetime.date.today())
+                db = mongo['orders']
+                collection = db['orders_' + date]
+                orders = RedisOrderDictonary().get_all()
+                collection.insert_one({'orders':orders, 'status':0})
+                break
+            except:
+                break
         
         time.sleep(10)
 
@@ -98,7 +101,10 @@ def load_orders():
 
 def main():
     # load all the holded orders
-    load_orders()
+    try:
+        load_orders()
+    except:
+        pass
     
     # start the orders websocket thread 
     t_socket = threading.Thread(target=ws.run_forever)
