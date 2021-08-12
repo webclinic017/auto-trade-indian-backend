@@ -10,7 +10,7 @@ time.tzset()
 
 TOKEN_SERVER = os.environ['WS_HOST']
 ORDERS_URI = f'ws://{TOKEN_SERVER}/ws/orders'
-EXIT_SERVER = os.environ['EXIT_HOST']
+EXIT_SERVER = os.environ['ORDERS_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 ZERODHA_CONSUMER = os.environ['ZERODHA_CONSUMER']
 MONGO_DB_URI = os.environ['MONGO_URI']
