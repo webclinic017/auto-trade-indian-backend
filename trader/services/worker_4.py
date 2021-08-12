@@ -13,7 +13,7 @@ def main():
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    tickers_buy = ['BANKNIFTY2180534900CE','BANKNIFTY2180534600PE','NIFTY2180516000CE','NIFTY2180515900PE']
+    tickers_buy = ['BANKNIFTY2181235900CE','BANKNIFTY2181235800PE','NIFTY2181216350CE','NIFTY2181216250PE']
     tickers_sell = []
 
     buy_quantity_depth = {}
@@ -40,7 +40,7 @@ def main():
         sell_quantity = 0
         
     if buy_quantity < 1:
-        buy_quantity = 50
+        buy_quantity = 100
     if sell_quantity < 1:
         sell_quantity = 1
 

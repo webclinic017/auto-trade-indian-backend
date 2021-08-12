@@ -552,13 +552,15 @@ def parsing_data(filtered_data, filter_date, raw_data, symbol):
         upper_circuit = ltp+dic_atm_CE['lastPrice']+dic_atm_PE['lastPrice']
         lower_circuit = ltp-(dic_atm_CE['lastPrice']+dic_atm_PE['lastPrice'])
 
-        costly_option = 0
+        cheaper_option = 0
         if ((ltp+diff_points)*dic_plus_strike1_CE['lastPrice']/plus_strike1) > ((ltp-diff_points)*dic_minus_strike1_PE['lastPrice']/minus_strike1):
             # costly_option='Call options are costly '
-            costly_option = 'bull'
+            #costly_option = 'bull'
+            cheaper_option="PE"
         if ((ltp+diff_points)*dic_plus_strike1_CE['lastPrice']/plus_strike1) < ((ltp-diff_points)*dic_minus_strike1_PE['lastPrice']/minus_strike1):
             # costly_option='Put options are costly'
-            costly_option = 'bear'
+            #costly_option = 'bear'
+            cheaper_option="CE"
 
         logging.info('Constructing the final output - Start')
 
@@ -582,7 +584,7 @@ def parsing_data(filtered_data, filter_date, raw_data, symbol):
             'next_resistance': next_resistance,
             'imm_support': imm_support,
             'next_support': next_support,
-            'costly_option': costly_option,
+            'cheaper_option': cheaper_option,
             'upper_circuit': upper_circuit,
             'lower_circuit': lower_circuit,
             'call_maxoi_StrikePrice': call_maxoi_StrikePrice,
