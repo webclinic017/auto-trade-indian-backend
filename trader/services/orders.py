@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import os, json, time, threading, redis, requests, datetime
 from websocket import WebSocketApp
 from pymongo import MongoClient
@@ -63,40 +63,64 @@ def index(token):
     requests.get(f'http://{ZERODHA_CONSUMER}/subscribe/{token}')
     return "", 200
 
+@app.route('/receive_order', methods=['POST'])
+def receive_order():
+    data = request.get_json()
+    
+    if data['tag'] == 'EXIT':
+        return "", 200
+    
+    if data['trading_symbol'] not in tickers_streamed:
+        token = data['instrument_token']
+        requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
+        tickers_streamed[data['trading_symbol']] = True
+     
+    RedisOrderDictonary().insert(data['trading_symbol'], data)
+    return '', 200
+
 # thread for saving the holded orders to the database
-def save_orders():
-    while True:
-        if datetime.datetime.now().time() > datetime.time(15, 30):
-            try:
-                mongo = MongoClient(MONGO_DB_URI)
-                date = str(datetime.date.today())
-                db = mongo['orders']
-                collection = db['orders_' + date]
-                orders = RedisOrderDictonary().get_all()
-                collection.insert_one({'orders':orders, 'status':0})
-                break
-            except:
-                break
+# def save_orders():
+#     while True:
+#         if datetime.datetime.now().time() > datetime.time(15, 30):
+#             try:
+#                 mongo = MongoClient(MONGO_DB_URI)
+#                 date = str(datetime.date.today())
+#                 db = mongo['orders']
+#                 collection = db['orders_' + date]
+#                 orders = RedisOrderDictonary().get_all()
+#                 collection.insert_one({'orders':orders, 'status':0})
+#                 break
+#             except:
+#                 break
         
-        time.sleep(10)
+#         time.sleep(10)
 
 # thread for loading the order
 def load_orders():
-    mongo = MongoClient(MONGO_DB_URI)
-    date = str(datetime.date.today() - datetime.timedelta(days=1))
-    db = mongo['orders']
-    collection = db['orders_' + date]
-    orders = collection.find({})
+    orders = RedisOrderDictonary().get_all()
     
-    if orders['status'] == 0:
-        for ticker in orders:
-            RedisOrderDictonary().insert(ticker, orders[ticker])
-            order = orders[ticker]
-            token = order['instrument_token']
-            requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
-            tickers_streamed[token] = True
+    for ticker in orders:
+        order = orders[ticker][0]
+        token = order['instrument_token']
+        requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
+        tickers_streamed[token] = True
         
-        collection.update_one({'_id':orders['_id']}, {'status':1})
+    
+    # mongo = MongoClient(MONGO_DB_URI)
+    # date = str(datetime.date.today() - datetime.timedelta(days=1))
+    # db = mongo['orders']
+    # collection = db['orders_' + date]
+    # orders = collection.find({})
+    
+    # if orders['status'] == 0:
+    #     for ticker in orders:
+    #         RedisOrderDictonary().insert(ticker, orders[ticker])
+    #         order = orders[ticker]
+    #         token = order['instrument_token']
+    #         requests.get(f'http://{EXIT_SERVER}/stream_ticker/{token}')
+    #         tickers_streamed[token] = True
+        
+    #     collection.update_one({'_id':orders['_id']}, {'status':1})
     
 
 def main():
@@ -107,8 +131,8 @@ def main():
         pass
     
     # start the orders websocket thread 
-    t_socket = threading.Thread(target=ws.run_forever)
-    t_socket.start()
+    # t_socket = threading.Thread(target=ws.run_forever)
+    # t_socket.start()
     
     time.sleep(5)
     
@@ -117,5 +141,5 @@ def main():
     t.start()
     
     # run the database saving service
-    t = threading.Thread(target=save_orders)
-    t.start()
+    # t = threading.Thread(target=save_orders)
+    # t.start()

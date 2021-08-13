@@ -48,6 +48,7 @@ for instrument in instruments:
     token_map[instrument['tradingsymbol']] = instrument
 
 
+EXIT_SERVER = os.environ['ORDERS_HOST']
 # print(token_map[instrument['tradingsymbol']])
 
 # start the flask server
@@ -92,16 +93,22 @@ def place_market_buy_order():
     try:
         validate_market_api(data)
 
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = market_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            # tag = data.get('tag', None)
+            # order_id = market_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
             
             send_notification({
                 'notification': {
@@ -111,8 +118,10 @@ def place_market_buy_order():
                 'trade': data 
             }, data['uri'])
             
+            
+            requests.post(f'http://{EXIT_SERVER}/receive_order',json=data)
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order is placed'
             }), 200
         except Exception as ex: 
             return jsonify({
@@ -131,17 +140,23 @@ def place_market_sell_order():
     try:
         validate_market_api(data)
         
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            # tag = data.get('tag', None)
+            # order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
             
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+             
             send_notification({
                 'notification': {
                     'title': 'ORDER PLACED HEDGE',
@@ -150,8 +165,11 @@ def place_market_sell_order():
                 'trade': data 
             }, data['uri'])
             
+            
+            requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order id is placed'
             }), 200
         except Exception as ex: 
             print(ex)
@@ -173,16 +191,22 @@ def place_limit_buy_order():
     try:
         validate_limit_api(data)
         
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            # tag = data.get('tag', None)
+            # order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
             
             send_notification({
                 'notification': {
@@ -192,8 +216,11 @@ def place_limit_buy_order():
                 'trade': data 
             }, data['uri'])
             
+            
+            requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order is placed'
             }), 200
         except Exception as ex:
             print(ex)
@@ -214,16 +241,22 @@ def place_limit_sell_order():
     try:
         validate_limit_api(data)
         
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            # tag = data.get('tag', None)
+            # order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
             
             send_notification({
                 'notification': {
@@ -233,8 +266,11 @@ def place_limit_sell_order():
                 'trade': data 
             }, data['uri'])
             
+            
+            requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order is placed'
             }), 200
         except Exception as ex: 
             print(ex)
