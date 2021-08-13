@@ -20,7 +20,7 @@ def main():
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    tickers_buy = ['BANKNIFTY2181235900CE','BANKNIFTY2181235800PE','NIFTY2181216350CE','NIFTY2181216250PE']
+    tickers_buy = ['BANKNIFTY2181836200CE','BANKNIFTY2181835800PE','NIFTY2181816500CE','NIFTY2181816200PE']
     tickers_sell = []
 
     buy_quantity_depth = {}
@@ -28,7 +28,7 @@ def main():
 
     buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
     quote_buy = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={'tickers':buy_tickers_quote}).json()
-    print(quote_buy)
+    # print(quote_buy)
 
     for ticker in tickers_buy + tickers_sell:
         buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
@@ -72,8 +72,8 @@ def main():
     while True:
         
         # pull the latest documents
-        latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {'$slice':{-1}})
-        latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {'$slice':{-1}})
+        latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {"data":{'$slice':-1}})
+        latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {"data":{'$slice':-1}})
         
         positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()
         data = json.dumps(positions)

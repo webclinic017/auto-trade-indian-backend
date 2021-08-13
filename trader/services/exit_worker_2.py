@@ -1,16 +1,13 @@
-from .utils import RedisOrderDictonary, RedisWorker5Dict, calculate_pnl_order
-import time, threading, datetime, os
+from .utils import RedisOrderDictonary, RedisWorker5Dict
 from .function_signals import send_trade
+import json, redis, os, time
 
-PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
-PUBLISHER_URI_INDEX_FUT = os.environ['PUBLISHER_URI_INDEX_FUT']
+REDIS_SERVER = os.environ['REDIS_HOST']
+ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 
-def exit_process():
-    profit = {
-        
-    }
-    
-    # run the exit process loop
+r_ticker = redis.StrictRedis(host=REDIS_SERVER, port=6379)
+
+def main():
     while True:
         orders = RedisOrderDictonary().get_all()
         ticker_pairs = RedisWorker5Dict().get_all()
@@ -19,104 +16,79 @@ def exit_process():
         
         for ticker_pair in ticker_pairs:
             ticker_a, ticker_b = ticker_pair.split("-")
-
-            # calculate pnl for ticker a and ticker b
-            pnl_a, exchange_a, total_buy_quantity_a, total_sell_quantity_a, status_a = calculate_pnl_order(orders, ticker_a)
-            pnl_b, exchange_b, total_buy_quantity_b, total_sell_quantity_b, status_b = calculate_pnl_order(orders, ticker_b)
+            pnl = {}
             
-            if not status_a or not status_b:
-                time.sleep(10)
-                continue
-                        
-            if ticker_a == {} or ticker_b == {} or exchange_a != exchange_b:
-                continue
-            
-            profit[f'{ticker_a}-{ticker_b}'] = {
-                'buy': pnl_a['buy'] + pnl_b['buy'],
-                'sell': pnl_a['sell'] + pnl_b['sell']
-            }
-            
-            print(profit)
-            
-            ticker = f'{ticker_a}-{ticker_b}'
-            exchange = exchange_a
-            
-            if 'FUT' in ticker:
-                uri = PUBLISHER_URI_INDEX_FUT
-            else:
-                uri = PUBLISHER_URI_INDEX_OPT
-
-            
-            if profit[ticker]['buy'] != 0:
-                if profit[ticker]['buy'] > 1 or datetime.datetime.now().time() >= datetime.time(15, 25):
-                    print(f'Exit {ticker} by SELLING it')
-                    if exchange == 'NFO':
-                         
-                        ticker_a, ticker_b = ticker.split('-')
-                         
-                        trade = {
-                            'endpoint': '/place/market_order/sell',
-                            'trading_symbol': ticker_a,
-                            'exchange': exchange,
-                            'quantity': total_buy_quantity_a,
-                            'tag': 'EXIT',
-                            'uri': uri
-                        }
-                        
-                        RedisOrderDictonary().clear(ticker_a)
-                        send_trade(trade)
-                        
-                        
-                        trade = {
-                            'endpoint': '/place/market_order/sell',
-                            'trading_symbol': ticker_b,
-                            'exchange': exchange,
-                            'quantity': total_buy_quantity_b,
-                            'tag': 'EXIT',
-                            'uri': uri
-                        }
-                        
-                        RedisOrderDictonary().clear(ticker_b)
-                        send_trade(trade)
-                        
-                        
-            
-            if profit[ticker]['sell'] != 0:
-                if profit[ticker]['sell'] > 1 or datetime.datetime.now().date() >= datetime.time(15, 25):
-                    print(f'Exit {ticker} by BUYING it')
-                    if exchange == 'NFO':
-                        
-                        ticker_a, ticker_b = ticker.split('-')
-                         
-                        trade = {
-                            'endpoint': '/place/market_order/sell',
-                            'trading_symbol': ticker_a,
-                            'exchange': exchange,
-                            'quantity': total_sell_quantity_a,
-                            'tag': 'EXIT',
-                            'uri': uri
-                        }
-                        
-                        RedisOrderDictonary().clear(ticker_a)
-                        send_trade(trade)
-                        
-                        
-                        trade = {
-                            'endpoint': '/place/market_order/sell',
-                            'trading_symbol': ticker_b,
-                            'exchange': exchange,
-                            'quantity': total_sell_quantity_b,
-                            'tag': 'EXIT',
-                            'uri': uri
-                        }
-                        
-                        RedisOrderDictonary().clear(ticker_b)
-                        send_trade(trade)
-        
-        # sleep for 10 seconds
+            if ticker_a in orders and ticker_b in orders:
+                # for ticker a
+                entry_price = 0
+                count = 0
+                
+                for order_a in orders[ticker_a]:
+                    entry_price += order_a['entry_price']
+                    count += 1
+                
+                entry_price /= count
+                
+                try:
+                    ticker_data = ticker_data = json.loads(r_ticker.get(order_a['instrument_token']))
+                except:
+                    continue
+                
+                ltp = ticker_data['last_price']
+                pnl[ticker_a] = ((ltp-entry_price)/ltp)*100
+                
+                # for ticker b
+                entry_price = 0
+                count = 0
+                
+                for order_b in orders[ticker_b]:
+                    entry_price += order_b['entry_price']
+                    count += 1
+                
+                entry_price /= count
+                
+                try:
+                    ticker_data = ticker_data = json.loads(r_ticker.get(order_b['instrument_token']))
+                except:
+                    continue
+                
+                ltp = ticker_data['last_price']
+                pnl[ticker_b] = ((ltp-entry_price)/ltp)*100
+                
+            if ticker_a in pnl and ticker_b in pnl:
+                if pnl[ticker_a] + pnl[ticker_b] >= 4:
+                    
+                    # exit the ticker a
+                    if 'buy' in order_a['endpoint']:
+                        order_a['endpoint'] = order_a['endpoint'].replace('buy', 'sell')
+                    else:
+                        order_a['endpoint'] = order_a['endpoint'].replace('sell', 'buy')
+                    
+                    trade = {
+                        'endpoint': order_a['endpoint'],
+                        'trading_symbol': order_a['trading_symbol'],
+                        'exchange': order_a['exchange'],
+                        'quantity': order_a['quantity'],
+                        'tag': 'EXIT',
+                        'uri': order_a['uri']
+                    }
+                    send_trade(trade)
+                    RedisOrderDictonary().clear(order_a['trading_symbol'])
+                    
+                    # exit the ticker b
+                    if 'buy' in order_b['endpoint']:
+                        order_b['endpoint'] = order_b['endpoint'].replace('buy', 'sell')
+                    else:
+                        order_b['endpoint'] = order_b['endpoint'].replace('sell', 'buy')
+                    
+                    trade = {
+                        'endpoint': order_b['endpoint'],
+                        'trading_symbol': order_b['trading_symbol'],
+                        'exchange': order_b['exchange'],
+                        'quantity': order_b['quantity'],
+                        'tag': 'EXIT',
+                        'uri': order_b['uri']
+                    }
+                    send_trade(trade)
+                    RedisOrderDictonary().clear(order_b['trading_symbol'])
         time.sleep(10)
-
-
-def main():
-    t_exit = threading.Thread(target=exit_process)
-    t_exit.start()

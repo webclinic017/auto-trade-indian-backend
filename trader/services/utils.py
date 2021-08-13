@@ -39,7 +39,9 @@ class RedisOrderDictonary:
     # get orders for a particular ticker
     def get(self, key):
         orders = json.loads(self.r.get('orders'))
-        return orders[key]
+        if key in orders:
+            return orders[key]
+        return None
     
     # get all orders
     def get_all(self):
