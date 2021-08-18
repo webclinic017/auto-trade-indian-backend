@@ -45,8 +45,10 @@ def main():
                 # send a exit signal
                 if 'buy' in order['endpoint']:
                     order['endpoint'] = order['endpoint'].replace('buy', 'sell')
+                    order['price'] = ticker_data['depth']['buy'][1]['price']
                 else:
                     order['endpoint'] = order['endpoint'].replace('sell', 'buy')
+                    order['price'] = ticker_data['depth']['sell'][1]['price']
                 
                 trade = {
                     'endpoint': order['endpoint'],
@@ -54,7 +56,8 @@ def main():
                     'exchange': order['exchange'],
                     'quantity': order['quantity'],
                     'tag': 'EXIT',
-                    'uri': order['uri']
+                    'uri': order['uri'],
+                    'price': order['price']
                 }
                 send_trade(trade)
                 RedisOrderDictonary().clear(order['trading_symbol'])

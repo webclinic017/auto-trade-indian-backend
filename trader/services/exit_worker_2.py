@@ -30,11 +30,11 @@ def main():
                 entry_price /= count
                 
                 try:
-                    ticker_data = ticker_data = json.loads(r_ticker.get(order_a['instrument_token']))
+                    ticker_data_a = json.loads(r_ticker.get(order_a['instrument_token']))
                 except:
                     continue
                 
-                ltp = ticker_data['last_price']
+                ltp = ticker_data_a['last_price']
                 pnl[ticker_a] = ((ltp-entry_price)/ltp)*100
                 
                 # for ticker b
@@ -48,12 +48,13 @@ def main():
                 entry_price /= count
                 
                 try:
-                    ticker_data = ticker_data = json.loads(r_ticker.get(order_b['instrument_token']))
+                    ticker_data_b = json.loads(r_ticker.get(order_b['instrument_token']))
                 except:
                     continue
                 
-                ltp = ticker_data['last_price']
+                ltp = ticker_data_b['last_price']
                 pnl[ticker_b] = ((ltp-entry_price)/ltp)*100
+                
                 
             if ticker_a in pnl and ticker_b in pnl:
                 if pnl[ticker_a] + pnl[ticker_b] >= 4:
@@ -61,8 +62,10 @@ def main():
                     # exit the ticker a
                     if 'buy' in order_a['endpoint']:
                         order_a['endpoint'] = order_a['endpoint'].replace('buy', 'sell')
+                        order_a['price'] = ticker_data_a['depth']['buy'][1]['price']
                     else:
                         order_a['endpoint'] = order_a['endpoint'].replace('sell', 'buy')
+                        order_a['price'] = ticker_data_a['depth']['sell'][1]['price']
                     
                     trade = {
                         'endpoint': order_a['endpoint'],
@@ -78,8 +81,10 @@ def main():
                     # exit the ticker b
                     if 'buy' in order_b['endpoint']:
                         order_b['endpoint'] = order_b['endpoint'].replace('buy', 'sell')
+                        order_b['price'] = ticker_data_b['depth']['buy'][1]['price']
                     else:
                         order_b['endpoint'] = order_b['endpoint'].replace('sell', 'buy')
+                        order_b['price'] = ticker_data_b['depth']['sell'][1]['price']
                     
                     trade = {
                         'endpoint': order_b['endpoint'],
