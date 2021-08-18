@@ -29,7 +29,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6
     
     for message in p.listen():
         if message['type'] != 'subscribe':
-            # positions = json.loads(message['data'])
+            quotes = json.loads(message['data'])
             rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
 
@@ -57,7 +57,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
     
     for message in p.listen():
         if message['type'] != 'subscribe':
-            positions = json.loads(message['data'])
+            quotes = json.loads(message['data'])
             
             rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
