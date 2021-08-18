@@ -4,6 +4,11 @@ from time import sleep
 from .utils import RedisWorker5Dict
 
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
+PUBLISHER_URI_STOCKS = os.environ['PUBLISHER_URI_STOCKS']
+PUBLISHER_URI_STOCK_OPT = os.environ['PUBLISHER_URI_STOCK_OPT']
+PUBLISHER_URI_STOCK_FUT = os.environ['PUBLISHER_URI_STOCK_FUT']
+
+
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
@@ -193,3 +198,188 @@ def fetch_data_from_api(url, sybmol=''):
         logging.info('Valid Json Response')
 
         return resp_cont.json()
+
+
+# for the stocks
+def scalp_buy_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+    x = datetime.time(6,45)
+    total_quantity = quantity
+    
+    r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+    p = r.pubsub()
+    p.subscribe('stocks')
+    
+    for message in p.listen():
+        if message['type'] != 'subscribe':
+            data = json.loads(message['data'])
+            quotes = data['quotes']
+            
+            if datetime.datetime.now().time() > x:
+                trade = {
+                    'endpoint': '/place/market_order/buy',
+                    'trading_symbol': symbol,
+                    'exchange': 'NSE',
+                    'quantity': quantity,
+                    'tag': 'ENTRY_STOCK',
+                    'uri': PUBLISHER_URI_STOCKS,
+                    'ltp': quotes[f'NSE:{symbol}']['last_price']
+                }
+                
+                send_trade(trade)
+                total_quantity += quantity
+
+
+
+def scalp_sell_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+    x = datetime.time(6,45)
+    total_quantity = quantity
+    
+    r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+    p = r.pubsub()
+    p.subscribe('stocks')
+    
+    for message in p.listen():
+        if message['type'] != 'subscribe':
+            data = json.loads(message['data'])
+            quotes = data['quotes']
+            
+            if datetime.datetime.now().time() > x:
+                trade = {
+                    'endpoint': '/place/market_order/sell',
+                    'trading_symbol': symbol,
+                    'exchange': 'NSE',
+                    'quantity': quantity,
+                    'tag': 'ENTRY_STOCK',
+                    'uri': PUBLISHER_URI_STOCKS,
+                    'ltp': quotes[f'NSE:{symbol}']['last_price']
+                }
+                
+                send_trade(trade)
+                total_quantity += quantity
+
+
+# stock options
+def scalp_buy_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+    x = datetime.time(6,45)
+    total_quantity = quantity
+    
+    r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+    p = r.pubsub()
+    p.subscribe('stock_option')
+    
+    for message in p.listen():
+        if message['type'] != 'subscribe':
+            quotes = json.loads(message['data'])
+            
+            for ticker in quotes:
+                if f'NFO:{symbol}' == ticker:
+                    if datetime.datetime.now().time() > x:
+                        trade = {
+                            'endpoint': '/place/limit_order/buy',
+                            'trading_symbol': symbol,
+                            'exchange': 'NFO',
+                            'quantity': quantity,
+                            'tag': 'ENTRY_STOCK_OPT',
+                            'price': quotes[ticker]['depth']['sell'][1]['price'],
+                            'uri': PUBLISHER_URI_STOCK_OPT,
+                            'ltp': quotes[ticker]['last_price']
+                        }
+                        
+                        send_trade(trade)
+                        total_quantity += quantity
+                        break
+
+
+
+def scalp_sell_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+    x = datetime.time(6,45)
+    total_quantity = quantity
+    
+    r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+    p = r.pubsub()
+    p.subscribe('stock_option')
+    
+    for message in p.listen():
+        if message['type'] != 'subscribe':
+            quotes = json.loads(message['data'])
+            
+            for ticker in quotes:
+                if f'NFO:{symbol}' == ticker:
+                    if datetime.datetime.now().time() > x:
+                        trade = {
+                            'endpoint': '/place/limit_order/sell',
+                            'trading_symbol': symbol,
+                            'exchange': 'NFO',
+                            'quantity': quantity,
+                            'tag': 'ENTRY_STOCK_OPT',
+                            'price': quotes[ticker]['depth']['buy'][1]['price'],
+                            'uri': PUBLISHER_URI_STOCK_OPT,
+                            'ltp': quotes[ticker]['last_price']
+                        }
+                        
+                        send_trade(trade)
+                        total_quantity += quantity
+                        break
+
+# stock futures
+def scalp_buy_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+    x = datetime.time(6,45)
+    total_quantity = quantity
+    
+    r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+    p = r.pubsub()
+    p.subscribe('stock_fut')
+    
+    for message in p.listen():
+        if message['type'] != 'subscribe':
+            quotes = json.loads(message['data'])
+            
+            for ticker in quotes:
+                if f'NFO:{symbol}' == ticker:
+                    if datetime.datetime.now().time() > x:
+                        trade = {
+                            'endpoint': '/place/limit_order/buy',
+                            'trading_symbol': symbol,
+                            'exchange': 'NFO',
+                            'quantity': quantity,
+                            'tag': 'ENTRY_STOCK_FUT',
+                            'price': quotes[ticker]['depth']['sell'][1]['price'],
+                            'uri': PUBLISHER_URI_STOCK_FUT,
+                            'ltp': quotes[ticker]['last_price']
+                        }
+                        
+                        send_trade(trade)
+                        total_quantity += quantity
+                        break
+
+
+
+def scalp_sell_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+    x = datetime.time(6,45)
+    total_quantity = quantity
+    
+    r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
+    p = r.pubsub()
+    p.subscribe('stock_fut')
+    
+    for message in p.listen():
+        if message['type'] != 'subscribe':
+            quotes = json.loads(message['data'])
+            
+            for ticker in quotes:
+                if f'NFO:{symbol}' == ticker:
+                    if datetime.datetime.now().time() > x:
+                        trade = {
+                            'endpoint': '/place/limit_order/sell',
+                            'trading_symbol': symbol,
+                            'exchange': 'NFO',
+                            'quantity': quantity,
+                            'tag': 'ENTRY_STOCK_FUT',
+                            'price': quotes[ticker]['depth']['buy'][1]['price'],
+                            'uri': PUBLISHER_URI_STOCK_FUT,
+                            'ltp': quotes[ticker]['last_price']
+                        }
+                        
+                        send_trade(trade)
+                        total_quantity += quantity
+                        break

@@ -1,82 +1,104 @@
+import os, threading, time, requests
 from services.function_signals import *
-import os, requests
-import threading
-import time, datetime
-from pymongo import MongoClient
 
-ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
-REDIS_SERVER = os.environ['REDIS_HOST']
-MONGO_DB_URI = os.environ['MONGO_URI']
-today = str(datetime.date.today())
 
-def main():
-    os.environ['TZ'] = 'Asia/Kolkata'
-    time.tzset()
+os.environ['TZ'] = 'Asia/Kolkata'
+time.tzset()
 
-    mongo = MongoClient(MONGO_DB_URI)
-    db = mongo['intraday_' + today]
-    collection = db['index_master']
+scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
+scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
-    scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
+# stocks
+tickers_buy = [
+   
+]
 
-    tickers_buy = ['BANKNIFTY2181836200CE','BANKNIFTY2181835800PE','NIFTY2181816500CE','NIFTY2181816200PE']
-    tickers_sell = []
+tickers_sell = [
+    
+]
 
-    buy_quantity_depth = {}
-    sell_quantity_depth = {}
+# stock options
+tickers_buy_stock_opt = [
+    'MARUTI21JUL7500PE','BAJFINANCE21JUL6200CE',
+    'HEROMOTOCO21JUL2900CE','SBILIFE21JUL1020CE','INFY21JUL1560PE',
+    'SBIN21JUL430PE','HDFCBANK21JUL1540CE','TATAMOTORS21JUL315PE',
+    'IBULHSGFIN21JUL270CE','SUNPHARMA21JUL670CE','TCS21JUL3280PE',
+    'VEDL21JUL270CE', 'RELIANCE21JUL2120PE' 
+]
 
-    buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
-    quote_buy = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={'tickers':buy_tickers_quote}).json()
-    # print(quote_buy)
+tickers_sell_stock_opt = [
+    
+]
 
-    for ticker in tickers_buy + tickers_sell:
-        buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
-        sell_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['sell_quantity']
+# stock futures
+tickers_buy_stock_fut = [
+    
+]
 
-    n = 300
-    n_min = 15
+tickers_sell_stock_fut = [
+    
+]
 
-    try:
-        buy_quantity = int((scalp_buy_investment/len(tickers_buy))/3600/n_min)
-    except:
-        buy_quantity = 0
-    try:
-        sell_quantity = int((scalp_sell_investment/len(tickers_sell))/3600/n_min)
-    except:
-        sell_quantity = 0
-        
-    if buy_quantity < 1:
-        buy_quantity = 100
-    if sell_quantity < 1:
-        sell_quantity = 1
+n = 900
+n_min = 15
 
-    print('Worker 4 started')
-    print(buy_quantity)
+token_map = requests.get('http://zerodha_worker/get/token_map').json()
 
-    for ticker in tickers_buy:
-        t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n])
-        print(f"starting thread for {ticker} worker 4 scalp buy")
-        t.start()
 
-    for ticker in tickers_sell:
-        t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n])
-        print(f"starting thread for {ticker} worker 4 scalp sell")
-        t.start()
-        
-    import redis
-    import json
+print('Worder 4 started')
 
-    r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
+# stocks
+for ticker in tickers_buy:
+    t = threading.Thread(target=scalp_buy_stock, args=[ticker, token_map[ticker]['lot_size'], n])
+    t.start()
 
-    while True:
-        
-        # pull the latest documents
-        latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {"data":{'$slice':-1}})
-        latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {"data":{'$slice':-1}})
-        
-        # positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()
-        quotes = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={'tickers':buy_tickers_quote}).json()
-        data = json.dumps(quotes)
-        r.publish('positions', data)
-        time.sleep(n)
+for ticker in tickers_sell:
+    t = threading.Thread(target=scalp_sell_stock, args=[ticker, token_map[ticker]['lot_size'], n])
+    t.start()
+
+# stock options
+for ticker in tickers_buy_stock_opt:
+    t = threading.Thread(target=scalp_buy_stock_option, args=[ticker, token_map[ticker]['lot_size'], n])
+    t.start()
+
+for ticker in tickers_sell_stock_opt:
+    t = threading.Thread(target=scalp_sell_stock_option, args=[ticker, token_map[ticker]['lot_size'], n])
+    t.start()
+
+# stock futures
+for ticker in tickers_buy_stock_fut:
+    t = threading.Thread(target=scalp_buy_stock_fut, args=[ticker, token_map[ticker]['lot_size'], n])
+    t.start()
+
+for ticker in tickers_sell_stock_fut:
+    t = threading.Thread(target=scalp_sell_stock_fut, args=[ticker, token_map[ticker]['lot_size'], n])
+    t.start()
+
+
+import redis
+import json
+
+r = redis.StrictRedis(host='redis_pubsub', port=6379, decode_responses=True)
+
+while True:
+    # stocks
+    positions = requests.get('http://zerodha_worker/get/positions').json()
+    quote_tickers = tickers_buy_stock_opt + tickers_sell_stock_opt + tickers_buy_stock_fut + tickers_sell_stock_fut
+    quote_tickers_ = tickers_buy + tickers_sell
+    # stock options
+    quote_tickers = list(map(lambda x : f'NFO:{x}', quote_tickers))
+    quote_tickers_ = list(map(lambda x : f'NSE:{x}', quote_tickers_))
+
+    quote_tickers = quote_tickers + quote_tickers_
+    quotes = requests.post('http://zerodha_worker/get/quote', json={'tickers': quote_tickers}).json()
+    
+    # print(quotes)
+    
+    data = json.dumps({'positions':positions, 'quotes':quotes})
+    r.publish('stock', data)
+    
+    data = json.dumps(quotes)
+    r.publish('stock_option', data)
+    r.publish('stock_fut', data)
+    
+    time.sleep(n)
