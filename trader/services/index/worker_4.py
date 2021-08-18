@@ -1,5 +1,5 @@
-from .function_signals import *
-import os
+from services.function_signals import *
+import os, requests
 import threading
 import time, datetime
 from pymongo import MongoClient

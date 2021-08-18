@@ -1,6 +1,6 @@
 import redis, os, time, json, datetime, requests
-from .utils import RedisOrderDictonary
-from .function_signals import send_trade
+from services.utils import RedisOrderDictonary
+from services.function_signals import send_trade
 
 REDIS_SERVER = os.environ['REDIS_HOST']
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
