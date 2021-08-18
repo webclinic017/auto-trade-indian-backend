@@ -1,5 +1,5 @@
 import time, pika, json, os
-from .function_signals import fetch_data_from_api
+from services.function_signals import fetch_data_from_api
 
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 

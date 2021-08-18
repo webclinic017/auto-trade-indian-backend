@@ -1,5 +1,5 @@
 import pika, json, requests, os, datetime
-from .functions_db import insert_data
+from services.functions_db import insert_data
 from pymongo import MongoClient
 
 MONGO_DB_URI = os.environ['MONGO_URI']

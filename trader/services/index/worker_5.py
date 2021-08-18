@@ -1,7 +1,7 @@
 import json
 import pika
 import requests
-from .function_signals import start_trade
+from services.function_signals import start_trade
 import os
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']

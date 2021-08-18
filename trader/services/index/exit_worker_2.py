@@ -1,5 +1,5 @@
-from .utils import RedisOrderDictonary, RedisWorker5Dict
-from .function_signals import send_trade
+from services.utils import RedisOrderDictonary, RedisWorker5Dict
+from services.function_signals import send_trade
 import json, redis, os, time
 
 REDIS_SERVER = os.environ['REDIS_HOST']

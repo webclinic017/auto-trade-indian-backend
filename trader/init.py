@@ -26,13 +26,13 @@ print('services are up running ...')
 
 # import the object with aliase name Process
 from threading import Thread as Process # <-- change the type of process here to threading.Thread or multiprocess.Process
-from services.exit_worker import main as main_exit
-from services.exit_worker_2 import main as main_exit2
+from services.index.exit_worker import main as main_exit
+from services.index.exit_worker_2 import main as main_exit2
 from services.orders import main as main_orders
-from services.worker_4 import main as main_wk4
-from services.worker_5 import main as main_wk5
-from services.scraper import main as main_scraper
-from services.calculator import main as main_calculator
+from services.index.worker_4 import main as main_wk4
+from services.index.worker_5 import main as main_wk5
+from services.index.scraper import main as main_scraper
+from services.index.calculator import main as main_calculator
 
 # orders service start
 orders_process = {}
@@ -65,6 +65,8 @@ while True:
 
 
 # add service as {'name':'foo', 'script':'./a.out'}
+
+# for the index trading
 services = [
     {'name':'exit_service', 'script': main_exit, 'args':[]},
     # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
