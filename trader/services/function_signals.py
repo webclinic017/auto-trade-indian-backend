@@ -27,20 +27,27 @@ def send_trade(trade):
 
 def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
-    
+     # PE CE 
+            # NIFTYCE400
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
     p = r.pubsub()
     p.subscribe('positions')
     
     for message in p.listen():
         if message['type'] != 'subscribe':
-            quotes = json.loads(message['data'])
+            data = json.loads(message['data'])
             rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
 
+            if 'BANKNIFTY' in symbol:
+                doc = data['banknifty']
+            else:
+                doc = data['nifty']
+
+
             print(datetime.datetime.now().time())
-            if datetime.datetime.now().time() > x:
-                if last_rsi > 30 and last_slope > 0:
+            if datetime.datetime.now().time() > x and doc is not None:
+                if last_rsi > 40 and last_slope > 0 and (doc['cheaper_option'] in symbol):
                     trade = {
                         'endpoint': '/place/market_order/buy',
                         'trading_symbol': symbol,
@@ -66,6 +73,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
             
             rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
+
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x:
                 if last_rsi < 40:
@@ -201,7 +209,7 @@ def fetch_data_from_api(url, sybmol=''):
 
 
 # for the stocks
-def scalp_buy_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_buy_stock(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     total_quantity = quantity
     
@@ -213,8 +221,10 @@ def scalp_buy_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6
         if message['type'] != 'subscribe':
             data = json.loads(message['data'])
             quotes = data['quotes']
-            
-            if datetime.datetime.now().time() > x:
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
+            last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
+
+            if datetime.datetime.now().time() > x and last_rsi > 40 and last_slope > 40:
                 trade = {
                     'endpoint': '/place/market_order/buy',
                     'trading_symbol': symbol,
@@ -230,7 +240,7 @@ def scalp_buy_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6
 
 
 
-def scalp_sell_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_sell_stock(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     total_quantity = quantity
     
@@ -242,8 +252,10 @@ def scalp_sell_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=
         if message['type'] != 'subscribe':
             data = json.loads(message['data'])
             quotes = data['quotes']
-            
-            if datetime.datetime.now().time() > x:
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
+            last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
+
+            if datetime.datetime.now().time() > x and last_rsi < 40 and last_slope < 0:
                 trade = {
                     'endpoint': '/place/market_order/sell',
                     'trading_symbol': symbol,
@@ -259,7 +271,7 @@ def scalp_sell_stock(symbol, quantity, n, redis_host='redis_pubsub', redis_port=
 
 
 # stock options
-def scalp_buy_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_buy_stock_option(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     total_quantity = quantity
     
@@ -270,10 +282,12 @@ def scalp_buy_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redis
     for message in p.listen():
         if message['type'] != 'subscribe':
             quotes = json.loads(message['data'])
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
+            last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             
             for ticker in quotes:
                 if f'NFO:{symbol}' == ticker:
-                    if datetime.datetime.now().time() > x:
+                    if datetime.datetime.now().time() > x and last_rsi > 40 and last_slope > 0:
                         trade = {
                             'endpoint': '/place/limit_order/buy',
                             'trading_symbol': symbol,
@@ -291,7 +305,7 @@ def scalp_buy_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redis
 
 
 
-def scalp_sell_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_sell_stock_option(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     total_quantity = quantity
     
@@ -302,10 +316,12 @@ def scalp_sell_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redi
     for message in p.listen():
         if message['type'] != 'subscribe':
             quotes = json.loads(message['data'])
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
+            last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             
             for ticker in quotes:
                 if f'NFO:{symbol}' == ticker:
-                    if datetime.datetime.now().time() > x:
+                    if datetime.datetime.now().time() > x and last_rsi < 40  and last_slope < 0:
                         trade = {
                             'endpoint': '/place/limit_order/sell',
                             'trading_symbol': symbol,
@@ -322,7 +338,7 @@ def scalp_sell_stock_option(symbol, quantity, n, redis_host='redis_pubsub', redi
                         break
 
 # stock futures
-def scalp_buy_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_buy_stock_fut(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     total_quantity = quantity
     
@@ -333,10 +349,12 @@ def scalp_buy_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_po
     for message in p.listen():
         if message['type'] != 'subscribe':
             quotes = json.loads(message['data'])
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
+            last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             
             for ticker in quotes:
                 if f'NFO:{symbol}' == ticker:
-                    if datetime.datetime.now().time() > x:
+                    if datetime.datetime.now().time() > x and last_rsi > 40  and last_slope > 0:
                         trade = {
                             'endpoint': '/place/limit_order/buy',
                             'trading_symbol': symbol,
@@ -354,7 +372,7 @@ def scalp_buy_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_po
 
 
 
-def scalp_sell_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_port=6379):
+def scalp_sell_stock_fut(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     total_quantity = quantity
     
@@ -365,10 +383,12 @@ def scalp_sell_stock_fut(symbol, quantity, n, redis_host='redis_pubsub', redis_p
     for message in p.listen():
         if message['type'] != 'subscribe':
             quotes = json.loads(message['data'])
+            rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
+            last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
             
             for ticker in quotes:
                 if f'NFO:{symbol}' == ticker:
-                    if datetime.datetime.now().time() > x:
+                    if datetime.datetime.now().time() > x and last_rsi < 40  and last_slope < 0:
                         trade = {
                             'endpoint': '/place/limit_order/sell',
                             'trading_symbol': symbol,
