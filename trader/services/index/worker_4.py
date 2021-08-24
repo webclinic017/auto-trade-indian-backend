@@ -20,7 +20,7 @@ def main():
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    tickers_buy = ['BANKNIFTY2181836200CE','BANKNIFTY2181835800PE','NIFTY2181816500CE','NIFTY2181816200PE']
+    tickers_buy = ['NIFTY21AUG16600CE','NIFTY21AUG16500PE','BANKNIFTY21AUG35700CE','BANKNIFTY21AUG35500PE']
     tickers_sell = []
 
     buy_quantity_depth = {}
@@ -70,12 +70,11 @@ def main():
     r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
 
     while True:
-        
         # pull the latest documents
         latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {"data":{'$slice':-1}})
         latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {"data":{'$slice':-1}})
         
         positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()
-        data = json.dumps(positions)
+        data = json.dumps({'positions':positions, 'nifty':latest_doc_nifty, 'banknifty':latest_doc_banknifty})
         r.publish('positions', data)
         time.sleep(n)

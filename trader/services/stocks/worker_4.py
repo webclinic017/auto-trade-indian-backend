@@ -20,11 +20,7 @@ tickers_sell = [
 
 # stock options
 tickers_buy_stock_opt = [
-    'MARUTI21JUL7500PE','BAJFINANCE21JUL6200CE',
-    'HEROMOTOCO21JUL2900CE','SBILIFE21JUL1020CE','INFY21JUL1560PE',
-    'SBIN21JUL430PE','HDFCBANK21JUL1540CE','TATAMOTORS21JUL315PE',
-    'IBULHSGFIN21JUL270CE','SUNPHARMA21JUL670CE','TCS21JUL3280PE',
-    'VEDL21JUL270CE', 'RELIANCE21JUL2120PE' 
+    'SBIN21AUG410PE','TATASTEEL21AUG1380PE','RELIANCE21AUG2160PE'
 ]
 
 tickers_sell_stock_opt = [
@@ -79,7 +75,7 @@ def main():
     import redis
     import json
 
-    r = redis.StrictRedis(host='redis_pubsub', port=6379, decode_responses=True)
+    r = redis.StrictRedis(host='redis_server_index', port=6379, decode_responses=True)
 
     while True:
         # stocks
