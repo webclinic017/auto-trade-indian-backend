@@ -71,10 +71,23 @@ def main():
 
     while True:
         # pull the latest documents
-        latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {"data":{'$slice':-1}})
-        latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {"data":{'$slice':-1}})
+        try:
+            latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {"data":{'$slice':-1}})
+            latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {"data":{'$slice':-1}})
+            latest_doc_banknifty['_id'] = str(latest_doc_banknifty['_id'] )
+            latest_doc_nifty['_id'] = str(latest_doc_banknifty['_id'] )
+        except:
+            time.sleep(n)
+            continue
+        # def atest_doc_banknifty
+        
+        # print(latest_doc_banknifty)
+        # print(latest_doc_banknifty)
         
         positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()
         data = json.dumps({'positions':positions, 'nifty':latest_doc_nifty, 'banknifty':latest_doc_banknifty})
         r.publish('positions', data)
         time.sleep(n)
+
+
+      

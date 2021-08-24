@@ -31,16 +31,16 @@ from services.exit_worker_2 import main as main_exit2
 from services.orders import main as main_orders
 
 # for the index
-from services.index.worker_4 import main as main_wk4
+from services.index.worker_4 import main as main_wk4_index
 from services.index.worker_5 import main as main_wk5
-from services.index.scraper import main as main_scraper
-from services.index.calculator import main as main_calculator
+from services.index.scraper import main as main_scraper_index
+from services.index.calculator import main as main_calculator_index
 
 # for the stocks
-# from services.stocks.calculator import main as main_calculator
-# from services.stocks.compare import main as main_compare
-# from services.stocks.scraper import main as main_scraper
-# from services.stocks.worker_4 import main as main_wk4
+from services.stocks.calculator import main as main_calculator_stock
+from services.stocks.compare import main as main_compare_stock
+from services.stocks.scraper import main as main_scraper_stock
+from services.stocks.worker_4 import main as main_wk4_stock
 
 # orders service start
 orders_process = {}
@@ -75,31 +75,32 @@ while True:
 # add service as {'name':'foo', 'script':'./a.out'}
 
 # for the index trading
-services = [
+services_index = [
     {'name':'exit_service', 'script': main_exit, 'args':[]},
     # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
-    {'name':'scrapper', 'script':main_scraper, 'args':[]},
-    {'name':'calculator', 'script':main_calculator, 'args':[os.environ['EXPIRY_DATE']]},
+    {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
+    {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    {'name':'worker_4', 'script':main_wk4, 'args':[]},
+    {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
     # {'name':'worker_6', 'script':'', 'args':[]},
     # {'name':'worker_8', 'script':'', 'args':[]},
 ]
 
 # for stock trading
-# services = [
-#     {'name':'exit_service', 'script': main_exit, 'args':[]},
-#     # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
-#     # {'name':'scrapper', 'script':main_scraper, 'args':[]},
-#     # {'name':'calculator', 'script':main_calculator, 'args':[os.environ['EXPIRY_DATE']]},
-#     # {'name':'compare', 'script':'', 'args':[]},
-#     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-#     {'name':'worker_4', 'script':main_wk4, 'args':[]},
-#     # {'name':'worker_6', 'script':'', 'args':[]},
-#     # {'name':'worker_8', 'script':'', 'args':[]},
-# ]
+services_stocks = [
+    # {'name':'exit_service', 'script': main_exit, 'args':[]},
+    # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
+    {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
+    {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
+    # {'name':'compare', 'script':'', 'args':[]},
+    # {'name':'worker_5', 'script':main_wk5, 'args':[]},
+    {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
+    # {'name':'worker_6', 'script':'', 'args':[]},
+    # {'name':'worker_8', 'script':'', 'args':[]},
+]
 
+services = services_index + services_stocks
 
 processes = {}
 
