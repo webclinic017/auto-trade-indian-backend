@@ -91,8 +91,8 @@ services_index = [
 services_stocks = [
     # {'name':'exit_service', 'script': main_exit, 'args':[]},
     # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
-    {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
-    {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
+    # {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
+    # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
