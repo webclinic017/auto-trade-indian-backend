@@ -10,7 +10,7 @@ def main():
         connection = pika.BlockingConnection(
         pika.ConnectionParameters(host=RABBIT_MQ_SERVER))
         channel = connection.channel()
-        channel.queue_declare(queue='trader')
+        channel.queue_declare(queue='trader_index')
 
 
         for ticker in tickers:
@@ -19,7 +19,7 @@ def main():
             json_data['ticker'] = ticker
             channel.basic_publish(
                 exchange='',
-                routing_key='trader',
+                routing_key='trader_index',
                 body=json.dumps(json_data).encode()
             )
             print('[*] message send to queue..')

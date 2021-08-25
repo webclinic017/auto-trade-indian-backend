@@ -8,7 +8,7 @@ def main():
         pika.ConnectionParameters(host=RABBIT_MQ_SERVER)
     )
     channel = connection.channel()
-    channel.queue_declare(queue='compare')
+    channel.queue_declare(queue='compare_stock')
     
     def callback(ch, method, properties, body):
         print('[*] Message Received')
@@ -17,5 +17,5 @@ def main():
         latest_compare = requests.post(f'http://{ZERODHA_SERVER}/compare_results', json=json_data).json()
         
     
-    channel.basic_consume(queue='compare', on_message_callback=callback, auto_ack=True)
+    channel.basic_consume(queue='compare_stock', on_message_callback=callback, auto_ack=True)
     channel.start_consuming()
