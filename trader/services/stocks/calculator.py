@@ -9,15 +9,15 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 today = str(datetime.date.today())
 mongo = MongoClient(MONGO_DB_URI)
 db = mongo['intraday_' + today]
-collection = db['index_master']
+collection = db['stock_master']
 
 def main(expiry_date):
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host=RABBIT_MQ_SERVER))
     channel = connection.channel()
-    channel.queue_declare(queue='trader')
-    channel.queue_declare(queue='compare')
-    channel.queue_declare(queue='worker_5')
+    channel.queue_declare(queue='trader_stock')
+    channel.queue_declare(queue='compare_stock')
+    channel.queue_declare(queue='worker_5_stock')
     
 
     def callback(ch, method, properties, body):
@@ -37,7 +37,7 @@ def main(expiry_date):
 
             channel.basic_publish(
                 exchange='',
-                routing_key='compare',
+                routing_key='compare_stock',
                 body=json.dumps(data_).encode()
             )
 
@@ -54,12 +54,12 @@ def main(expiry_date):
         
         channel.basic_publish(
             exchange='',
-            routing_key='worker_5',
+            routing_key='worker_5_stock',
             body=json.dumps(doc).encode()
         )
         print('[*] Latest document send to worker 5')
 
     channel.basic_consume(
-        queue='trader', on_message_callback=callback, auto_ack=True)
+        queue='trader_stock', on_message_callback=callback, auto_ack=True)
     print('[*] Waiting for Message')
     channel.start_consuming()

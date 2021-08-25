@@ -9,7 +9,7 @@ RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 token_map = requests.get(f'http://{ZERODHA_SERVER}/get/token_map').json()
 
-worker = 'worker_5'
+worker = 'worker_5_index'
 nf_quantity = int(os.environ['NF_QUANTITY'])
 bf_quantity = int(os.environ['BF_QUANTITY'])
 
