@@ -21,7 +21,7 @@ def main():
         
         for ticker in orders:
             entry_price = 0
-            count = 1
+            count = 0
             
             for order in orders[ticker]:
                 entry_price += order['entry_price']
@@ -35,6 +35,7 @@ def main():
             except:
                 continue
             
+            print(ticker_data)
 
             try:
                 data = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()
