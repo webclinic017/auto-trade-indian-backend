@@ -28,6 +28,7 @@ def main():
                 count += 1    
             
             entry_price /= count
+            print("Entry_Price", entry_price)
             
             try:
                 ticker_data = json.loads(r_ticker.get(order['instrument_token']))
@@ -75,6 +76,8 @@ def main():
 
             pnl = ((ltp - entry_price)/ltp) * 100
             print({
+                'entry_price':entry_price,
+                
                 'pnl': pnl,
                 'accleration': cur_accleration,
                 'prev_acc': prev_acc,
