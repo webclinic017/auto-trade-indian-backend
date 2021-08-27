@@ -14,10 +14,12 @@ REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
 def send_trade(trade):
+    if 'ENTRY' in trade['tag']:
+        if datetime.datetime.now().time() >= datetime.time(15, 00):
+            print('\ncant enter now\n')
+            return False, {}
+
     response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
-    # print(trade)
-    # return True, {}
-    
     status, data = response.ok, response.json()
     
     if not status:
@@ -38,28 +40,39 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6
             data = json.loads(message['data'])
             rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
+            ltp = data['ltp']['ltp']
 
             if 'BANKNIFTY' in symbol:
-                doc = data['banknifty']
+                doc = data['banknifty']['data'].pop()
             else:
-                doc = data['nifty']
+                doc = data['nifty']['data'].pop()
 
+            print("-"*10 + " ENTRY CONDITIONS " + "-"*10)
+            log = {
+                'rsi': last_rsi,
+                'slope': last_slope,
+                'ticker': symbol,
+                'ltp': ltp[f'NFO:{symbol}']['last_price'],
+                'cheaper_option': doc['cheaper_option']
+            }
+            print(json.dumps(log, indent=3))
+            print("-"*(10+17+10))            
 
             print(datetime.datetime.now().time())
             if datetime.datetime.now().time() > x and doc is not None:
-                if last_rsi > 40 and last_slope > 0 and (doc['cheaper_option'] in symbol):
+                if last_rsi > 40 and last_slope > 0: #and (doc['cheaper_option'] in symbol):
                     trade = {
                         'endpoint': '/place/market_order/buy',
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
                         'tag': 'ENTRY_INDEX',
-                        'uri': PUBLISHER_URI_INDEX_OPT
+                        'uri': PUBLISHER_URI_INDEX_OPT,
+                        'ltp': ltp[f'NFO:{symbol}']['last_price']
                     }
                     
                     send_trade(trade)
                     
-
 def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
     x = datetime.time(6,45)
     
@@ -69,8 +82,9 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
     
     for message in p.listen():
         if message['type'] != 'subscribe':
-            quotes = json.loads(message['data'])
-            
+            data = json.loads(message['data'])
+            ltp = data['ltp']
+            print(ltp)
             rsi = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{symbol}/7').json()
             last_rsi, last_slope = rsi['last_rsi'], rsi['last_slope']
 
@@ -83,7 +97,8 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
                         'exchange': 'NFO',
                         'quantity': quantity,
                         'tag':'ENTRY_INDEX',
-                        'uri': PUBLISHER_URI_INDEX_OPT
+                        'uri': PUBLISHER_URI_INDEX_OPT,
+                        'ltp': ltp[f'NFO:{symbol}']['last_price']
                     }
                     
                     # publish trade to zerodha_worker queue

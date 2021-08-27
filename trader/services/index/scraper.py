@@ -26,4 +26,4 @@ def main():
 
         time.sleep(15)
         channel.close()
-        time.sleep(900 - 15)
+        time.sleep(300 - 15)
