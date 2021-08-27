@@ -20,7 +20,7 @@ def main():
     scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
     scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
 
-    tickers_buy = ['NIFTY21AUG16600CE','NIFTY21AUG16500PE','BANKNIFTY21AUG35700CE','BANKNIFTY21AUG35500PE']
+    tickers_buy = ['NIFTY2190216650CE','NIFTY2190216600PE','BANKNIFTY2190235600CE','BANKNIFTY2190235500PE']
     tickers_sell = []
 
     buy_quantity_depth = {}
@@ -34,7 +34,7 @@ def main():
         buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
         sell_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['sell_quantity']
 
-    n = 300
+    n = 310
     n_min = 15
 
     try:
@@ -68,6 +68,8 @@ def main():
     import json
 
     r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
+    tickers = tickers_buy + tickers_sell
+    tickers = list(map(lambda x : f'NFO:{x}', tickers))
 
     while True:
         # pull the latest documents
@@ -79,13 +81,15 @@ def main():
         except:
             time.sleep(n)
             continue
+
+
         # def atest_doc_banknifty
         
         # print(latest_doc_banknifty)
         # print(latest_doc_banknifty)
         
-        positions = requests.get(f'http://{ZERODHA_SERVER}/get/positions').json()
-        data = json.dumps({'positions':positions, 'nifty':latest_doc_nifty, 'banknifty':latest_doc_banknifty})
+        ltp = requests.post(f'http://{ZERODHA_SERVER}/get/ltp', json={'tickers': tickers}).json()
+        data = json.dumps({'ltp':ltp, 'nifty':latest_doc_nifty, 'banknifty':latest_doc_banknifty})
         r.publish('positions', data)
         time.sleep(n)
 

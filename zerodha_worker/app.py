@@ -54,6 +54,10 @@ EXIT_SERVER = os.environ['ORDERS_HOST']
 # start the flask server
 app = Flask(__name__)
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 # root url for checking the connection
 @app.route('/')
 def index():

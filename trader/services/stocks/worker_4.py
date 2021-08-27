@@ -20,7 +20,7 @@ tickers_sell = [
 
 # stock options
 tickers_buy_stock_opt = [
-    'SBIN21AUG410PE','TATASTEEL21AUG1380PE','RELIANCE21AUG2160PE'
+    
 ]
 
 tickers_sell_stock_opt = [
