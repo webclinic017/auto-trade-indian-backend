@@ -13,11 +13,18 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
+TEST_MODE = True
+
 def send_trade(trade):
     if 'ENTRY' in trade['tag']:
-        if datetime.datetime.now().time() >= datetime.time(15, 00):
-            print('\ncant enter now\n')
-            return False, {}
+        if TEST_MODE:
+            if datetime.datetime.now().time() >= datetime.time(21, 00):
+                print('\ncant enter now\n')
+                return False, {}
+        else:
+            if datetime.datetime.now().time() >= datetime.time(18, 00):
+                print('\ncant enter now\n')
+                return False, {}
 
     response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
     status, data = response.ok, response.json()

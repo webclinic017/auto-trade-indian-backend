@@ -2,6 +2,7 @@ import redis, os, time, json, datetime, requests
 from services.utils import RedisOrderDictonary
 from services.function_signals import send_trade
 from collections import defaultdict
+import random
 
 REDIS_SERVER = os.environ['REDIS_HOST']
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
@@ -9,6 +10,7 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 
 r_ticker = redis.StrictRedis(host=REDIS_SERVER, port=6379)
 
+TEST_MODE = True
 
 def main():
     m = defaultdict(int)
@@ -47,6 +49,10 @@ def main():
             
             # print(ticker_data)
             ltp = ticker_data['last_price']
+            
+            if TEST_MODE:
+                ltp += random.random() * random.choice((1,-1))
+            
             cur_accleration = (ltp - m[ticker]) / 100
             # m[ticker] = ltp
             acc[ticker].append(cur_accleration)
@@ -86,7 +92,7 @@ def main():
             })
 
 
-            if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(15, 25) or (cur_accleration > 4*prev_acc):
+            if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(21, 25) or (cur_accleration > 4*prev_acc):
                 # send a exit signal
                 if 'buy' in order['endpoint']:
                     order['endpoint'] = order['endpoint'].replace('buy', 'sell')
