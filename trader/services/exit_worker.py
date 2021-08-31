@@ -10,7 +10,7 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 
 r_ticker = redis.StrictRedis(host=REDIS_SERVER, port=6379)
 
-TEST_MODE = True
+TEST_MODE = False
 
 def main():
     m = defaultdict(int)
