@@ -13,7 +13,7 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
-TEST_MODE = True
+TEST_MODE = False
 
 def send_trade(trade):
     if 'ENTRY' in trade['tag']:
@@ -35,7 +35,7 @@ def send_trade(trade):
     return status, data
 
 def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
-    x = datetime.time(6,45)
+    x = datetime.time(9,53)
      # PE CE 
             # NIFTYCE400
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
