@@ -112,8 +112,11 @@ def place_market_buy_order():
             data['instrument_token'] = token
             exchange = data['exchange']
             ticker = data['trading_symbol']
-            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
-            data['ltp'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+            
+            live_price = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+            
+            data['entry_price'] = live_price
+            data['ltp'] = live_price
             
             send_notification({
                 'notification': {
@@ -124,7 +127,8 @@ def place_market_buy_order():
             }, data['uri'])
             
             
-            requests.post(f'http://{EXIT_SERVER}/receive_order',json=data)
+            # requests.post(f'http://{EXIT_SERVER}/receive_order',json=data)
+            
             return jsonify({
                 'message': f'order is placed'
             }), 200
@@ -170,9 +174,7 @@ def place_market_sell_order():
                 'trade': data 
             }, data['uri'])
             
-            
-            requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
-            
+            # requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
             return jsonify({
                 'message': f'order id is placed'
             }), 200
@@ -221,8 +223,7 @@ def place_limit_buy_order():
                 'trade': data 
             }, data['uri'])
             
-            
-            requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            # requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
             
             return jsonify({
                 'message': f'order is placed'
@@ -272,7 +273,7 @@ def place_limit_sell_order():
             }, data['uri'])
             
             
-            requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            # requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
             
             return jsonify({
                 'message': f'order is placed'

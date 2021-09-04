@@ -10,10 +10,10 @@ class TradeApp:
         self.redis = redis.StrictRedis(host='redis_server_index', port=6379)
         self.mongo = MongoClient(host='db', port=27017)
         self.name = name
-        
+        self.token_map = requests.get(f'http://{ZERODHA_SERVER}/get/token_map').json()
         # create a collection for storing all the orders for that particular collection
         date = datetime.date.today()
-        self.orders_db = self.mongo['orders' + str(date)]
+        self.orders_db = self.mongo['orders_' + str(date)]
         self.orders_collection = self.orders_db[self.name]
         
         # database for index
@@ -22,18 +22,22 @@ class TradeApp:
         
     # get the live data for the particular ticker
     def getLiveData(self, ticker):
-        data = self.redis.get(ticker)
+        data = self.redis.get(self.token_map[ticker]['instrument_token'])
         return json.loads(data)
     
     # insert the order into the database
-    def insertOrder(self, order):
-        result = self.orders_collection.insert_one(order)
-        return result.inserted_id
+    def insertOrder(self, ticker, order):
+        result = self.orders_collection.update_one({'ticker':ticker}, {'$push': {'data':order}}, True)
+        return result
     
     # get the all orders
     def getAllOrders(self):
         orders = self.orders_collection.find({})
-        return orders
+        return list(orders)
+    
+    # delete the order document
+    def deleteOrder(self, ticker):
+        self.orders_collection.delete_one({'ticker':ticker})
     
     # get one particular order
     def getOrder(self, ticker):
@@ -65,7 +69,7 @@ class TradeApp:
             'quantity': quantity,
             'tag': tag,
             'uri': PUBLISHER_URI_INDEX_OPT,
-            'ltp': live_data[ticker]
+            'entry_price': live_data['last_price']
         }
         return trade
 
@@ -79,7 +83,7 @@ class TradeApp:
             'quantity': quantity,
             'tag': tag,
             'uri': PUBLISHER_URI_INDEX_OPT,
-            'ltp': live_data[ticker]
+            'entry_price': live_data['last_price']
         }
         return trade
     
@@ -91,6 +95,10 @@ class TradeApp:
         
         response = requests.post(f'http://{ZERODHA_SERVER}' + trade['endpoint'], json=trade)
         status, data = response.ok, response.json()        
+        
+        if status:
+            self.insertOrder(trade['trading_symbol'], trade)
+        
         return status, data
     
     
@@ -106,6 +114,8 @@ class TradeApp:
     
     def start(self):
         # create the threads for the entry and exit
+        print(f'starting threads {self.name}')
         entry_strategy = threading.Thread(target=self.entryStrategy); exit_startegy = threading.Thread(target=self.exitStrategy)
         # start the threads
         entry_strategy.start(); exit_startegy.start()
+        entry_strategy.join(); exit_startegy.join()

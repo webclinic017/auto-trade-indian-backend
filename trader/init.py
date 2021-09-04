@@ -26,31 +26,33 @@ print('services are up running ...')
 
 # import the object with aliase name Process
 from threading import Thread as Process # <-- change the type of process here to threading.Thread or multiprocess.Process
-from services.exit_worker import main as main_exit
 from services.exit_worker_2 import main as main_exit2
-from services.orders import main as main_orders
+# from services.orders import main as main_orders
+from services.live_data import main as live_data_main
 
 # for the index
 from services.index.worker_4 import main as main_wk4_index
-from services.index.worker_5 import main as main_wk5
+# from services.index.worker_5 import main as main_wk5
 from services.index.scraper import main as main_scraper_index
 from services.index.calculator import main as main_calculator_index
 
 # for the stocks
-from services.stocks.calculator import main as main_calculator_stock
-from services.stocks.compare import main as main_compare_stock
-from services.stocks.scraper import main as main_scraper_stock
-from services.stocks.worker_4 import main as main_wk4_stock
+# from services.stocks.calculator import main as main_calculator_stock
+# from services.stocks.compare import main as main_compare_stock
+# from services.stocks.scraper import main as main_scraper_stock
+# from services.stocks.worker_4 import main as main_wk4_stock
 
 # orders service start
 orders_process = {}
+
 orders_services = [
-    {'name':'orders_service', 'script':main_orders, 'args': []}
+    # {'name':'orders_service', 'script':main_orders, 'args': []}
+    {'name':'live_data_service', 'script':live_data_main, 'args':[]}
 ]
 
 for service in orders_services:
     orders_process[service['name']] = Process(
-        target=main_orders,
+        target=service['script'],
         args=service['args']
     )
 
@@ -76,15 +78,11 @@ while True:
 
 # for the index trading
 services_index = [
-    {'name':'exit_service', 'script': main_exit, 'args':[]},
-    # {'name':'exit_service_2', 'script': main_exit2, 'args':[]},
     {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
     {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
-    # {'name':'worker_6', 'script':'', 'args':[]},
-    # {'name':'worker_8', 'script':'', 'args':[]},
 ]
 
 # for stock trading
