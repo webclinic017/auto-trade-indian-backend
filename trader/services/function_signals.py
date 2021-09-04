@@ -13,7 +13,7 @@ ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 
-TEST_MODE = True
+TEST_MODE = False
 
 def send_trade(trade):
     if 'ENTRY' in trade['tag']:
@@ -35,7 +35,7 @@ def send_trade(trade):
     return status, data
 
 def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6379):
-    x = datetime.time(6,45)
+    x = datetime.time(9,53)
      # PE CE 
             # NIFTYCE400
     r = redis.StrictRedis(host=redis_host, port=redis_port, decode_responses=True)
@@ -136,7 +136,7 @@ def start_trade(document, quantity):
             ltp_pe = pe_documents[strike_]['lastPrice']
             
             if ltp_pe >= min_ltp_ce and ltp_pe <= max_ltp_ce:
-                pairs.add((ce_documents[strike]['weekly_Options_CE'], pe_documents[strike_]['weekly_Options_PE']))
+                pairs.add((ce_documents[strike]['monthly_Options_CE'], pe_documents[strike_]['monthly_Options_PE']))
     
         
     for strike in pe_documents:
@@ -148,7 +148,7 @@ def start_trade(document, quantity):
             ltp_ce = ce_documents[strike_]['lastPrice']
             
             if ltp_ce >= min_ltp_pe and ltp_ce <= max_ltp_pe:
-                pairs.add((ce_documents[strike_]['weekly_Options_CE'], pe_documents[strike]['weekly_Options_PE']))
+                pairs.add((ce_documents[strike_]['monthly_Options_CE'], pe_documents[strike]['monthly_Options_PE']))
                 
     
     # remove duplicate elements from the set
@@ -169,8 +169,8 @@ def start_trade(document, quantity):
         # send trade to zerodha_worker
         status, _ = send_trade(trade_a)
         
-        if not status:
-            continue
+        # if not status:
+        #     continue
         
         trade_b = {
             'endpoint': '/place/market_order/buy',
@@ -184,12 +184,12 @@ def start_trade(document, quantity):
         status, _ = send_trade(trade_b)
         
         # if second trade dosen't execute then rollback previous trade
-        if not status:
-            print('rollbacking 1st trade')
-            trade_a['endpoint'] = '/place/market_order/sell'
-            trade_a['tag'] = 'EXIT'
-            status, _ = send_trade(trade_a)
-            continue
+        # if not status:
+        #     print('rollbacking 1st trade')
+        #     trade_a['endpoint'] = '/place/market_order/sell'
+        #     trade_a['tag'] = 'EXIT'
+        #     status, _ = send_trade(trade_a)
+        #     continue
         
         pair = f'{ticker_a}-{ticker_b}'
         RedisWorker5Dict().insert(pair)

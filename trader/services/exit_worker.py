@@ -7,14 +7,23 @@ import random
 REDIS_SERVER = os.environ['REDIS_HOST']
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 
-
 r_ticker = redis.StrictRedis(host=REDIS_SERVER, port=6379)
 
-TEST_MODE = True
+
+# def second_derivative(arr):
+#     result = list(np.diff(np.diff(arr, 1), 1))
+#     if len(result) >= 2:
+#         return [result.pop(), result.pop()]
+#     else:
+#         return [1,1]
+
+TEST_MODE = False
 
 def main():
     m = defaultdict(int)
     acc = defaultdict(list)
+    acc_drop = defaultdict(int)
+
     iterations = 0
 
     while True:
@@ -30,14 +39,14 @@ def main():
                 count += 1    
             
             entry_price /= count
-            print("Entry_Price", entry_price)
+            # print("Entry_Price", entry_price)
             
             try:
                 ticker_data = json.loads(r_ticker.get(order['instrument_token']))
             except:
                 continue
             
-            print(ticker_data)
+            # print(ticker_data)
 
             try:
                 data = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()
@@ -49,6 +58,8 @@ def main():
             
             # print(ticker_data)
             ltp = ticker_data['last_price']
+
+           
             
             if TEST_MODE:
                 ltp += random.random() * random.choice((1,-1))
@@ -58,11 +69,21 @@ def main():
             acc[ticker].append(cur_accleration)
             prev_acc = None
 
-            if iterations % 7 == 0:
+            if iterations >= 2:
                 acc[ticker] = acc[ticker][len(acc[ticker])-7:]
-                prev_acc = sum(acc[ticker]) / len(acc[ticker])
+                #prev_acc = sum(acc[ticker]) / len(acc[ticker])
+                try:
+                    prev_acc=acc[ticker][-2]
+                except:
+                    prev_acc= cur_accleration
             else:
                 prev_acc = cur_accleration
+
+            
+            if cur_accleration < prev_acc:
+                acc_drop[ticker] += 1
+            else:
+                acc_drop[ticker] = 0
            
             # previous_acc = 0
 
@@ -78,21 +99,29 @@ def main():
             # else:
             #     acc[ticker].append(cur_accleration)
 
+            flag = False
 
+            if acc_drop[ticker] >= 5:
+                flag = True
+                acc_drop[ticker] = 0
 
+            delta_acceleration = ((cur_accleration-prev_acc)/cur_accleration)*100
 
             pnl = ((ltp - entry_price)/ltp) * 100
             print({
                 'entry_price':entry_price,
-                
                 'pnl': pnl,
                 'accleration': cur_accleration,
                 'prev_acc': prev_acc,
-                'ticker': ticker
+                'ticker': ticker,
+                'rsi_slope': rsi_slope,
+                'rsi': rsi,
+                'delta_acc':delta_acceleration,
+                'acc_drop': flag
             })
 
 
-            if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(21, 25) or (cur_accleration > 4*prev_acc):
+            if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(21, 25) or (delta_acceleration <= -2) or flag:
                 # send a exit signal
                 if 'buy' in order['endpoint']:
                     order['endpoint'] = order['endpoint'].replace('buy', 'sell')
@@ -119,7 +148,8 @@ def main():
                     'slope': rsi_slope,
                     'ticker': ticker,
                     'accleration': cur_accleration,
-                    'prev_acc': prev_acc
+                    'prev_acc': prev_acc,
+                    'acc_drop': flag,
                 }
                 print(json.dumps(exit_cond, indent=3))
                 print("-"*(10+17+10))
