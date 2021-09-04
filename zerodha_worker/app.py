@@ -113,6 +113,7 @@ def place_market_buy_order():
             exchange = data['exchange']
             ticker = data['trading_symbol']
             data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+            data['ltp'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
             
             send_notification({
                 'notification': {
@@ -357,7 +358,7 @@ def get_rsi(symbol, n):
         
 
         last_rsi, last_deg =  df_slope.tail(1)['rsi'].values[0], df_slope.tail(1)['slope_deg'].values[0]
-        print("RSI",last_rsi, "& RSI_Slope", last_deg)
+        # print("RSI",last_rsi, "& RSI_Slope", last_deg)
         
         return jsonify({
             'last_rsi':last_rsi, 
