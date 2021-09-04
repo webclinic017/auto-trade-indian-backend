@@ -1,97 +1,181 @@
-from services.function_signals import *
-import os, requests
-import threading
-import time, datetime
-from pymongo import MongoClient
+from interfaces.tradeapp import TradeApp
+import time, json, threading, datetime
+from collections import defaultdict
 
-ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
-REDIS_SERVER = os.environ['REDIS_HOST']
-MONGO_DB_URI = os.environ['MONGO_URI']
-today = str(datetime.date.today())
+
+class Worker4(TradeApp):
+    
+    tickers = ['BANKNIFTY2190936100PE', 'NIFTY2190917250CE']
+    buy_quantity = 1
+    sell_quantity = 1
+    
+    def scalpBuy(self, ticker, data):
+        rsi, slope = self.getRSISlope(ticker)
+        live_data = self.getLiveData(ticker)
+        ltp = live_data['last_price']
+        
+        log = {
+            'rsi': rsi,
+            'slope': slope,
+            'ticker': ticker,
+            'ltp': ltp,
+            'cheaper_option': data['cheaper_option']
+        }
+        
+        print(json.dumps(log, indent=2))
+        if rsi > 40 and slope > 0:
+            trade = self.generateIndexOptionBuyTrade(ticker, self.buy_quantity, 'ENTRY_INDEX')
+            self.sendTrade(trade)
+            return
+    
+    # strategy for entry
+    def entryStrategy(self):
+        while True:
+            latest_nifty = self.getDataIndexTicker('NIFTY')
+            latest_banknifty = self.getDataIndexTicker('BANKNIFTY')
+            
+            if latest_nifty['data'] == 0 or latest_banknifty['data'] == 0:
+                time.sleep(10)
+                continue
+            
+            latest_nifty = latest_nifty['data'].pop()
+            latest_banknifty = latest_banknifty['data'].pop()
+            
+            for ticker in self.tickers:
+                if 'BANKNIFTY' in ticker:
+                    data = latest_banknifty
+                else:
+                    data = latest_nifty
+                threading.Thread(target=self.scalpBuy, args=[ticker, data]).start()
+            
+            time.sleep(310)
+            
+    
+    # strategy for exit
+    def exitStrategy(self):
+        m        = defaultdict(int)
+        acc      = defaultdict(list)
+        acc_drop = defaultdict(int)
+
+        iterations = 0
+
+        while True:
+            orders = self.getAllOrders()
+            
+            for order_ in orders:
+                ticker = order_['ticker']
+                
+                entry_price = 0
+                count = 0
+                
+                for order in order_['data']:
+                    entry_price += order['entry_price']
+                    count += 1    
+                
+                entry_price /= count
+                # print("Entry_Price", entry_price)
+                
+                try:
+                    ticker_data = self.getLiveData(ticker)
+                except:
+                    continue
+                
+                # print(ticker_data)
+
+                try:
+                    rsi, rsi_slope = self.getRSISlope(ticker)
+                except:
+                    rsi = 999
+                    rsi_slope = 999
+                
+                # print(ticker_data)
+                ltp = ticker_data['last_price']
+
+             
+                cur_accleration = (ltp - m[ticker]) / 100
+                # m[ticker] = ltp
+                acc[ticker].append(cur_accleration)
+                prev_acc = None
+
+                if iterations >= 2:
+                    acc[ticker] = acc[ticker][len(acc[ticker])-7:]
+                    #prev_acc = sum(acc[ticker]) / len(acc[ticker])
+                    try:
+                        prev_acc=acc[ticker][-2]
+                    except:
+                        prev_acc= cur_accleration
+                else:
+                    prev_acc = cur_accleration
+
+                
+                if cur_accleration < prev_acc:
+                    acc_drop[ticker] += 1
+                else:
+                    acc_drop[ticker] = 0
+            
+                flag = False
+
+                if acc_drop[ticker] >= 5:
+                    flag = True
+                    acc_drop[ticker] = 0
+
+                delta_acceleration = ((cur_accleration-prev_acc)/cur_accleration)*100
+
+                pnl = ((ltp - entry_price)/ltp) * 100
+                print({
+                    'entry_price':entry_price,
+                    'pnl': pnl,
+                    'accleration': cur_accleration,
+                    'prev_acc': prev_acc,
+                    'ticker': ticker,
+                    'rsi_slope': rsi_slope,
+                    'rsi': rsi,
+                    'delta_acc':delta_acceleration,
+                    'acc_drop': flag
+                })
+
+
+                if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(21, 25) or (delta_acceleration <= -2) or flag:
+                    # send a exit signal
+                    if 'buy' in order['endpoint']:
+                        order['endpoint'] = order['endpoint'].replace('buy', 'sell')
+                        order['price'] = ticker_data['depth']['buy'][1]['price']
+                    else:
+                        order['endpoint'] = order['endpoint'].replace('sell', 'buy')
+                        order['price'] = ticker_data['depth']['sell'][1]['price']
+                    
+                    trade = {
+                        'endpoint': order['endpoint'],
+                        'trading_symbol': order['trading_symbol'],
+                        'exchange': order['exchange'],
+                        'quantity': order['quantity'],
+                        'tag': 'EXIT',
+                        'uri': order['uri'],
+                        'price': order['price']
+                    }
+                    
+                    self.sendTrade(trade)
+                    
+                    self.deleteOrder(ticker)
+                    
+                    print("-"*10 + " EXIT CONDITIONS " + "-"*10)
+                    exit_cond = {
+                        'pnl': pnl,
+                        'rsi': rsi,
+                        'slope': rsi_slope,
+                        'ticker': ticker,
+                        'accleration': cur_accleration,
+                        'prev_acc': prev_acc,
+                        'acc_drop': flag,
+                    }
+                    print(json.dumps(exit_cond, indent=3))
+                    print("-"*(10+17+10))
+                
+            
+            iterations += 1
+            time.sleep(10)
+
 
 def main():
-    os.environ['TZ'] = 'Asia/Kolkata'
-    time.tzset()
-
-    mongo = MongoClient(MONGO_DB_URI)
-    db = mongo['intraday_' + today]
-    collection = db['index_master']
-
-    scalp_buy_investment = int(os.environ['SCALP_BUY_INVESTMENT'])
-    scalp_sell_investment = int(os.environ['SCALP_SELL_INVESTMENT'])
-
-    tickers_buy = ['NIFTY2190917250CE','BANKNIFTY2190937000CE']
-    tickers_sell = []
-
-    buy_quantity_depth = {}
-    sell_quantity_depth = {}
-
-    buy_tickers_quote = list(map(lambda x : f'NFO:{x}', tickers_buy+tickers_sell))
-    quote_buy = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={'tickers':buy_tickers_quote}).json()
-    # print(quote_buy)
-
-    for ticker in tickers_buy + tickers_sell:
-        buy_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['buy_quantity']
-        sell_quantity_depth[ticker] = quote_buy[f'NFO:{ticker}']['sell_quantity']
-
-    n = 310
-    n_min = 15
-
-    try:
-        buy_quantity = int((scalp_buy_investment/len(tickers_buy))/3600/n_min)
-    except:
-        buy_quantity = 0
-    try:
-        sell_quantity = int((scalp_sell_investment/len(tickers_sell))/3600/n_min)
-    except:
-        sell_quantity = 0
-        
-    if buy_quantity < 1:
-        buy_quantity = 100
-    if sell_quantity < 1:
-        sell_quantity = 1
-
-    print('Worker 4 started')
-    print(buy_quantity)
-
-    for ticker in tickers_buy:
-        t = threading.Thread(target=scalp_buy, args=[ticker, buy_quantity, n])
-        print(f"starting thread for {ticker} worker 4 scalp buy")
-        t.start()
-
-    for ticker in tickers_sell:
-        t = threading.Thread(target=scalp_sell, args=[ticker, sell_quantity, n])
-        print(f"starting thread for {ticker} worker 4 scalp sell")
-        t.start()
-        
-    import redis
-    import json
-
-    r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
-    tickers = tickers_buy + tickers_sell
-    tickers = list(map(lambda x : f'NFO:{x}', tickers))
-
-    while True:
-        # pull the latest documents
-        try:
-            latest_doc_nifty = collection.find_one({'ticker': 'NIFTY'}, {"data":{'$slice':-1}})
-            latest_doc_banknifty = collection.find_one({'ticker': 'BANKNIFTY'}, {"data":{'$slice':-1}})
-            latest_doc_banknifty['_id'] = str(latest_doc_banknifty['_id'] )
-            latest_doc_nifty['_id'] = str(latest_doc_banknifty['_id'] )
-        except:
-            time.sleep(n)
-            continue
-
-
-        # def atest_doc_banknifty
-        
-        # print(latest_doc_banknifty)
-        # print(latest_doc_banknifty)
-        
-        ltp = requests.post(f'http://{ZERODHA_SERVER}/get/ltp', json={'tickers': tickers}).json()
-        data = json.dumps({'ltp':ltp, 'nifty':latest_doc_nifty, 'banknifty':latest_doc_banknifty})
-        r.publish('positions', data)
-        time.sleep(n)
-
-
-      
+    app = Worker4(name='worker_4')
+    app.start()
