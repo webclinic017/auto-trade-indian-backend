@@ -17,7 +17,6 @@ def main(expiry_date):
     channel = connection.channel()
     channel.queue_declare(queue='trader_index')
     channel.queue_declare(queue='compare_index')
-    channel.queue_declare(queue='worker_5_index')
     
 
     def callback(ch, method, properties, body):
@@ -45,19 +44,6 @@ def main(expiry_date):
         else:
             print("[*] Need 2 documents to compare")
     
-            
-        doc = collection.find_one(
-            {'ticker':ticker}, {"data":{"$slice":-1}}
-        )
-        
-        doc["_id"] = str(doc["_id"])
-        
-        channel.basic_publish(
-            exchange='',
-            routing_key='worker_5_index',
-            body=json.dumps(doc).encode()
-        )
-        print('[*] Latest document send to worker 5')
 
     channel.basic_consume(
         queue='trader_index', on_message_callback=callback, auto_ack=True)
