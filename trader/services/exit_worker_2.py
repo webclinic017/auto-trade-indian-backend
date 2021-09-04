@@ -12,7 +12,7 @@ def main():
         orders = RedisOrderDictonary().get_all()
         ticker_pairs = RedisWorker5Dict().get_all()
         
-        print(ticker_pairs)
+        # print(ticker_pairs)
         
         for ticker_pair in ticker_pairs:
             ticker_a, ticker_b = ticker_pair.split("-")
@@ -55,7 +55,7 @@ def main():
                 ltp = ticker_data_b['last_price']
                 pnl[ticker_b] = ((ltp-entry_price)/ltp)*100
                 
-                
+            print(pnl)
             if ticker_a in pnl and ticker_b in pnl:
                 if pnl[ticker_a] + pnl[ticker_b] >= 4:
                     
