@@ -1,5 +1,6 @@
 import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
+import pandas as pd
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
@@ -59,6 +60,18 @@ class TradeApp:
         data = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()
         return data['last_rsi'], data['last_slope']
     
+    # historical data
+    def getHistoricalData(self, ticker, fdate, tdate, interval):
+        token = self.token_map[ticker]['instrument_token']
+        data = requests.post(f'http://{ZERODHA_SERVER}/get/historical_data', json={
+            'fdate': fdate,
+            'tdate': tdate,
+            'tocker': token,
+            'interval': interval
+        }).json()
+
+        return pd.DataFrame(data)
+
     # generate the trade dictonary for index options buy
     def generateIndexOptionBuyTrade(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker)
@@ -86,7 +99,37 @@ class TradeApp:
             'entry_price': live_data['last_price']
         }
         return trade
+
+    # generate trade dictonary for limit order
+    def generateLimitBuyIndexOptionTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/buy',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'uri': PUBLISHER_URI_INDEX_OPT,
+            'entry_price': live_data['last_price'],
+            'price': live_data['depth']['sell'][1]['price']
+        }
+        return trade
     
+    # for exit trade
+    def generateLimitSellIndexOptionTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/sell',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'uri': PUBLISHER_URI_INDEX_OPT,
+            'entry_price': live_data['last_price'],
+            'price': live_data['depth']['buy'][1]['price']
+        }
+        return trade
+
     # function to send the trade
     def sendTrade(self, trade):
         if datetime.datetime.now().time() >= datetime.time(18, 00):
@@ -101,7 +144,24 @@ class TradeApp:
         
         return status, data
     
+
+    # function for average entry price
+    def averageEntryprice(self, orders):
+        total = 0
+        count = 0
+
+        for order in orders:
+            total += order['entry_price']
+            count += 1
+
+        return total/count
     
+    # function ffor pnl
+    def getPnl(self, entry_price,live_price):
+        pnl=((live_price-entry_price)/entry_price)*100
+        return pnl
+
+
     # method for the entry condition
     def entryStrategy(self):
         '''override this method'''
