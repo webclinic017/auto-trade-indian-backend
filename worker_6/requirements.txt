@@ -1,4 +1,0 @@
-pika
-requests
-pymongo
-dnspython

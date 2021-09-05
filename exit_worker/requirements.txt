@@ -1,5 +1,0 @@
-requests
-websocket-client
-pika
-flask
-redis
