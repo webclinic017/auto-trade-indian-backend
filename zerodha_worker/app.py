@@ -11,6 +11,13 @@ import numpy as np
 import statsmodels.api as sm
 
 
+# send_notification({
+#     'notification': {
+#         'title': 'ORDER PLACED HEDGE',
+#         'body': json_data['trading_symbol'],
+#     },
+#     'trade': json_data 
+# }, json_data['uri'])
 
 def send_notification(data, uri):
     try:
@@ -41,10 +48,20 @@ for instrument in instruments:
     token_map[instrument['tradingsymbol']] = instrument
 
 
+EXIT_SERVER = os.environ['ORDERS_HOST']
 # print(token_map[instrument['tradingsymbol']])
 
 # start the flask server
 app = Flask(__name__)
+
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
+# root url for checking the connection
+@app.route('/')
+def index():
+    return '', 200
 
 @app.route('/get_api_key_token')
 def get_api_key_token():
@@ -80,18 +97,40 @@ def place_market_buy_order():
     try:
         validate_market_api(data)
 
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = market_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            # tag = data.get('tag', None)
+            # order_id = market_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            
+            live_price = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+            
+            data['entry_price'] = live_price
+            data['ltp'] = live_price
+            
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
+            
+            # requests.post(f'http://{EXIT_SERVER}/receive_order',json=data)
+            
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order is placed'
             }), 200
         except Exception as ex: 
             return jsonify({
@@ -110,18 +149,34 @@ def place_market_sell_order():
     try:
         validate_market_api(data)
         
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            # tag = data.get('tag', None)
+            # order_id = market_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+             
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
+            # requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order id is placed'
             }), 200
         except Exception as ex: 
             print(ex)
@@ -143,18 +198,35 @@ def place_limit_buy_order():
     try:
         validate_limit_api(data)
         
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            # tag = data.get('tag', None)
+            # order_id = limit_buy_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+            
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
+            # requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order is placed'
             }), 200
         except Exception as ex:
             print(ex)
@@ -175,18 +247,36 @@ def place_limit_sell_order():
     try:
         validate_limit_api(data)
         
-        if data['exchange'] == 'NFO':
-            exchange = kite.EXCHANGE_NFO
-        elif data['exchange'] == 'NSE':
-            exchange = kite.EXCHANGE_NSE
-        else:
-            raise Exception('enter a valid exchange, NSE or NFO')
+        # if data['exchange'] == 'NFO':
+        #     exchange = kite.EXCHANGE_NFO
+        # elif data['exchange'] == 'NSE':
+        #     exchange = kite.EXCHANGE_NSE
+        # else:
+        #     raise Exception('enter a valid exchange, NSE or NFO')
         
         try:
-            tag = data.get('tag', None)
-            order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            # tag = data.get('tag', None)
+            # order_id = limit_sell_order(kite, data['trading_symbol'], exchange, data['quantity'], data['price'], tag)
+            
+            token = token_map[data['trading_symbol']]['instrument_token']
+            data['instrument_token'] = token
+            exchange = data['exchange']
+            ticker = data['trading_symbol']
+            data['entry_price'] = kite.ltp(f'{exchange}:{ticker}')[f'{exchange}:{ticker}']['last_price']
+            
+            send_notification({
+                'notification': {
+                    'title': 'ORDER PLACED HEDGE',
+                    'body': data['trading_symbol'],
+                },
+                'trade': data 
+            }, data['uri'])
+            
+            
+            # requests.post(f'http://{EXIT_SERVER}/receive_order', json=data)
+            
             return jsonify({
-                'message': f'order id is {order_id}'
+                'message': f'order is placed'
             }), 200
         except Exception as ex: 
             print(ex)
@@ -269,7 +359,7 @@ def get_rsi(symbol, n):
         
 
         last_rsi, last_deg =  df_slope.tail(1)['rsi'].values[0], df_slope.tail(1)['slope_deg'].values[0]
-        print("RSI",last_rsi, "& RSI_Slope", last_deg)
+        # print("RSI",last_rsi, "& RSI_Slope", last_deg)
         
         return jsonify({
             'last_rsi':last_rsi, 
@@ -289,7 +379,8 @@ def get_quote():
     try:
         quote = kite.quote(data)
         return jsonify(quote)
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({})
 
 # get ltp
@@ -318,7 +409,7 @@ def compare_results():
 def generate_data():
     data = request.get_json()
     json_data = data['data']
-    expiry = data['expiry_date']
+    expiry = data['expiry']
     data = gen_data(json_data, expiry)
     return jsonify(data)
 
@@ -451,39 +542,6 @@ def slope(symbol, n):
         'slope':slope,
         'trend':trend
     })
-
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='rabbit_mq_index')
-)
-channel = connection.channel()
-result = channel.queue_declare(queue='zerodha_worker')
-
-def callback(ch, method, properties, body):
-    print('[**] ORDER RECEIVED [**]')
-    json_data = json.loads(body.decode('utf-8')) # the trade object is received here
-    end_point = json_data['endpoint']
-    response = json.dumps(requests.post('http://zerodha_worker_index' + end_point, json=json_data).json(), indent=2)
-    
-    # send notification to frontend
-    send_notification({
-        'notification': {
-            'title': 'ORDER PLACED HEDGE',
-            'body': json_data['trading_symbol'],
-        },
-        'trade': json_data 
-    }, json_data['uri'])
-    
-    print(f'RESPONSE : {response}')
-    print('ORDER')
-    print(json.dumps(json_data, indent=2))
-    
-
-
-channel.basic_consume(queue='zerodha_worker', on_message_callback=callback, auto_ack=True)
-print('WAITING FOR ORDERS')
-
-t = threading.Thread(target=channel.start_consuming)
-t.start()
 
 
 if __name__ == '__main__':
