@@ -31,6 +31,7 @@ from services.live_data import main as live_data_main
 
 # for the index
 from services.index.worker_4 import main as main_wk4_index
+from services.index.worker_6 import main as main_wk6_index
 # from services.index.worker_5 import main as main_wk5
 from services.index.scraper import main as main_scraper_index
 from services.index.calculator import main as main_calculator_index
@@ -81,12 +82,13 @@ services_index = [
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
+    {'name':'worker_6_index', 'script':main_wk6_index, 'args':[]},
 ]
 
 # for stock trading
 services_stocks = [
-    {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
-    {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
+    # {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
+    # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},

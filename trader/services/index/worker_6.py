@@ -1,0 +1,110 @@
+from interfaces.tradeapp import TradeApp
+import datetime, time, json
+
+class Worker6(TradeApp):
+
+    tickers = []
+    quantity = 1
+
+    entered_tickers = set()
+    ohlc_ticker = {}
+
+    def entryStrategy(self):
+        # logic for entry
+        while True:
+            now = datetime.datetime.now().time()
+            if now >= datetime.time(9, 30):
+                
+                for ticker in self.ticker:
+
+                    live_data = self.getLiveData(ticker)
+                    
+                    if ticker not in self.ohlc_ticker:
+                        self.ohlc_ticker[ticker] = {
+                            'ohlc': live_data['ohlc'],
+                            'high': live_data['ohlc']['high'],
+                            'low':  live_data['ohlc']['low']
+                        }
+
+                    ohlc = self.ohlc_ticker['ohlc']
+                    high = self.ohlc_ticker['high']
+                    low = self.ohlc_ticker['low']
+
+                    current_price = live_data['last_price']
+
+                    if current_price > high and ticker not in self.entered_tickers:
+                        if 'CE' in ticker:
+                            # buy the ticker
+                            entry_conditions = {
+                                'ohlc': ohlc,
+                                'current_price': current_price 
+                            }
+
+                            print(json.dumps(entry_conditions, indent=2))
+                            trade = self.generateLimitBuyIndexOptionTrade(ticker, self.quantity, 'ENTRY_INDEX')
+                            self.sendTrade(trade)
+                            self.entered_tickers.add(ticker)
+                    elif current_price < low and ticker not in self.entered_tickers:
+                        if 'PE' in ticker:
+                            # buy the ticker
+                            entry_conditions = {
+                                'ohlc': ohlc,
+                                'current_price': current_price 
+                            }
+
+                            print(json.dumps(entry_conditions, indent=2))
+                            trade = self.generateLimitBuyIndexOptionTrade(ticker, self.quantity, 'ENTRY_INDEX')
+                            self.sendTrade(trade)
+                            self.entered_tickers.add(ticker)
+            else:
+                break
+
+            time.sleep(300)
+
+    def exitStrategy(self):
+        while True:
+            orders = self.getAllOrders()
+            for order_ in orders:
+                ticker = order_['ticker']
+                live_data = self.getLiveData(ticker)
+
+                orders_list = order_['data']
+                entry_price = self.averageEntryprice(orders_list)
+                pnl = self.getPnl(entry_price, live_data['last_price'])
+
+
+
+                if 'CE' in ticker:
+                    ohlc = live_data['ohlc']
+                    low = ohlc['low']
+                    current_price = live_data['last_price']
+
+                    exit_contitions = {
+                        'ohlc': ohlc,
+                        'current_price': current_price
+                    }
+                    print(json.dumps(exit_contitions, indent=2))
+                        
+                    if current_price < low or pnl>=5:
+                        trade = self.generateLimitSellIndexOptionTrade(ticker, self.quantity, 'EXIT')
+                        self.sendTrade(trade)
+                        self.deleteOrder(ticker)
+                        self.entered_tickers.remove(ticker)
+                elif 'PE' in ticker or pnl>=5:
+                    ohlc = live_data['ohlc']
+                    high = ohlc['high']
+                    current_price = live_data['last_price']
+                    
+                    if current_price > high:
+                        trade = self.generateLimitSellIndexOptionTrade(ticker, self.quantity, 'EXIT')
+                        self.sendTrade(trade)
+                        self.deleteOrder(ticker)
+                        self.entered_tickers.remove(ticker)
+            
+            time.sleep(10)
+            
+
+
+def main():
+    app = Worker6(name='worker_6')
+    app.start()

@@ -5,3 +5,4 @@ pymongo
 websocket-client
 flask
 redis
+pandas
