@@ -51,8 +51,8 @@ class Worker5(TradeApp):
                 for pair in pairs:
                     ticker_a, ticker_b = pair
                        
-                    trade_a = self.generateIndexOptionBuyTrade(ticker_a, self.quantity, 'ENTRY_INDEX')
-                    trade_b = self.generateIndexOptionBuyTrade(ticker_b, self.quantity, 'ENTRY_INDEX')
+                    trade_a = self.generateMarketOrderBuyIndexOption(ticker_a, self.quantity, 'ENTRY_INDEX')
+                    trade_b = self.generateMarketOrderBuyIndexOption(ticker_b, self.quantity, 'ENTRY_INDEX')
                     
                     self.sendTrade(trade_a)
                     self.sendTrade(trade_b)
@@ -92,8 +92,8 @@ class Worker5(TradeApp):
                 pnl_b = (live_b['last_price'] - entry_b) / live_b['last_price']
                 
                 if pnl_a + pnl_b >= 4:
-                    trade_a = self.generateIndexOptionSellTrade(ticker_a, self.quantity, 'EXIT')
-                    trade_b = self.generateIndexOptionSellTrade(ticker_b, self.quantity, 'EXIT')
+                    trade_a = self.generateMarketOrderSellIndexOption(ticker_a, self.quantity, 'EXIT')
+                    trade_b = self.generateMarketOrderSellIndexOption(ticker_b, self.quantity, 'EXIT')
                     
                     self.sendTrade(trade_a)
                     self.sendTrade(trade_b)

@@ -24,7 +24,7 @@ class Worker4(TradeApp):
         
         print(json.dumps(log, indent=2))
         if rsi > 40 and slope > 0:
-            trade = self.generateIndexOptionBuyTrade(ticker, self.buy_quantity, 'ENTRY_INDEX')
+            trade = self.generateMarketOrderBuyIndexOption(ticker, self.buy_quantity, 'ENTRY_INDEX')
             self.sendTrade(trade)
             return
     

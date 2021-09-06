@@ -24,19 +24,19 @@ class Worker4(TradeApp):
             if now > datetime.time(9, 15):
                 # stock options
                 for ticker in self.tickers_stock_option:
-                    trade = self.generateLimitBuyStockOptionTrade(ticker, 'ENTRY_STOCK_OPT')
+                    trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK_OPT')
                     t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
                     t.start()
                 
                 # stocks
                 for ticker in self.tickers_stock:
-                    trade = self.generateLimitBuyStockTrade(ticker, self.quantity, 'ENTRY_STOCK')
+                    trade = self.generateLimitOrderBuyStock(ticker, self.quantity, 'ENTRY_STOCK')
                     t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
                     t.start()
                 
                 # stock futures
                 for ticker in self.tickers_stock_fut:
-                    trade = self.generateLimitBuyStockFutTrade(ticker, 'ENTRY_STOCK_FUT')
+                    trade = self.generateLimitOrderBuyStockFuture(ticker, 'ENTRY_STOCK_FUT')
                     t = threading.Thread(target=self.scalpBuy, args=[ticker,trade])
                     t.start()
             
