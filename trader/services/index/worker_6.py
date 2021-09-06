@@ -3,7 +3,7 @@ import datetime, time, json
 
 class Worker6(TradeApp):
 
-    tickers = []
+    tickers = ['RELIANCE21SEP2460CE','HINDALCO21SEP470CE','TATASTEEL21SEP1420PE','ASIANPAINT21SEP3300PE']
     quantity = 1
 
     entered_tickers = set()

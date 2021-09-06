@@ -82,7 +82,7 @@ services_index = [
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
-    {'name':'worker_6_index', 'script':main_wk6_index, 'args':[]},
+    # {'name':'worker_6_index', 'script':main_wk6_index, 'args':[]},
 ]
 
 # for stock trading
