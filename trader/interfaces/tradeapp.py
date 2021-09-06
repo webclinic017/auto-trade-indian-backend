@@ -4,6 +4,8 @@ import pandas as pd
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
+PUBLISHER_URI_STOCK_OPT = os.environ['PUBLISHER_URI_STOCK_OPT']
+
 
 class TradeApp:
     
@@ -129,6 +131,38 @@ class TradeApp:
             'price': live_data['depth']['buy'][1]['price']
         }
         return trade
+    
+    # limit order for stock options
+    def generateLimitBuyStockOptionTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/buy',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'price': live_data['depth']['sell'][1]['price'],
+            'uri': PUBLISHER_URI_STOCK_OPT,
+            'ltp': live_data['last_price'],
+            'entry_price': live_data['last_price']
+        }
+        return trade
+    
+    def generateLimitSellStockOptionTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/sell',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'price': live_data['depth']['sell'][1]['price'],
+            'uri': PUBLISHER_URI_STOCK_OPT,
+            'ltp': live_data['last_price'],
+            'entry_price': live_data['last_price']
+        }
+        return trade
+        
 
     # function to send the trade
     def sendTrade(self, trade):
