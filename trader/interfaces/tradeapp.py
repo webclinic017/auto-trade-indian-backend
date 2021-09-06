@@ -21,6 +21,9 @@ class TradeApp:
         self.orders_db = self.mongo['orders_' + str(date)]
         self.orders_collection = self.orders_db[self.name]
         
+        # this step is to clear all the database orders at the initialization step
+        self.orders_collection.delete_many({})
+        
         # database for index
         self.data_db = self.mongo['intraday_' + str(date)]
         self.index_collection = self.data_db['index_master']
