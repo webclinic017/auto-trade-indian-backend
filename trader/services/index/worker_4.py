@@ -5,7 +5,7 @@ from collections import defaultdict
 
 class Worker4(TradeApp):
     
-    tickers = ['BANKNIFTY2190936100PE', 'NIFTY2190917250CE']
+    tickers = ["BANKNIFTY2190936800PE","BANKNIFTY2190936900CE" ,"NIFTY2190917400CE","NIFTY2190917300PE"]
     buy_quantity = 1
     sell_quantity = 1
     
@@ -119,7 +119,7 @@ class Worker4(TradeApp):
                     flag = True
                     acc_drop[ticker] = 0
 
-                delta_acceleration = ((cur_accleration-prev_acc)/cur_accleration)*100
+                delta_acceleration = ((cur_accleration-prev_acc)/prev_acc)*100
 
                 pnl = ((ltp - entry_price)/ltp) * 100
                 print({
@@ -131,7 +131,8 @@ class Worker4(TradeApp):
                     'rsi_slope': rsi_slope,
                     'rsi': rsi,
                     'delta_acc':delta_acceleration,
-                    'acc_drop': flag
+                    'acc_drop': flag,
+                    'acc_drop_count':acc_drop[ticker]
                 })
 
 
@@ -166,7 +167,9 @@ class Worker4(TradeApp):
                         'ticker': ticker,
                         'accleration': cur_accleration,
                         'prev_acc': prev_acc,
+                        'delta_acc':delta_acceleration,
                         'acc_drop': flag,
+                        'acc_drop_count':acc_drop[ticker]
                     }
                     print(json.dumps(exit_cond, indent=3))
                     print("-"*(10+17+10))
