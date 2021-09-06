@@ -47,32 +47,15 @@ class Worker6(TradeApp):
                     current_price = live_data['last_price']
 
                     if current_price > high and ticker not in self.entered_tickers:
-                        if 'CE' in ticker:
-                            # buy the ticker
-                            entry_conditions = {
-                                'ohlc': ohlc,
-                                'current_price': current_price 
-                            }
+                        entry_conditions = {
+                            'ohlc': ohlc,
+                            'current_price': current_price 
+                        }
 
-                            print(json.dumps(entry_conditions, indent=2))
-                            trade = self.generateLimitBuyStockOptionTrade(ticker, self.quantity, 'ENTRY_STOCK_OPT')
-                            self.sendTrade(trade)
-                            self.entered_tickers.add(ticker)
-                    elif current_price < low and ticker not in self.entered_tickers:
-                        if 'PE' in ticker:
-                            # buy the ticker
-                            entry_conditions = {
-                                'ohlc': ohlc,
-                                'current_price': current_price,
-                                'ticker': ticker,
-                            }
-
-                            print(json.dumps(entry_conditions, indent=2))
-                            trade = self.generateLimitBuyStockOptionTrade(ticker, self.quantity, 'ENTRY_STOCK_OPT')
-                            self.sendTrade(trade)
-                            self.entered_tickers.add(ticker)
-            else:
-                break
+                        print(json.dumps(entry_conditions, indent=2))
+                        trade = self.generateLimitBuyStockOptionTrade(ticker, 'ENTRY_STOCK_OPT')
+                        self.sendTrade(trade)
+                        self.entered_tickers.add(ticker)
 
             time.sleep(300)
 
@@ -89,7 +72,7 @@ class Worker6(TradeApp):
                     live_data = self.getLiveData(ticker)
                 except:
                     continue
-                
+
                 current_price = live_data['last_price']
 
                 orders_list = order_['data']
@@ -103,26 +86,26 @@ class Worker6(TradeApp):
                 }
                 print(json.dumps(exit_contitions, indent=2))
 
-                if 'CE' in ticker:
-                    ohlc = live_data['ohlc']
-                    low = ohlc['low']
-                    current_price = live_data['last_price']
+                # if 'CE' in ticker:
+                ohlc = live_data['ohlc']
+                low = ohlc['low']
+                current_price = live_data['last_price']
 
-                    if current_price < low or pnl>=5:
-                        trade = self.generateLimitSellStockOptionTrade(ticker, self.quantity, 'EXIT')
-                        self.sendTrade(trade)
-                        self.deleteOrder(ticker)
-                        self.entered_tickers.remove(ticker)
-                elif 'PE' in ticker or pnl>=5:
-                    ohlc = live_data['ohlc']
-                    high = ohlc['high']
-                    current_price = live_data['last_price']
+                if current_price < low or pnl>=5:
+                    trade = self.generateLimitSellStockOptionTrade(ticker, 'EXIT')
+                    self.sendTrade(trade)
+                    self.deleteOrder(ticker)
+                    self.entered_tickers.remove(ticker)
+                # elif 'PE' in ticker or pnl>=5:
+                #     ohlc = live_data['ohlc']
+                #     high = ohlc['high']
+                #     current_price = live_data['last_price']
                     
-                    if current_price > high:
-                        trade = self.generateLimitSellStockOptionTrade(ticker, self.quantity, 'EXIT')
-                        self.sendTrade(trade)
-                        self.deleteOrder(ticker)
-                        self.entered_tickers.remove(ticker)
+                #     if current_price > high:
+                #         trade = self.generateLimitSellStockOptionTrade(ticker, 'EXIT')
+                #         self.sendTrade(trade)
+                #         self.deleteOrder(ticker)
+                #         self.entered_tickers.remove(ticker)
             
             time.sleep(10)
             
