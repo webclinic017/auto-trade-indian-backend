@@ -5,6 +5,8 @@ import pandas as pd
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
 PUBLISHER_URI_STOCK_OPT = os.environ['PUBLISHER_URI_STOCK_OPT']
+PUBLISHER_URI_STOCKS = os.environ['PUBLISHER_URI_STOCKS']
+PUBLISHER_URI_STOCK_FUT = os.environ['PUBLISHER_URI_STOCK_FUT']
 
 
 class TradeApp:
@@ -163,6 +165,67 @@ class TradeApp:
         }
         return trade
         
+    # limit order for stock
+    def generateLimitBuyStockTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/buy',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'price': live_data['depth']['sell'][1]['price'],
+            'uri': PUBLISHER_URI_STOCKS,
+            'ltp': live_data['last_price'],
+            'entry_price': live_data['last_price']
+        }
+        return trade
+    
+    def generateLimitSellStockTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/sell',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'price': live_data['depth']['sell'][1]['price'],
+            'uri': PUBLISHER_URI_STOCKS,
+            'ltp': live_data['last_price'],
+            'entry_price': live_data['last_price']
+        }
+        return trade
+    
+    # limit order for stock futures
+    def generateLimitBuyStockFutTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/buy',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'price': live_data['depth']['sell'][1]['price'],
+            'uri': PUBLISHER_URI_STOCK_FUT,
+            'ltp': live_data['last_price'],
+            'entry_price': live_data['last_price']
+        }
+        return trade
+    
+    def generateLimitSellStockFutTrade(self, ticker, quantity, tag):
+        live_data = self.getLiveData(ticker)
+        trade = {
+            'endpoint': '/place/limit_order/sell',
+            'trading_symbol': ticker,
+            'exchange': 'NFO',
+            'quantity': quantity,
+            'tag': tag,
+            'price': live_data['depth']['sell'][1]['price'],
+            'uri': PUBLISHER_URI_STOCK_FUT,
+            'ltp': live_data['last_price'],
+            'entry_price': live_data['last_price']
+        }
+        return trade
 
     # function to send the trade
     def sendTrade(self, trade):

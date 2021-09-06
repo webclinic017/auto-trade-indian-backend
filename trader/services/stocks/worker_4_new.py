@@ -1,55 +1,46 @@
 from interfaces.tradeapp import TradeApp
-import time, json, threading, datetime
+import threading, time, datetime, json
 from collections import defaultdict
-
 
 class Worker4(TradeApp):
     
-    tickers = ["BANKNIFTY2190936800PE","BANKNIFTY2190936900CE" ,"NIFTY2190917400CE","NIFTY2190917300PE"]
-    buy_quantity = 1
-    sell_quantity = 1
+    tickers_stock = []
+    tickers_stock_option = []
+    tickers_stock_fut = []
     
-    def scalpBuy(self, ticker, data):
+    quantity = 1
+    
+    def scalpBuy(self, ticker, trade):
         rsi, slope = self.getRSISlope(ticker)
-        live_data = self.getLiveData(ticker)
-        ltp = live_data['last_price']
-        
-        log = {
-            'rsi': rsi,
-            'slope': slope,
-            'ticker': ticker,
-            'ltp': ltp,
-            'cheaper_option': data['cheaper_option']
-        }
-        
-        print(json.dumps(log, indent=2))
         if rsi > 40 and slope > 0:
-            trade = self.generateIndexOptionBuyTrade(ticker, self.buy_quantity, 'ENTRY_INDEX')
             self.sendTrade(trade)
-            return
     
-    # strategy for entry
+    
+    # entry logic
     def entryStrategy(self):
         while True:
-            latest_nifty = self.getDataIndexTicker('NIFTY')
-            latest_banknifty = self.getDataIndexTicker('BANKNIFTY')
+            now = datetime.datetime.now().time()
             
-            if latest_nifty['data'] == 0 or latest_banknifty['data'] == 0:
-                time.sleep(10)
-                continue
+            if now > datetime.time(9, 15):
+                # stock options
+                for ticker in self.tickers_stock_option:
+                    trade = self.generateLimitBuyStockOptionTrade(ticker, self.quantity, 'ENTRY_STOCK_OPT')
+                    t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
+                    t.start()
+                
+                # stocks
+                for ticker in self.tickers_stock:
+                    trade = self.generateLimitBuyStockTrade(ticker, self.quantity, 'ENTRY_STOCK')
+                    t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
+                    t.start()
+                
+                # stock futures
+                for ticker in self.tickers_stock_fut:
+                    trade = self.generateLimitBuyStockFutTrade(ticker, self.quantity, 'ENTRY_STOCK_FUT')
+                    t = threading.Thread(target=self.scalpBuy, args=[ticker,trade])
+                    t.start()
             
-            latest_nifty = latest_nifty['data'].pop()
-            latest_banknifty = latest_banknifty['data'].pop()
-            
-            for ticker in self.tickers:
-                if 'BANKNIFTY' in ticker:
-                    data = latest_banknifty
-                else:
-                    data = latest_nifty
-                threading.Thread(target=self.scalpBuy, args=[ticker, data]).start()
-            
-            time.sleep(310)
-            
+            time.sleep(300)
     
     # strategy for exit
     def exitStrategy(self):
@@ -180,5 +171,6 @@ class Worker4(TradeApp):
 
 
 def main():
-    app = Worker4(name='worker_4_index')
-    app.start()
+    app = Worker4(name='worker_4_stock')
+    app.run()
+    
