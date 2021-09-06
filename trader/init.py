@@ -26,12 +26,10 @@ print('services are up running ...')
 
 # import the object with aliase name Process
 from threading import Thread as Process # <-- change the type of process here to threading.Thread or multiprocess.Process
-from services.exit_worker_2 import main as main_exit2
 from services.live_data import main as live_data_main
 
 # for the index
 from services.index.worker_4 import main as main_wk4_index
-from services.index.worker_6 import main as main_wk6_index
 # from services.index.worker_5 import main as main_wk5
 from services.index.scraper import main as main_scraper_index
 from services.index.calculator import main as main_calculator_index
