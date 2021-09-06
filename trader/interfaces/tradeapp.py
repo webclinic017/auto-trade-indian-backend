@@ -137,13 +137,13 @@ class TradeApp:
         return trade
     
     # limit order for stock options
-    def generateLimitBuyStockOptionTrade(self, ticker, quantity, tag):
+    def generateLimitBuyStockOptionTrade(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
             'exchange': 'NFO',
-            'quantity': quantity,
+            'quantity': self.token_map[ticker]['lot_size'],
             'tag': tag,
             'price': live_data['depth']['sell'][1]['price'],
             'uri': PUBLISHER_URI_STOCK_OPT,
@@ -152,13 +152,13 @@ class TradeApp:
         }
         return trade
     
-    def generateLimitSellStockOptionTrade(self, ticker, quantity, tag):
+    def generateLimitSellStockOptionTrade(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
             'exchange': 'NFO',
-            'quantity': quantity,
+            'quantity': self.token_map[ticker]['lot_size'],
             'tag': tag,
             'price': live_data['depth']['sell'][1]['price'],
             'uri': PUBLISHER_URI_STOCK_OPT,
@@ -199,13 +199,13 @@ class TradeApp:
         return trade
     
     # limit order for stock futures
-    def generateLimitBuyStockFutTrade(self, ticker, quantity, tag):
+    def generateLimitBuyStockFutTrade(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
             'exchange': 'NFO',
-            'quantity': quantity,
+            'quantity': self.token_map[ticker]['lot_size'],
             'tag': tag,
             'price': live_data['depth']['sell'][1]['price'],
             'uri': PUBLISHER_URI_STOCK_FUT,
@@ -214,13 +214,13 @@ class TradeApp:
         }
         return trade
     
-    def generateLimitSellStockFutTrade(self, ticker, quantity, tag):
+    def generateLimitSellStockFutTrade(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
             'exchange': 'NFO',
-            'quantity': quantity,
+            'quantity': self.token_map[ticker]['lot_size'],
             'tag': tag,
             'price': live_data['depth']['sell'][1]['price'],
             'uri': PUBLISHER_URI_STOCK_FUT,
