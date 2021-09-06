@@ -38,8 +38,7 @@ class Worker6(TradeApp):
                         }
                     
                     self.ohlc_ticker[ticker]['current_price'] = live_data['last_price']
-                    print(self.ohlc_ticker[ticker])
-
+                    
                     ohlc = self.ohlc_ticker[ticker]['ohlc']
                     high = self.ohlc_ticker[ticker]['high']
                     low = self.ohlc_ticker[ticker]['low']
@@ -52,7 +51,10 @@ class Worker6(TradeApp):
                             'current_price': current_price 
                         }
 
+                        print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         print(json.dumps(entry_conditions, indent=2))
+                        print('-'*10 + 'ENTRY CONDITION' + '-'*10)
+                        
                         trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK_OPT')
                         self.sendTrade(trade)
                         self.entered_tickers.add(ticker)
@@ -79,10 +81,15 @@ class Worker6(TradeApp):
                 entry_price = self.averageEntryprice(orders_list)
                 pnl = self.getPnl(entry_price, live_data['last_price'])
 
-
+                
                 exit_contitions = {
-                    'ohlc': self.ohlc_ticker[ticker]['ohlc'],
-                    'current_price': current_price
+                    'open': live_data['ohlc']['open'],
+                    'high': live_data['ohlc']['high'],
+                    'low': live_data['ohlc']['low'],
+                    'close': live_data['ohlc']['close'],
+                    'current_price': current_price,
+                    'ohlc_start': self.ohlc_ticker[ticker]['ohlc'],
+                    'pnl': pnl
                 }
                 print(json.dumps(exit_contitions, indent=2))
 
@@ -91,16 +98,20 @@ class Worker6(TradeApp):
                 low = ohlc['low']
                 current_price = live_data['last_price']
 
-                if current_price < low or pnl>=5:
+                if current_price < low or pnl >= 5:
                     trade = self.generateLimitOrderSellStockOption(ticker, 'EXIT')
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
                     self.entered_tickers.remove(ticker)
+                    
+                    print('-'*10 + 'EXIT CONDITION' + '-'*10)
+                    print(json.dumps(exit_contitions, indent=2))
+                    print('-'*10 + 'EXIT CONDITION' + '-'*10)
             
             time.sleep(10)
             
 
 
 def main():
-    app = Worker6(name='worker_6')
+    app = Worker6(name='worker_6_stock')
     app.start()

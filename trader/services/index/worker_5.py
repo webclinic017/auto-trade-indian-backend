@@ -101,5 +101,5 @@ class Worker5(TradeApp):
             time.sleep(5)
 
 def main():
-    app = Worker5('worker_5')
+    app = Worker5('worker_5_index')
     app.start()
