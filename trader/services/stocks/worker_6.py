@@ -53,7 +53,7 @@ class Worker6(TradeApp):
                         }
 
                         print(json.dumps(entry_conditions, indent=2))
-                        trade = self.generateLimitBuyStockOptionTrade(ticker, 'ENTRY_STOCK_OPT')
+                        trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK_OPT')
                         self.sendTrade(trade)
                         self.entered_tickers.add(ticker)
 
@@ -92,20 +92,10 @@ class Worker6(TradeApp):
                 current_price = live_data['last_price']
 
                 if current_price < low or pnl>=5:
-                    trade = self.generateLimitSellStockOptionTrade(ticker, 'EXIT')
+                    trade = self.generateLimitOrderSellStockOption(ticker, 'EXIT')
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
                     self.entered_tickers.remove(ticker)
-                # elif 'PE' in ticker or pnl>=5:
-                #     ohlc = live_data['ohlc']
-                #     high = ohlc['high']
-                #     current_price = live_data['last_price']
-                    
-                #     if current_price > high:
-                #         trade = self.generateLimitSellStockOptionTrade(ticker, 'EXIT')
-                #         self.sendTrade(trade)
-                #         self.deleteOrder(ticker)
-                #         self.entered_tickers.remove(ticker)
             
             time.sleep(10)
             

@@ -78,8 +78,8 @@ class TradeApp:
         df['date'] = pd.to_datetime(df['date'])
         return df
 
-    # generate the trade dictonary for index options buy
-    def generateIndexOptionBuyTrade(self, ticker, quantity, tag):
+    # market order buy for index option
+    def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/market_order/buy',
@@ -92,8 +92,8 @@ class TradeApp:
         }
         return trade
 
-    # generate the trade dictonary for index option sell
-    def generateIndexOptionSellTrade(self, ticker, quantity, tag):
+    # market order sell for index option
+    def generateMarketOrderSellIndexOption(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/market_order/sell',
@@ -106,38 +106,9 @@ class TradeApp:
         }
         return trade
 
-    # generate trade dictonary for limit order
-    def generateLimitBuyIndexOptionTrade(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
-        trade = {
-            'endpoint': '/place/limit_order/buy',
-            'trading_symbol': ticker,
-            'exchange': 'NFO',
-            'quantity': quantity,
-            'tag': tag,
-            'uri': PUBLISHER_URI_INDEX_OPT,
-            'entry_price': live_data['last_price'],
-            'price': live_data['depth']['sell'][1]['price']
-        }
-        return trade
     
-    # for exit trade
-    def generateLimitSellIndexOptionTrade(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
-        trade = {
-            'endpoint': '/place/limit_order/sell',
-            'trading_symbol': ticker,
-            'exchange': 'NFO',
-            'quantity': quantity,
-            'tag': tag,
-            'uri': PUBLISHER_URI_INDEX_OPT,
-            'entry_price': live_data['last_price'],
-            'price': live_data['depth']['buy'][1]['price']
-        }
-        return trade
-    
-    # limit order for stock options
-    def generateLimitBuyStockOptionTrade(self, ticker, tag):
+    # limit order buy for stock options
+    def generateLimitOrderBuyStockOption(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
@@ -152,7 +123,8 @@ class TradeApp:
         }
         return trade
     
-    def generateLimitSellStockOptionTrade(self, ticker, tag):
+    # limit order sell for stock options
+    def generateLimitOrderSellStockOption(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
@@ -167,8 +139,8 @@ class TradeApp:
         }
         return trade
         
-    # limit order for stock
-    def generateLimitBuyStockTrade(self, ticker, quantity, tag):
+    # limit order buy for stocks
+    def generateLimitOrderBuyStock(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
@@ -183,7 +155,8 @@ class TradeApp:
         }
         return trade
     
-    def generateLimitSellStockTrade(self, ticker, quantity, tag):
+    # limit order sell for stocks
+    def generateLimitOrderSellStock(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
@@ -198,8 +171,8 @@ class TradeApp:
         }
         return trade
     
-    # limit order for stock futures
-    def generateLimitBuyStockFutTrade(self, ticker, tag):
+    # limit order buy for stock futures
+    def generateLimitOrderBuyStockFuture(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
@@ -214,7 +187,8 @@ class TradeApp:
         }
         return trade
     
-    def generateLimitSellStockFutTrade(self, ticker, tag):
+    # limit order sell for stock futures
+    def generateLimitOrderSellStockFuture(self, ticker, tag):
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
