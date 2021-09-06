@@ -1,5 +1,8 @@
 # wait for all services
-import pika, redis, time, os, requests
+import pika, redis, time, os, requests, time
+
+os.environ['TZ'] = 'Asia/Kolkata'
+time.tzset()
 
 REDIS_SERVER = os.environ['REDIS_HOST']
 RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
