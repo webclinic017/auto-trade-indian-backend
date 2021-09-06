@@ -88,8 +88,8 @@ services_index = [
 
 # for stock trading
 services_stocks = [
-    {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
-    {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
+    # {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
+    # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},

@@ -15,7 +15,7 @@ class Worker6(TradeApp):
             now = datetime.datetime.now().time()
             if now >= datetime.time(9, 30):
                 
-                for ticker in self.ticker:
+                for ticker in self.tickers:
 
                     live_data = self.getLiveData(ticker)
                     
@@ -23,12 +23,17 @@ class Worker6(TradeApp):
                         self.ohlc_ticker[ticker] = {
                             'ohlc': live_data['ohlc'],
                             'high': live_data['ohlc']['high'],
-                            'low':  live_data['ohlc']['low']
+                            'low':  live_data['ohlc']['low'],
+                            'current_price': live_data['last_price'],
+                            'ticker': ticker
                         }
+                    
+                    self.ohlc_ticker[ticker]['current_price'] = live_data['last_price']
+                    print(self.ohlc_ticker[ticker])
 
-                    ohlc = self.ohlc_ticker['ohlc']
-                    high = self.ohlc_ticker['high']
-                    low = self.ohlc_ticker['low']
+                    ohlc = self.ohlc_ticker[ticker]['ohlc']
+                    high = self.ohlc_ticker[ticker]['high']
+                    low = self.ohlc_ticker[ticker]['low']
 
                     current_price = live_data['last_price']
 
@@ -49,7 +54,8 @@ class Worker6(TradeApp):
                             # buy the ticker
                             entry_conditions = {
                                 'ohlc': ohlc,
-                                'current_price': current_price 
+                                'current_price': current_price,
+                                'ticker': ticker,
                             }
 
                             print(json.dumps(entry_conditions, indent=2))
@@ -73,18 +79,17 @@ class Worker6(TradeApp):
                 pnl = self.getPnl(entry_price, live_data['last_price'])
 
 
+                exit_contitions = {
+                    'ohlc': ohlc,
+                    'current_price': current_price
+                }
+                print(json.dumps(exit_contitions, indent=2))
 
                 if 'CE' in ticker:
                     ohlc = live_data['ohlc']
                     low = ohlc['low']
                     current_price = live_data['last_price']
 
-                    exit_contitions = {
-                        'ohlc': ohlc,
-                        'current_price': current_price
-                    }
-                    print(json.dumps(exit_contitions, indent=2))
-                        
                     if current_price < low or pnl>=5:
                         trade = self.generateLimitSellStockOptionTrade(ticker, self.quantity, 'EXIT')
                         self.sendTrade(trade)
