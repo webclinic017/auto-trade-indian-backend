@@ -68,13 +68,15 @@ class TradeApp:
     def getHistoricalData(self, ticker, fdate, tdate, interval):
         token = self.token_map[ticker]['instrument_token']
         data = requests.post(f'http://{ZERODHA_SERVER}/get/historical_data', json={
-            'fdate': fdate,
-            'tdate': tdate,
-            'tocker': token,
+            'fdate': str(fdate),
+            'tdate': str(tdate),
+            'token': token,
             'interval': interval
         }).json()
 
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df['date'] = pd.to_datetime(df['date'])
+        return df
 
     # generate the trade dictonary for index options buy
     def generateIndexOptionBuyTrade(self, ticker, quantity, tag):
