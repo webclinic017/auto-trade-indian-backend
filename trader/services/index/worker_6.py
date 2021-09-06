@@ -106,5 +106,5 @@ class Worker6(TradeApp):
 
 
 def main():
-    app = Worker6(name='worker_6')
+    app = Worker6(name='worker_6_index')
     app.start()
