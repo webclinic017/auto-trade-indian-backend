@@ -1,4 +1,3 @@
-# wait for all services
 import pika, redis, time, os, requests, time
 
 os.environ['TZ'] = 'Asia/Kolkata'
@@ -9,6 +8,7 @@ RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
 ORDERS_SERVER = os.environ['ORDERS_HOST']
 
+# wait for all services
 def wait_for_service():
     while True:    
         try:
@@ -41,13 +41,12 @@ from services.index.calculator import main as main_calculator_index
 from services.stocks.calculator import main as main_calculator_stock
 from services.stocks.scraper import main as main_scraper_stock
 from services.stocks.worker_6 import main as main_wk6_stock
-# from services.stocks.worker_4 import main as main_wk4_stock
+from services.stocks.worker_4 import main as main_wk4_stock
 
 # orders service start
 orders_process = {}
 
 orders_services = [
-    # {'name':'orders_service', 'script':main_orders, 'args': []}
     {'name':'live_data_service', 'script':live_data_main, 'args':[]}
 ]
 
@@ -61,9 +60,7 @@ for process in orders_process:
     orders_process[process].start()
     time.sleep(1)
     
-for process in orders_process:
-    orders_process[process].join()
-# orders service stop
+
 
 # wait for orders service to start
 while True:
@@ -79,21 +76,19 @@ while True:
 
 # for the index trading
 services_index = [
-    # {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
-    # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE']]},
-    # {'name':'compare', 'script':'', 'args':[]},
+    {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
+    {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE']]},
+    {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    # {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
-    # {'name':'worker_6_index', 'script':main_wk6_index, 'args':[]},
+    {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
 ]
 
 # for stock trading
 services_stocks = [
-    # {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
-    # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
-    # {'name':'compare', 'script':'', 'args':[]},
-    # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
+    {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
+    {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
+    {'name':'compare', 'script':'', 'args':[]},
+    {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
     {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
 ]
 
@@ -115,5 +110,11 @@ for process in processes:
     processes[process].start()
     time.sleep(1)
 
+
+# wait for all process to complete
 for process in processes:
     processes[process].join()
+
+# wait for all process to comlete
+for process in orders_process:
+    orders_process[process].join()
