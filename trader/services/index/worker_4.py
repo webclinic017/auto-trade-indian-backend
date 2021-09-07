@@ -5,7 +5,10 @@ from collections import defaultdict
 
 class Worker4(TradeApp):
     
-    tickers = ["BANKNIFTY2190936800PE","BANKNIFTY2190936900CE" ,"NIFTY2190917400CE","NIFTY2190917300PE"]
+    tickers = ["BANKNIFTY2190936300PE",
+                "BANKNIFTY2190936400CE",
+                "NIFTY2190917400CE",
+                "NIFTY2190917300PE"]
     buy_quantity = 1
     sell_quantity = 1
     
@@ -31,9 +34,13 @@ class Worker4(TradeApp):
     # strategy for entry
     def entryStrategy(self):
         while True:
-            latest_nifty = self.getDataIndexTicker('NIFTY')
-            latest_banknifty = self.getDataIndexTicker('BANKNIFTY')
-            
+            try:
+                latest_nifty = self.getDataIndexTicker('NIFTY')
+                latest_banknifty = self.getDataIndexTicker('BANKNIFTY')
+            except:
+                time.sleep(10)
+                continue
+
             if latest_nifty['data'] == 0 or latest_banknifty['data'] == 0:
                 time.sleep(10)
                 continue

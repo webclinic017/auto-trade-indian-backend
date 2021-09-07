@@ -77,7 +77,7 @@ while True:
 # for the index trading
 services_index = [
     {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
-    {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE']]},
+    {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
     {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
@@ -85,10 +85,10 @@ services_index = [
 
 # for stock trading
 services_stocks = [
-    {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
-    {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE']]},
-    {'name':'compare', 'script':'', 'args':[]},
-    {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
+    # {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
+    # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
+    # {'name':'compare', 'script':'', 'args':[]},
+    # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
     {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
 ]
 
