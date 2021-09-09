@@ -172,5 +172,5 @@ class Worker4(TradeApp):
 
 def main():
     app = Worker4(name='worker_4_stock')
-    app.run()
+    app.start()
     

@@ -27,7 +27,9 @@ class TradeApp:
         # database for index
         self.data_db = self.mongo['intraday_' + str(date)]
         self.index_collection = self.data_db['index_master']
+        self.stock_collection = self.data_db['stock_master']
         
+    
     # get the live data for the particular ticker
     def getLiveData(self, ticker):
         data = self.redis.get(self.token_map[ticker]['instrument_token'])
@@ -59,6 +61,11 @@ class TradeApp:
     
     def getDataIndexTicker(self, ticker):
         data = self.index_collection.find_one({'ticker':ticker})
+        data['_id'] = str(data['_id'])
+        return data
+    
+    def getDataStockTicker(self, ticker):
+        data = self.stock_collection.find_one({'ticker':ticker})
         data['_id'] = str(data['_id'])
         return data
     
