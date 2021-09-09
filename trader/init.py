@@ -36,12 +36,14 @@ from services.index.worker_4 import main as main_wk4_index
 # from services.index.worker_5 import main as main_wk5
 from services.index.scraper import main as main_scraper_index
 from services.index.calculator import main as main_calculator_index
+from services.index.compare import main as main_compare_index
 
 # for the stocks
 from services.stocks.calculator import main as main_calculator_stock
 from services.stocks.scraper import main as main_scraper_stock
 from services.stocks.worker_6 import main as main_wk6_stock
 from services.stocks.worker_4 import main as main_wk4_stock
+from services.stocks.worker_7 import main as main_wk7_stock
 
 # orders service start
 orders_process = {}
@@ -78,7 +80,7 @@ while True:
 services_index = [
     {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
     {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
-    {'name':'compare', 'script':'', 'args':[]},
+    {'name':'compare', 'script':main_compare_index, 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
 ]
@@ -89,7 +91,8 @@ services_stocks = [
     # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
-    {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
+    # {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
+    # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
 ]
 
 services = services_index + services_stocks

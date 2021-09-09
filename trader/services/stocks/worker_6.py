@@ -6,7 +6,10 @@ time.tzset()
 
 class Worker6(TradeApp):
 
-    tickers = ['ASIANPAINT21SEP3350CE','ITC21SEP210CE','WIPRO21SEP690PE','AXISBANK21SEP800PE']
+    tickers = ["INDUSINDBK21SEP1040CE",
+                "BHARTIARTL21SEP680CE",
+                "INFY21SEP1700PE",
+                "TATAMOTORS21SEP290PE"]
     quantity = 1
 
     entered_tickers = set()
