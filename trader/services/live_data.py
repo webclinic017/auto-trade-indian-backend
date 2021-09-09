@@ -22,7 +22,7 @@ def on_message_ticker(ws, message):
     r_ticker.set(data['instrument_token'], message)
 
 def main():
-    tickers = json.loads(open('/app/data/tickers.json', 'r').read())
+    tickers = json.loads(open('/app/data/tickers.json', 'r').read())['tickers']
     # print(tickers)
     token_map = requests.get(f'http://{ZERODHA_SERVER}/get/token_map').json()
     
