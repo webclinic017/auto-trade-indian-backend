@@ -80,9 +80,9 @@ while True:
 
 # for the index trading
 services_index = [
-    {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
-    {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
-    {'name':'compare', 'script':main_compare_index, 'args':[]},
+    # {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
+    # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
+    # {'name':'compare', 'script':main_compare_index, 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     # {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
 ]

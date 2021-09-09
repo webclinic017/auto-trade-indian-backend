@@ -1,4 +1,4 @@
-import json, threading, os, requests, redis, time, datetime
+import json, os, requests, redis, time, datetime
 import pandas as pd
 from pymongo import MongoClient
 
@@ -25,16 +25,18 @@ def getLivePrice(ticker):
 tickers_path = '/app/data/tickers.json'
 tickers = json.loads(open(tickers_path, 'r').read())
 
-derivatives = tickers['derivatives']
 tickers = tickers['tickers']
 
 def main():
+    print("analysis service")
+    time.sleep(10)
+    
     while True:
         now = datetime.datetime.now()
-        print(now)
-
+        
         if now.time() >= datetime.time(9, 15):
-            for ticker in tickers:
+            for ticker in tickers.keys():
+                # print(ticker)
                 try:
                     live_data = getLivePrice(ticker)
                 except:
@@ -43,14 +45,14 @@ def main():
                 # worker 7 and 8
                 if now.time() <= datetime.time(9,22):
                     if live_data['ohlc']['open'] == live_data['ohlc']['low']:
-                        for derivative in derivatives:
-                            if ticker in derivative and 'CE' in derivative:
+                        for derivative in tickers[ticker]:
+                            if 'CE' in derivative:
                                 collection = db['workers']
                                 collection.update_one({'worker':'worker_7'}, {'$push':{'tickers':derivative}}, True)
                     
                     if live_data['ohlc']['open'] == live_data['ohlc']['high']:
-                        for derivative in derivatives:
-                            if ticker in derivative and 'PE' in derivative:
+                        for derivative in tickers[ticker]:
+                            if 'PE' in derivative:
                                 collection = db['workers']
                                 collection.update_one({'worker':'worker_7'}, {'$push':{'tickers':derivative}}, True)
 
@@ -63,34 +65,32 @@ def main():
                     if ltp > high:
                         collection = db['workers']
 
-                        for derivative in derivatives:
-                            if ticker in derivative and 'CE' in derivative:
+                        for derivative in tickers[ticker]:
+                            if 'CE' in derivative:
                                 collection.update_one({'worker':'worker_6'}, {'$push':{'tickers':derivative}})
                     
                     if ltp < low:
                         collection = db['workers']
 
-                        for derivative in derivatives:
-                            if ticker in derivative and 'PE' in derivative:
+                        for derivative in tickers[ticker]:
+                            if 'PE' in derivative:
                                 collection.update_one({'worker':'worker_6'}, {'$push':{'tickers':derivative}})
 
 
                 # worker 9
-                # take the average OBV of last 7 rows.
-                # if current OBV is double or greater  the average OBV CE
-                # if current OBV is half or less than half of the average OBV PE
                 if now.time() > datetime.time(9, 30):
                     obv = pd.DataFrame(requests.get(f'http://{ZERODHA_SERVER}/get/obv/{ticker}').json())
-                    print(obv)
+                    # print(obv)
+                    collection = db['workers']
 
-                    if obv['obv'].tail(1)[0, 'obv'] > obv['obv'].mean():
-                        for derivative in derivatives:
-                            if ticker in derivative and 'CE' in derivative:
+                    if obv.tail(1)['obv'].values[0] > obv['obv'].mean():
+                        for derivative in tickers[ticker]:
+                            if 'CE' in derivative:
                                 collection.update_one({'worker':'worker_9'}, {'$push':{'tickers':derivative}})
 
-                    elif obv['obv'].tail(1)[0, 'obv'] <= obv['obv'].mean() / 2:
-                        for derivative in derivatives:
-                            if ticker in derivative and 'CE' in derivative:
+                    elif obv.tail(1)['obv'].values[0] <= obv['obv'].mean() / 2:
+                        for derivative in tickers[ticker]:
+                            if 'CE' in derivative:
                                 collection.update_one({'worker':'worker_9'}, {'$push':{'tickers':derivative}})
 
         time.sleep(300)
