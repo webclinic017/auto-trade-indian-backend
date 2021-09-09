@@ -372,7 +372,24 @@ def get_rsi(symbol, n):
             'last_rsi':0, 
             'last_slope': 0
         })
+
+# get obv
+@app.route('/get/obv/<symbol>')
+def get_obv(symbol):
+    tday = datetime.date.today()
+    fday = tday - datetime.timedelta(days=3)
+    token = token_map[symbol]['instrument_token']
     
+    df = requests.post(f'http://zerodha_worker_index/get/historical_data', json={
+        'fdate':str(fday),
+        'tdate':str(tday),
+        'token': token,
+        'interval':'5minute'
+    }).json()
+    df = pd.DataFrame(df)
+    df['obv'] = tb.OBV(df['close'], df['volume'])
+    df = df.tail(10)
+    return jsonify(df.to_dict())
 
 # get the quotes
 @app.route('/get/quote', methods=['POST'])
