@@ -84,7 +84,7 @@ services_index = [
     # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
     # {'name':'compare', 'script':main_compare_index, 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    # {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
+    {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
 ]
 
 # for stock trading
@@ -93,8 +93,8 @@ services_stocks = [
     # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
-    # {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
-    # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
+    {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
+    {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
 ]
 
 services = services_index + services_stocks

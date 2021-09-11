@@ -27,11 +27,13 @@ class TradeApp:
         # database for index
         self.data_db = self.mongo['intraday_' + str(date)]
         self.index_collection = self.data_db['index_master']
-        self.stock_collection = self.data_db['stock_master']
+        self.stock_collection = self.data_db['stock_master']        
+        self.derivative_map = open('/app/data/tickers.json', 'r').read()['deriatives']
         
     
     # get the live data for the particular ticker
-    def getLiveData(self, ticker):
+    def getLiveData(self, ticker_der):
+        ticker = self.derivative_map[ticker_der]
         data = self.redis.get(self.token_map[ticker]['instrument_token'])
         return json.loads(data)
     
