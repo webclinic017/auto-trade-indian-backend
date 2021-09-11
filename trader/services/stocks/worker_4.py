@@ -4,10 +4,6 @@ from collections import defaultdict
 
 class Worker4(TradeApp):
     
-    tickers_stock = []
-    tickers_stock_option = []
-    tickers_stock_fut = []
-    
     quantity = 1
     
     def scalpBuy(self, ticker, trade):
@@ -23,21 +19,9 @@ class Worker4(TradeApp):
             
             if now > datetime.time(9, 15):
                 # stock options
-                for ticker in self.tickers_stock_option:
+                for ticker in self.getTickers():
                     trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK_OPT')
                     t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
-                    t.start()
-                
-                # stocks
-                for ticker in self.tickers_stock:
-                    trade = self.generateLimitOrderBuyStock(ticker, self.quantity, 'ENTRY_STOCK')
-                    t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
-                    t.start()
-                
-                # stock futures
-                for ticker in self.tickers_stock_fut:
-                    trade = self.generateLimitOrderBuyStockFuture(ticker, 'ENTRY_STOCK_FUT')
-                    t = threading.Thread(target=self.scalpBuy, args=[ticker,trade])
                     t.start()
             
             time.sleep(300)

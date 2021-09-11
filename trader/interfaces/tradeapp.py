@@ -29,7 +29,7 @@ class TradeApp:
         self.index_collection  = self.data_db['index_master']
         self.stock_collection  = self.data_db['stock_master']        
         self.ticker_collection = self.mongo['analysis']
-        self.derivative_map = open('/app/data/tickers.json', 'r').read()['deriatives']
+        self.derivative_map = json.loads(open('/app/data/tickers.json', 'r').read())['derivatives']
         
     
     # get the live data for the particular ticker
