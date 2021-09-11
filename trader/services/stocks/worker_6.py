@@ -5,8 +5,6 @@ os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
 class Worker6(TradeApp):
-
-    tickers = ["INDUSINDBK21SEP1040CE", "BHARTIARTL21SEP680CE", "INFY21SEP1700PE", "TATAMOTORS21SEP290PE"]
     quantity = 1
 
     entered_tickers = set()
@@ -18,7 +16,7 @@ class Worker6(TradeApp):
             now = datetime.datetime.now().time()
             if now >= datetime.time(9, 30):
                 
-                for ticker in self.tickers:
+                for ticker in self.getTickers():
 
                     live_data = self.getLiveData(ticker)
                     

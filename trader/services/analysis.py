@@ -49,6 +49,8 @@ def main():
                             if 'CE' in derivative:
                                 collection = db['workers']
                                 collection.update_one({'worker':'worker_7'}, {'$push':{'tickers':derivative}}, True)
+                                collection.update_one({'worker':'worker_8'}, {'$push':{'tickers':derivative}}, True)
+                                
                     
                     if live_data['ohlc']['open'] == live_data['ohlc']['high']:
                         for derivative in tickers[ticker]:
