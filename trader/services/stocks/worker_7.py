@@ -2,19 +2,13 @@ from interfaces.tradeapp import TradeApp
 import datetime, time, json
 
 class Worker7(TradeApp):
-
-    tickers = []
-    year = '21'
-    month = 'SEP'
-
-    entered_tickers = set()
-
+    
     def entryStrategy(self):
         while True:
             now = datetime.datetime.now()
 
             if now.time() >= datetime.time(hour=9, minute=15):
-                for ticker in self.tickers:
+                for ticker in self.getTickers():
                     live_data = self.getLiveData(ticker)
                     ohlc = live_data['ohlc']
 
@@ -23,40 +17,13 @@ class Worker7(TradeApp):
                         'ticker': ticker
                     }, indent=2))
 
-                    if ohlc['open'] == ohlc['low']:
-                        
-                        try:
-                            compare_file = self.getDataStockTicker(ticker)
-                        except:
-                            time.sleep(1)
-                            continue
-
-                        latest_compare = compare_file['data'].pop()
-                        atm = latest_compare['atm']
-                        ticker_ = ticker + self.year + self.month + atm + 'CE'
-                        
-                        print('ENTERED: ' + ticker_)
-                        
-                        if ticker_ not in self.entered_tickers:
-                            trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
-                            self.sendTrade(trade)
-                            self.entered_tickers.add((ticker_, ticker))
-                    elif ohlc['open'] == ohlc['high']:
-                        
-                        try:
-                            compare_file = self.getDataStockTicker(ticker)
-                        except:
-                            time.sleep(1)
-                            continue
-
-                        latest_compare = compare_file['data'].pop()
-                        atm = latest_compare['atm']
-                        ticker_ = ticker + self.year + self.month + atm + 'PE'
-
-                        if ticker_ not in self.entered_tickers:
-                            trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
-                            self.sendTrade(trade)
-                            self.entered_tickers.add((ticker_, ticker))
+                    if ohlc['open'] == ohlc['low'] and 'CE' in ticker:
+                        trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
+                        self.sendTrade(trade)
+                            
+                    elif ohlc['open'] == ohlc['high'] and 'PE' in ticker:
+                        trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
+                        self.sendTrade(trade)
 
 
             elif now.time() > datetime.time(hour=9, minute=20):
@@ -67,8 +34,10 @@ class Worker7(TradeApp):
 
     def exitStrategy(self):
         while True:
-            for ticker, ticker_mod in self.entered_tickers:
-                order = self.getOrder(ticker_mod)
+            orders = self.getAllOrders()
+            
+            for order in orders:
+                ticker = order['ticker']
                 entry_price = self.averageEntryprice(order['data'])
                 live_data = self.getLiveData(ticker)
                 ohlc = live_data['ohlc']
@@ -77,12 +46,12 @@ class Worker7(TradeApp):
                 if pnl >= 4 or live_data['last_price'] < ohlc['low']:
                     print('-'*10 + 'EXIT' + '-'*10)
                     print(json.dumps({
-                        'ticker': ticker_mod,
+                        'ticker': ticker,
                         'pnl': pnl,
                     }, indent=2))
                     print('-'*10 + 'EXIT' + '-'*10)
 
-                    trade = self.generateLimitOrderSellStockOption(ticker_mod, 'EXIT')
+                    trade = self.generateLimitOrderSellStockOption(ticker, 'EXIT')
                     self.sendTrade(trade)
 
 

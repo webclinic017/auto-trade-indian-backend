@@ -26,8 +26,9 @@ class TradeApp:
         
         # database for index
         self.data_db = self.mongo['intraday_' + str(date)]
-        self.index_collection = self.data_db['index_master']
-        self.stock_collection = self.data_db['stock_master']        
+        self.index_collection  = self.data_db['index_master']
+        self.stock_collection  = self.data_db['stock_master']        
+        self.ticker_collection = self.mongo['analysis']
         self.derivative_map = open('/app/data/tickers.json', 'r').read()['deriatives']
         
     
@@ -36,6 +37,15 @@ class TradeApp:
         ticker = self.derivative_map[ticker_der]
         data = self.redis.get(self.token_map[ticker]['instrument_token'])
         return json.loads(data)
+    
+    # get the tickers for the particular worker
+    def getTickers(self):
+        try:
+            data = self.ticker_collection.find({'worker':self.name})['data']
+        except:
+            data = []
+            
+        return set(data)
     
     # insert the order into the database
     def insertOrder(self, ticker, order):
