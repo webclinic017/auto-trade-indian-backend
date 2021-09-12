@@ -6,3 +6,4 @@ websocket-client
 flask
 redis
 pandas
+nsetools
