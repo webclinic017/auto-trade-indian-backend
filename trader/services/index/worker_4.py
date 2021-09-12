@@ -5,13 +5,13 @@ from collections import defaultdict
 
 class Worker4(TradeApp):
     
-    tickers = ["BANKNIFTY2190936700CE","NIFTY2190917300CE"]
+    tickers = ["BANKNIFTY21SEP24000CE","NIFTY21SEP11500CE"]
     buy_quantity = 1
     sell_quantity = 1
     
     def scalpBuy(self, ticker, data):
         rsi, slope = self.getRSISlope(ticker)
-        live_data = self.getLiveData(ticker)
+        live_data = self.getLiveData(ticker, 'index')
         ltp = live_data['last_price']
         
         log = {
@@ -23,7 +23,7 @@ class Worker4(TradeApp):
         }
         
         print(json.dumps(log, indent=2))
-        if rsi > 40 and slope > 0:
+        if rsi >= 40 and slope >= 0:
             trade = self.generateMarketOrderBuyIndexOption(ticker, self.buy_quantity, 'ENTRY_INDEX')
             self.sendTrade(trade)
             return
@@ -80,7 +80,7 @@ class Worker4(TradeApp):
                 # print("Entry_Price", entry_price)
                 
                 try:
-                    ticker_data = self.getLiveData(ticker)
+                    ticker_data = self.getLiveData(ticker, 'index')
                 except:
                     continue
                 

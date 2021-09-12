@@ -85,8 +85,8 @@ class Worker5(TradeApp):
                 entry_a /= count_a
                 entry_b /= count_b
                 
-                live_a = self.getLiveData(ticker_a)
-                live_b = self.getLiveData(ticker_b)
+                live_a = self.getLiveData(ticker_a, 'index')
+                live_b = self.getLiveData(ticker_b, 'index')
                 
                 pnl_a = (live_a['last_price'] - entry_a) / live_a['last_price']
                 pnl_b = (live_b['last_price'] - entry_b) / live_b['last_price']
