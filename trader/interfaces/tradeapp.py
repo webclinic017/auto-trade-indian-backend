@@ -33,8 +33,13 @@ class TradeApp:
         
     
     # get the live data for the particular ticker
-    def getLiveData(self, ticker_der):
-        ticker = self.derivative_map[ticker_der]
+    def getLiveData(self, ticker_der, type_='stock'):
+        
+        if type_ == 'stock':
+            ticker = self.derivative_map[ticker_der]
+        elif type_ == 'index':
+            ticker = ticker_der
+            
         data = self.redis.get(self.token_map[ticker]['instrument_token'])
         return json.loads(data)
     
@@ -102,7 +107,7 @@ class TradeApp:
 
     # market order buy for index option
     def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
+        live_data = self.getLiveData(ticker, "index")
         trade = {
             'endpoint': '/place/market_order/buy',
             'trading_symbol': ticker,
@@ -116,7 +121,7 @@ class TradeApp:
 
     # market order sell for index option
     def generateMarketOrderSellIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
+        live_data = self.getLiveData(ticker, "index")
         trade = {
             'endpoint': '/place/market_order/sell',
             'trading_symbol': ticker,
