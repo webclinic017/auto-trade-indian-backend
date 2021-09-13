@@ -4,6 +4,7 @@ import datetime, time, json
 class Worker7(TradeApp):
 
     entered_tickers = set()
+    ohlc_tickers = {}
     
     def entryStrategy(self):
         while True:
@@ -13,9 +14,12 @@ class Worker7(TradeApp):
             if now.time() >= datetime.time(hour=9, minute=15):
                 for ticker in self.getTickers():
                     live_data = self.getLiveData(ticker)
-                    print(live_data, ticker)
-                    ohlc = live_data['ohlc']
+                    
+                    if ticker not in self.ohlc_tickers:
+                        self.ohlc_tickers[ticker] = live_data['ohlc']
 
+                    ohlc = self.ohlc_tickers[ticker]
+                    
                     print(json.dumps({
                         'ohlc': ohlc,
                         'ticker': ticker
@@ -49,7 +53,7 @@ class Worker7(TradeApp):
                 ticker = order['ticker']
                 entry_price = self.averageEntryprice(order['data'])
                 live_data = self.getLiveData(ticker)
-                ohlc = live_data['ohlc']
+                ohlc = self.ohlc_tickers[ticker]
 
                 pnl = self.getPnl(entry_price, live_data['last_price'])
                 if pnl >= 4 or live_data['last_price'] < ohlc['low']:
