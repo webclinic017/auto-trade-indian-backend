@@ -28,7 +28,7 @@ class TradeApp:
         self.data_db = self.mongo['intraday_' + str(date)]
         self.index_collection  = self.data_db['index_master']
         self.stock_collection  = self.data_db['stock_master']        
-        self.ticker_collection = self.mongo['analysis']
+        self.ticker_collection = self.mongo['analysis']['workers']
         self.derivative_map = json.loads(open('/app/data/tickers.json', 'r').read())['derivatives']
         
     
@@ -46,8 +46,9 @@ class TradeApp:
     # get the tickers for the particular worker
     def getTickers(self):
         try:
-            data = self.ticker_collection.find({'worker':self.name})['data']
-        except:
+            data = self.ticker_collection.find_one({'worker':self.name})['tickers']
+        except Exception as e:
+            print(e)
             data = []
             
         return set(data)

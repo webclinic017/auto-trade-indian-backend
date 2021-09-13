@@ -5,7 +5,10 @@ from collections import defaultdict
 
 class Worker4(TradeApp):
     
-    tickers = ["BANKNIFTY21SEP24000CE","NIFTY21SEP11500CE"]
+    tickers = ["NIFTY2191617300CE",
+                "NIFTY2191617400PE",
+                "BANKNIFTY2191636600CE",
+                "BANKNIFTY2191636800PE"]
     buy_quantity = 1
     sell_quantity = 1
     
