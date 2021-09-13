@@ -22,7 +22,7 @@ class Worker6(TradeApp):
                     
                     if ticker not in self.ohlc_ticker:
                         t = datetime.date.today()
-                        historical_data = self.getHistoricalData(ticker, t, t, 'minute')
+                        historical_data = self.getHistoricalData(self.derivative_map[ticker], t, t, 'minute')
                         # print(historical_data)
                         # print(historical_data.loc[0, ['open','high','low','close']].values)
                         o, h, l, c = historical_data.loc[0, ['open','high','low','close']].values
