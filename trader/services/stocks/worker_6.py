@@ -92,7 +92,7 @@ class Worker6(TradeApp):
                 print(json.dumps(exit_contitions, indent=2))
 
                 # if 'CE' in ticker:
-                ohlc = live_data['ohlc']
+                ohlc = self.ohlc_ticker[ticker]['ohlc']
                 low = ohlc['low']
                 current_price = live_data['last_price']
 
