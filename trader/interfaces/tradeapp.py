@@ -43,6 +43,13 @@ class TradeApp:
         data = self.redis.get(self.token_map[ticker]['instrument_token'])
         return json.loads(data)
     
+    # get the quote for a ticker
+    def getQuote(self, exchange, ticker):
+        data = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={
+            'tickers': ['f{exchange}:{ticker]']
+        }).json()
+        return data[f'{exchange}:{ticker}']
+    
     # get the tickers for the particular worker
     def getTickers(self):
         try:
@@ -137,7 +144,7 @@ class TradeApp:
     
     # limit order buy for stock options
     def generateLimitOrderBuyStockOption(self, ticker, tag):
-        live_data = self.getLiveData(ticker)
+        live_data = self.getQuote('NFO', ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -153,7 +160,7 @@ class TradeApp:
     
     # limit order sell for stock options
     def generateLimitOrderSellStockOption(self, ticker, tag):
-        live_data = self.getLiveData(ticker)
+        live_data = self.getQuote('NFO', ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
