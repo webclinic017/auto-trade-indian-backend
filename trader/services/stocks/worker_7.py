@@ -64,6 +64,8 @@ class Worker7(TradeApp):
                     self.sendTrade(trade)
                     self.entered_tickers.remove(ticker)
                     self.deleteOrder(ticker)
+            
+            time.sleep(10)
 
 
 def main():
