@@ -46,8 +46,9 @@ class TradeApp:
     # get the quote for a ticker
     def getQuote(self, exchange, ticker):
         data = requests.post(f'http://{ZERODHA_SERVER}/get/quote', json={
-            'tickers': ['f{exchange}:{ticker]']
+            'tickers': [f'{exchange}:{ticker}']
         }).json()
+        print(data)
         return data[f'{exchange}:{ticker}']
     
     # get the tickers for the particular worker

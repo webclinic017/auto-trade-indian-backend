@@ -43,7 +43,7 @@ def main():
                     continue
                 
                 # worker 7 and 8
-                if now.time() <= datetime.time(9,22):
+                if now.time() <= datetime.time(9,25):
                     if live_data['ohlc']['open'] == live_data['ohlc']['low']:
                         for derivative in tickers[ticker]:
                             if 'CE' in derivative:
@@ -95,4 +95,4 @@ def main():
                             if 'CE' in derivative:
                                 collection.update_one({'worker':'worker_9'}, {'$push':{'tickers':derivative}})
 
-        time.sleep(300)
+        time.sleep(15)
