@@ -7,6 +7,9 @@ time.tzset()
 
 mongo = MongoClient(host='db', port=27017)
 db = mongo['analysis']
+collection = db['workers']
+
+collection.drop()
 
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
@@ -47,7 +50,7 @@ def main():
                     if live_data['ohlc']['open'] == live_data['ohlc']['low']:
                         for derivative in tickers[ticker]:
                             if 'CE' in derivative:
-                                collection = db['workers']
+                                
                                 collection.update_one({'worker':'worker_7'}, {'$push':{'tickers':derivative}}, True)
                                 collection.update_one({'worker':'worker_8'}, {'$push':{'tickers':derivative}}, True)
                                 
@@ -55,7 +58,7 @@ def main():
                     if live_data['ohlc']['open'] == live_data['ohlc']['high']:
                         for derivative in tickers[ticker]:
                             if 'PE' in derivative:
-                                collection = db['workers']
+                                
                                 collection.update_one({'worker':'worker_7'}, {'$push':{'tickers':derivative}}, True)
 
                 # worker 6
@@ -65,15 +68,13 @@ def main():
                     ltp = live_data['last_price']
 
                     if ltp > high:
-                        collection = db['workers']
-
+                        
                         for derivative in tickers[ticker]:
                             if 'CE' in derivative:
                                 collection.update_one({'worker':'worker_6'}, {'$push':{'tickers':derivative}})
                     
                     if ltp < low:
-                        collection = db['workers']
-
+                        
                         for derivative in tickers[ticker]:
                             if 'PE' in derivative:
                                 collection.update_one({'worker':'worker_6'}, {'$push':{'tickers':derivative}})
@@ -83,7 +84,7 @@ def main():
                 if now.time() > datetime.time(9, 30):
                     obv = pd.DataFrame(requests.get(f'http://{ZERODHA_SERVER}/get/obv/{ticker}').json())
                     # print(obv)
-                    collection = db['workers']
+                    
 
                     if obv.tail(1)['obv'].values[0] > obv['obv'].mean():
                         for derivative in tickers[ticker]:
