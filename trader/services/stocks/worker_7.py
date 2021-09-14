@@ -38,7 +38,7 @@ class Worker7(TradeApp):
                         # self.insertOrder(ticker, trade)
 
 
-            elif now.time() > datetime.time(hour=10, minute=0):
+            elif now.time() > datetime.time(hour=9, minute=22):
                 return
 
             time.sleep(5)
