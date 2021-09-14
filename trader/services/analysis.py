@@ -26,9 +26,10 @@ def getLivePrice(ticker):
 
 
 tickers_path = '/app/data/tickers.json'
-tickers = json.loads(open(tickers_path, 'r').read())
+data = json.loads(open(tickers_path, 'r').read())
 
-tickers = tickers['tickers']
+tickers = data['tickers']
+
 
 def main():
     print("analysis service")

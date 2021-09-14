@@ -34,13 +34,12 @@ class TradeApp:
     
     # get the live data for the particular ticker
     def getLiveData(self, ticker_der, type_='stock'):
-        
-        if type_ == 'stock':
-            ticker = self.derivative_map[ticker_der]
-        elif type_ == 'index':
-            ticker = ticker_der
-            
-        data = self.redis.get(self.token_map[ticker]['instrument_token'])
+        # if type_ == 'stock':
+        #     ticker = self.derivative_map[ticker_der]
+        # elif type_ == 'index':
+        #     ticker = ticker_der
+        # data = self.redis.get(self.token_map[ticker]['instrument_token'])
+        data = self.redis.get(ticker_der)
         return json.loads(data)
     
     # get the quote for a ticker
@@ -145,7 +144,8 @@ class TradeApp:
     
     # limit order buy for stock options
     def generateLimitOrderBuyStockOption(self, ticker, tag):
-        live_data = self.getQuote('NFO', ticker)
+        # live_data = self.getQuote('NFO', ticker)
+        live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -161,7 +161,8 @@ class TradeApp:
     
     # limit order sell for stock options
     def generateLimitOrderSellStockOption(self, ticker, tag):
-        live_data = self.getQuote('NFO', ticker)
+        # live_data = self.getQuote('NFO', ticker)
+        live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
@@ -177,7 +178,8 @@ class TradeApp:
         
     # limit order buy for stocks
     def generateLimitOrderBuyStock(self, ticker, quantity, tag):
-        live_data = self.getQuote('NFO', ticker)
+        # live_data = self.getQuote('NFO', ticker)
+        live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -193,7 +195,8 @@ class TradeApp:
     
     # limit order sell for stocks
     def generateLimitOrderSellStock(self, ticker, quantity, tag):
-        live_data = self.getQuote('NFO', ticker)
+        # live_data = self.getQuote('NFO', ticker)
+        live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
@@ -209,7 +212,8 @@ class TradeApp:
     
     # limit order buy for stock futures
     def generateLimitOrderBuyStockFuture(self, ticker, tag):
-        live_data = self.getQuote('NFO', ticker)
+        # live_data = self.getQuote('NFO', ticker)
+        live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -225,7 +229,8 @@ class TradeApp:
     
     # limit order sell for stock futures
     def generateLimitOrderSellStockFuture(self, ticker, tag):
-        live_data = self.getQuote('NFO', ticker)
+        # live_data = self.getQuote('NFO', ticker)
+        live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
