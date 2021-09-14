@@ -9,6 +9,7 @@ class Worker6(TradeApp):
 
     entered_tickers = set()
     ohlc_ticker = {}
+    exchange = 'NFO'
 
     def entryStrategy(self):
         # logic for entry
