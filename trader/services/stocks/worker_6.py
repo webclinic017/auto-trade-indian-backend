@@ -23,7 +23,10 @@ class Worker6(TradeApp):
                     
                     if ticker not in self.ohlc_ticker:
                         t = datetime.date.today()
-                        historical_data = self.getHistoricalData(ticker, t, t, '15 minute')
+                        try:
+                            historical_data = self.getHistoricalData(ticker, t, t, '15minute')
+                        except:
+                            continue
                         # print(historical_data)
                         # print(historical_data.loc[0, ['open','high','low','close']].values)
                         o, h, l, c = historical_data.loc[0, ['open','high','low','close']].values
@@ -90,7 +93,6 @@ class Worker6(TradeApp):
                     'ohlc_start': self.ohlc_ticker[ticker]['ohlc'],
                     'pnl': pnl
                 }
-                print(json.dumps(exit_contitions, indent=2))
 
                 # if 'CE' in ticker:
                 ohlc = self.ohlc_ticker[ticker]['ohlc']
