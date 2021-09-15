@@ -267,7 +267,10 @@ class TradeApp:
     
     # function ffor pnl
     def getPnl(self, entry_price,live_price):
-        pnl=((live_price-entry_price)/entry_price)*100
+        try:
+            pnl=((live_price-entry_price)/entry_price)*100
+        except:
+            pnl = 0
         return pnl
 
 

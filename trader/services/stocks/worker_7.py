@@ -9,10 +9,10 @@ class Worker7(TradeApp):
     def entryStrategy(self):
         while True:
             now = datetime.datetime.now()
-            print(now)
+            # print(now)
 
-            if now.time() >= datetime.time(hour=9, minute=15):
-                for ticker in self.getTickers():
+            if now.time() >= datetime.time(hour=9, minute=15) and now.time() <= datetime.time(hour=9, minute=22):
+                for ticker in self.stock_option_tickers:
                     live_data = self.getLiveData(ticker)
                     
                     if ticker not in self.ohlc_tickers:
@@ -20,15 +20,16 @@ class Worker7(TradeApp):
 
                     ohlc = self.ohlc_tickers[ticker]
                     
-                    print(json.dumps({
-                        'ohlc': ohlc,
-                        'ticker': ticker
-                    }, indent=2))
+                    
 
                     if ohlc['open'] == ohlc['low'] and 'CE' in ticker and ticker not in self.entered_tickers:
                         trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
                         self.sendTrade(trade)
                         self.entered_tickers.add(ticker)
+                        print(json.dumps({
+                            'ohlc': ohlc,
+                            'ticker': ticker
+                        }, indent=2))
                         # self.insertOrder(ticker, trade)
 
                     elif ohlc['open'] == ohlc['high'] and 'PE' in ticker and ticker not in self.entered_tickers:
@@ -36,10 +37,16 @@ class Worker7(TradeApp):
                         self.sendTrade(trade)
                         self.entered_tickers.add(ticker)
                         # self.insertOrder(ticker, trade)
+                        
+                        print('-'*10 + 'ENTRY CONDITION' + '-'*10)
+                        print(json.dumps({
+                            'ohlc': ohlc,
+                            'ticker': ticker
+                        }, indent=2))
+                        print('-'*10 + 'ENTRY CONDITION' + '-'*10)
+            else:
+                print("Cant enter Worker 7")
 
-
-            elif now.time() > datetime.time(hour=9, minute=22):
-                return
 
             time.sleep(5)
 
@@ -66,7 +73,7 @@ class Worker7(TradeApp):
 
                     trade = self.generateLimitOrderSellStockOption(ticker, 'EXIT')
                     self.sendTrade(trade)
-                    self.entered_tickers.remove(ticker)
+                    self.entered_tickers.discard(ticker)
                     self.deleteOrder(ticker)
             
             time.sleep(10)
