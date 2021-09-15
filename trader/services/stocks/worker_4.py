@@ -19,7 +19,7 @@ class Worker4(TradeApp):
             
             if now > datetime.time(9, 15):
                 # stock options
-                for ticker in self.getTickers():
+                for ticker in self.stock_option_tickers:
                     trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK_OPT')
                     t = threading.Thread(target=self.scalpBuy, args=[ticker, trade])
                     t.start()

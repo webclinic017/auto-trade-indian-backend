@@ -30,7 +30,6 @@ print('services are up running ...')
 # import the object with aliase name Process
 from threading import Thread as Process # <-- change the type of process here to threading.Thread or multiprocess.Process
 from services.live_data import main as live_data_main
-from services.analysis import main as main_analysis
 
 # for the index
 from services.index.worker_4 import main as main_wk4_index
@@ -51,7 +50,7 @@ orders_process = {}
 
 orders_services = [
     {'name':'live_data_service', 'script':live_data_main, 'args':[]},
-    {'name':'analysis', 'script':main_analysis, 'args':[]},
+    # {'name':'analysis', 'script':main_analysis, 'args':[]},
 ]
 
 for service in orders_services:

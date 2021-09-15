@@ -29,8 +29,12 @@ class TradeApp:
         self.index_collection  = self.data_db['index_master']
         self.stock_collection  = self.data_db['stock_master']        
         self.ticker_collection = self.mongo['analysis']['workers']
-        self.derivative_map = json.loads(open('/app/data/tickers.json', 'r').read())['derivatives']
+        self.data = json.loads(open('/app/data/tickers.json', 'r').read())
+        self.derivative_map = self.data['derivatives']
         
+        self.stock_tickers = list(self.data['tickers'].keys())
+        self.stock_option_tickers = list(self.derivative_map.keys())
+        self.index_tickers = self.data['index']    
     
     # get the live data for the particular ticker
     def getLiveData(self, ticker_der, type_='stock'):
@@ -50,15 +54,6 @@ class TradeApp:
         print(data)
         return data[f'{exchange}:{ticker}']
     
-    # get the tickers for the particular worker
-    def getTickers(self):
-        try:
-            data = self.ticker_collection.find_one({'worker':self.name})['tickers']
-        except Exception as e:
-            print(e)
-            data = []
-            
-        return set(data)
     
     # insert the order into the database
     def insertOrder(self, ticker, order):

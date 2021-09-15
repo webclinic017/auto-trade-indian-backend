@@ -5,10 +5,6 @@ from collections import defaultdict
 
 class Worker4(TradeApp):
     
-    tickers = ["NIFTY2191617300CE",
-                "NIFTY2191617400PE",
-                "BANKNIFTY2191636600CE",
-                "BANKNIFTY2191636800PE"]
     buy_quantity = 1
     sell_quantity = 1
     
@@ -48,7 +44,7 @@ class Worker4(TradeApp):
             latest_nifty = latest_nifty['data'].pop()
             latest_banknifty = latest_banknifty['data'].pop()
             
-            for ticker in self.tickers:
+            for ticker in self.index_tickers:
                 if 'BANKNIFTY' in ticker:
                     data = latest_banknifty
                 else:

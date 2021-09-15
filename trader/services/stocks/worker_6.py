@@ -17,7 +17,7 @@ class Worker6(TradeApp):
             now = datetime.datetime.now().time()
             if now >= datetime.time(9, 30):
                 
-                for ticker in self.getTickers():
+                for ticker in self.stock_option_tickers:
 
                     live_data = self.getLiveData(ticker)
                     
