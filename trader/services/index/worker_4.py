@@ -1,6 +1,7 @@
 from interfaces.tradeapp import TradeApp
 import time, json, threading, datetime
 from collections import defaultdict
+import datetime, time
 
 
 class Worker4(TradeApp):
@@ -8,21 +9,22 @@ class Worker4(TradeApp):
     buy_quantity = 1
     sell_quantity = 1
     
-    def scalpBuy(self, ticker, data):
+    def scalpBuy(self, ticker):
         rsi, slope = self.getRSISlope(ticker)
         live_data = self.getLiveData(ticker, 'index')
         ltp = live_data['last_price']
+        now = datetime.datetime.now().time()
+          
         
         log = {
             'rsi': rsi,
             'slope': slope,
             'ticker': ticker,
             'ltp': ltp,
-            'cheaper_option': data['cheaper_option']
         }
         
         print(json.dumps(log, indent=2))
-        if rsi >= 40 and slope >= 0:
+        if rsi >= 40 and slope >= 0 and now>=datetime.time(9,30):
             trade = self.generateMarketOrderBuyIndexOption(ticker, self.buy_quantity, 'ENTRY_INDEX')
             self.sendTrade(trade)
             return
@@ -30,26 +32,8 @@ class Worker4(TradeApp):
     # strategy for entry
     def entryStrategy(self):
         while True:
-            try:
-                latest_nifty = self.getDataIndexTicker('NIFTY')
-                latest_banknifty = self.getDataIndexTicker('BANKNIFTY')
-            except:
-                time.sleep(10)
-                continue
-
-            if latest_nifty['data'] == 0 or latest_banknifty['data'] == 0:
-                time.sleep(10)
-                continue
-            
-            latest_nifty = latest_nifty['data'].pop()
-            latest_banknifty = latest_banknifty['data'].pop()
-            
             for ticker in self.index_tickers:
-                if 'BANKNIFTY' in ticker:
-                    data = latest_banknifty
-                else:
-                    data = latest_nifty
-                threading.Thread(target=self.scalpBuy, args=[ticker, data]).start()
+                threading.Thread(target=self.scalpBuy, args=[ticker]).start()
             
             time.sleep(310)
             
