@@ -83,7 +83,7 @@ services_index = [
     # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
     # {'name':'compare', 'script':main_compare_index, 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    # {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
+    {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
 ]
 
 # for stock trading

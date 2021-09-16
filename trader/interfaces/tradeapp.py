@@ -164,7 +164,7 @@ class TradeApp:
             'exchange': 'NFO',
             'quantity': self.token_map[ticker]['lot_size'],
             'tag': tag,
-            'price': live_data['depth']['sell'][1]['price'],
+            'price': live_data['depth']['buy'][1]['price'],
             'uri': PUBLISHER_URI_STOCK_OPT,
             'ltp': live_data['last_price'],
             'entry_price': live_data['last_price']
@@ -198,7 +198,7 @@ class TradeApp:
             'exchange': 'NFO',
             'quantity': quantity,
             'tag': tag,
-            'price': live_data['depth']['sell'][1]['price'],
+            'price': live_data['depth']['buy'][1]['price'],
             'uri': PUBLISHER_URI_STOCKS,
             'ltp': live_data['last_price'],
             'entry_price': live_data['last_price']
@@ -232,7 +232,7 @@ class TradeApp:
             'exchange': 'NFO',
             'quantity': self.token_map[ticker]['lot_size'],
             'tag': tag,
-            'price': live_data['depth']['sell'][1]['price'],
+            'price': live_data['depth']['buy'][1]['price'],
             'uri': PUBLISHER_URI_STOCK_FUT,
             'ltp': live_data['last_price'],
             'entry_price': live_data['last_price']

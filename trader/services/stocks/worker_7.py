@@ -11,7 +11,7 @@ class Worker7(TradeApp):
             now = datetime.datetime.now()
             # print(now)
 
-            if now.time() >= datetime.time(hour=9, minute=15) and now.time() <= datetime.time(hour=9, minute=22):
+            if now.time() >= datetime.time(hour=9, minute=16) and now.time() <= datetime.time(hour=9, minute=22):
                 for ticker in self.stock_option_tickers:
                     live_data = self.getLiveData(ticker)
                     
