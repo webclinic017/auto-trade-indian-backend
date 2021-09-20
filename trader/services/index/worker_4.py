@@ -63,7 +63,11 @@ class Worker4(TradeApp):
                 entry_price /= count
                 # print("Entry_Price", entry_price)
                 
-                ticker_data = self.getLiveData(ticker, 'index')
+                try:
+                    ticker_data = self.getLiveData(ticker, 'index')
+                except:
+                    continue
+                
                 rsi, rsi_slope = self.getRSISlope(ticker)
                 
                 # print(ticker_data)
