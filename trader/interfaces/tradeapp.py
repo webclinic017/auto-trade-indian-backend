@@ -40,6 +40,8 @@ class TradeApp:
             self.index_tickers.append(self.data['index'][tick]['ce_ticker'])
             self.index_tickers.append(self.data['index'][tick]['pe_ticker'])
     
+        self.tickers = self.data['tickers']
+    
     # get the live data for the particular ticker
     def getLiveData(self, ticker_der, type_='stock'):
         # if type_ == 'stock':
