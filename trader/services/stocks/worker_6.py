@@ -54,7 +54,7 @@ class Worker6(TradeApp):
                         }
 
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
-                        print(json.dumps(entry_conditions, indent=2))
+                        print(json.dumps(entry_conditions, indent=2, default=str))
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         
                         trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK_OPT')
