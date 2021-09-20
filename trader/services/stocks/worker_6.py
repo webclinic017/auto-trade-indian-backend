@@ -18,8 +18,11 @@ class Worker6(TradeApp):
             if now >= datetime.time(9, 30):
                 
                 for ticker in self.stock_option_tickers:
-
-                    live_data = self.getLiveData(ticker)
+                    
+                    try:
+                        live_data = self.getLiveData(ticker)
+                    except:
+                        continue
                     
                     if ticker not in self.ohlc_ticker:
                         t = datetime.date.today()

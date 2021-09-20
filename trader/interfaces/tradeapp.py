@@ -47,6 +47,8 @@ class TradeApp:
         # elif type_ == 'index':
         #     ticker = ticker_der
         # data = self.redis.get(self.token_map[ticker]['instrument_token'])
+        # print(ticker_der)
+        
         data = self.redis.get(ticker_der)
         return json.loads(data)
     

@@ -13,7 +13,11 @@ class Worker7(TradeApp):
 
             if now.time() >= datetime.time(hour=9, minute=16) and now.time() <= datetime.time(hour=9, minute=22):
                 for ticker in self.stock_option_tickers:
-                    live_data = self.getLiveData(ticker)
+                    
+                    try:
+                        live_data = self.getLiveData(ticker)
+                    except:
+                        continue
                     
                     if ticker not in self.ohlc_tickers:
                         self.ohlc_tickers[ticker] = live_data['ohlc']
