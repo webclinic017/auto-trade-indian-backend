@@ -18,16 +18,18 @@ class Worker6(TradeApp):
             if now >= datetime.time(9, 30):
                 
                 for ticker in self.stock_option_tickers:
+
+                    original_ticker = self.derivative_map[ticker]
                     
                     try:
-                        live_data = self.getLiveData(ticker)
+                        live_data = self.getLiveData(original_ticker)
                     except:
                         continue
                     
                     if ticker not in self.ohlc_ticker:
                         t = datetime.date.today()
                         try:
-                            historical_data = self.getHistoricalData(ticker, t, t, '15minute')
+                            historical_data = self.getHistoricalData(original_ticker, t, t, '15minute')
                         except:
                             continue
                         # print(historical_data)
@@ -76,20 +78,22 @@ class Worker6(TradeApp):
                     continue
 
                 
-                live_data = self.getLiveData(ticker)
+                original_ticker = self.derivative_map[ticker]
+                live_data_original = self.getLiveData(original_ticker)
+                live_data_tickerder = self.getLiveData(ticker)
 
-                current_price = live_data['last_price']
+                current_price = live_data_original['last_price']
 
                 orders_list = order_['data']
                 entry_price = self.averageEntryprice(orders_list)
-                pnl = self.getPnl(entry_price, live_data['last_price'])
+                pnl = self.getPnl(entry_price, live_data_tickerder['last_price'])
 
                 
                 exit_contitions = {
-                    'open': live_data['ohlc']['open'],
-                    'high': live_data['ohlc']['high'],
-                    'low': live_data['ohlc']['low'],
-                    'close': live_data['ohlc']['close'],
+                    'open': live_data_original['ohlc']['open'],
+                    'high': live_data_original['ohlc']['high'],
+                    'low': live_data_original['ohlc']['low'],
+                    'close': live_data_original['ohlc']['close'],
                     'current_price': current_price,
                     'ohlc_start': self.ohlc_ticker[ticker]['ohlc'],
                     'pnl': pnl
@@ -98,7 +102,7 @@ class Worker6(TradeApp):
                 # if 'CE' in ticker:
                 ohlc = self.ohlc_ticker[ticker]['ohlc']
                 low = ohlc['low']
-                current_price = live_data['last_price']
+                current_price = live_data_original['last_price']
 
                 if current_price < low or pnl >= 5:
                     trade = self.generateLimitOrderSellStockOption(ticker, 'EXIT')

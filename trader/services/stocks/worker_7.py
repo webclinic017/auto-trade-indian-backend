@@ -14,8 +14,10 @@ class Worker7(TradeApp):
             if now.time() >= datetime.time(hour=9, minute=16) and now.time() <= datetime.time(hour=9, minute=22):
                 for ticker in self.stock_option_tickers:
                     
+                    original_ticker = self.derivative_map[ticker]
+
                     try:
-                        live_data = self.getLiveData(ticker)
+                        live_data = self.getLiveData(original_ticker)
                     except:
                         continue
                     
@@ -63,7 +65,9 @@ class Worker7(TradeApp):
                 print(order)
                 ticker = order['ticker']
                 entry_price = self.averageEntryprice(order['data'])
-                live_data = self.getLiveData(ticker)
+                original_ticker = self.derivative_map[ticker]
+
+                live_data = self.getLiveData(original_ticker)
                 ohlc = self.ohlc_tickers[ticker]
 
                 pnl = self.getPnl(entry_price, live_data['last_price'])
