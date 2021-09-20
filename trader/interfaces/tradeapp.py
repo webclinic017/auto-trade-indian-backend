@@ -1,4 +1,4 @@
-import redis, json, threading, datetime, requests, os
+import redis, json, threading, datetime, requests, os, time
 from pymongo import MongoClient
 import pandas as pd
 
@@ -30,11 +30,15 @@ class TradeApp:
         self.stock_collection  = self.data_db['stock_master']        
         self.ticker_collection = self.mongo['analysis']['workers']
         self.data = json.loads(open('/app/data/tickers.json', 'r').read())
-        self.derivative_map = self.data['derivatives']
+        self.derivative_map = self.data['derivative_map']
         
         self.stock_tickers = list(self.data['tickers'].keys())
         self.stock_option_tickers = list(self.derivative_map.keys())
-        self.index_tickers = self.data['index']    
+        self.index_tickers = []
+        
+        for tick in self.data['index']:
+            self.index_tickers.append(self.data['index'][tick]['ce_ticker'])
+            self.index_tickers.append(self.data['index'][tick]['pe_ticker'])
     
     # get the live data for the particular ticker
     def getLiveData(self, ticker_der, type_='stock'):
@@ -91,11 +95,13 @@ class TradeApp:
     
     # function to get rsi and slope
     def getRSISlope(self, ticker):
+        ticker = ticker.split(":")[1]
         data = requests.get(f'http://{ZERODHA_SERVER}/get/rsi/{ticker}/7').json()
         return data['last_rsi'], data['last_slope']
     
     # historical data
     def getHistoricalData(self, ticker, fdate, tdate, interval):
+        ticker = ticker.split(":")[1]
         token = self.token_map[ticker]['instrument_token']
         data = requests.post(f'http://{ZERODHA_SERVER}/get/historical_data', json={
             'fdate': str(fdate),
@@ -111,6 +117,7 @@ class TradeApp:
     # market order buy for index option
     def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker, "index")
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/market_order/buy',
             'trading_symbol': ticker,
@@ -125,6 +132,7 @@ class TradeApp:
     # market order sell for index option
     def generateMarketOrderSellIndexOption(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker, "index")
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/market_order/sell',
             'trading_symbol': ticker,
@@ -141,6 +149,7 @@ class TradeApp:
     def generateLimitOrderBuyStockOption(self, ticker, tag):
         # live_data = self.getQuote('NFO', ticker)
         live_data = self.getLiveData(ticker)
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -158,6 +167,7 @@ class TradeApp:
     def generateLimitOrderSellStockOption(self, ticker, tag):
         # live_data = self.getQuote('NFO', ticker)
         live_data = self.getLiveData(ticker)
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
@@ -175,6 +185,7 @@ class TradeApp:
     def generateLimitOrderBuyStock(self, ticker, quantity, tag):
         # live_data = self.getQuote('NFO', ticker)
         live_data = self.getLiveData(ticker)
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -192,6 +203,7 @@ class TradeApp:
     def generateLimitOrderSellStock(self, ticker, quantity, tag):
         # live_data = self.getQuote('NFO', ticker)
         live_data = self.getLiveData(ticker)
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/limit_order/sell',
             'trading_symbol': ticker,
@@ -209,6 +221,7 @@ class TradeApp:
     def generateLimitOrderBuyStockFuture(self, ticker, tag):
         # live_data = self.getQuote('NFO', ticker)
         live_data = self.getLiveData(ticker)
+        ticker = ticker.split(":")[1]
         trade = {
             'endpoint': '/place/limit_order/buy',
             'trading_symbol': ticker,
@@ -225,6 +238,7 @@ class TradeApp:
     # limit order sell for stock futures
     def generateLimitOrderSellStockFuture(self, ticker, tag):
         # live_data = self.getQuote('NFO', ticker)
+        ticker = ticker.split(":")[1]
         live_data = self.getLiveData(ticker)
         trade = {
             'endpoint': '/place/limit_order/sell',
@@ -249,7 +263,7 @@ class TradeApp:
         status, data = response.ok, response.json()        
         
         if status:
-            self.insertOrder(trade['trading_symbol'], trade)
+            self.insertOrder(trade['exchange'] + ':' + trade['trading_symbol'], trade)
         
         return status, data
     
