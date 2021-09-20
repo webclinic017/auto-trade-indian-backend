@@ -72,10 +72,8 @@ class Worker6(TradeApp):
                 if ticker not in self.ohlc_ticker:
                     continue
 
-                try:
-                    live_data = self.getLiveData(ticker)
-                except:
-                    continue
+                
+                live_data = self.getLiveData(ticker)
 
                 current_price = live_data['last_price']
 

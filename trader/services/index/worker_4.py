@@ -11,10 +11,7 @@ class Worker4(TradeApp):
     
     def scalpBuy(self, ticker):
         rsi, slope = self.getRSISlope(ticker)
-        try:
-            live_data = self.getLiveData(ticker, 'index')
-        except:
-            return
+        live_data = self.getLiveData(ticker, 'index')
 
         ltp = live_data['last_price']
         now = datetime.datetime.now().time()
@@ -66,18 +63,8 @@ class Worker4(TradeApp):
                 entry_price /= count
                 # print("Entry_Price", entry_price)
                 
-                try:
-                    ticker_data = self.getLiveData(ticker, 'index')
-                except:
-                    continue
-                
-                # print(ticker_data)
-
-                try:
-                    rsi, rsi_slope = self.getRSISlope(ticker)
-                except:
-                    rsi = 999
-                    rsi_slope = 999
+                ticker_data = self.getLiveData(ticker, 'index')
+                rsi, rsi_slope = self.getRSISlope(ticker)
                 
                 # print(ticker_data)
                 ltp = ticker_data['last_price']
