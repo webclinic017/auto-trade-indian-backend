@@ -24,26 +24,26 @@ class Worker7(TradeApp):
                     
                     ohlc = self.ohlc_tickers[ticker]
                     
-                    if ohlc['open'] == ohlc['low'] and ticker['ce_ticker'] not in self.entered_tickers:
-                        trade = self.generateLimitOrderBuyStockOption(ticker['ce_ticker'], 'ENTRY_STOCK')
+                    if ohlc['open'] == ohlc['low'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                        trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['ce_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
-                        self.entered_tickers.add(ticker['ce_ticker'])
+                        self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
                         print(json.dumps({
                             'ohlc': ohlc,
-                            'ticker': ticker['ce_ticker']
+                            'ticker': self.tickers[ticker]['ce_ticker']
                         }, indent=2))
                         # self.insertOrder(ticker, trade)
 
-                    elif ohlc['open'] == ohlc['high'] and ticker['pe_ticker'] not in self.entered_tickers:
-                        trade = self.generateLimitOrderBuyStockOption(ticker['pe_ticker'], 'ENTRY_STOCK')
+                    elif ohlc['open'] == ohlc['high'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                        trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['pe_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
-                        self.entered_tickers.add(ticker['pe_ticker'])
+                        self.entered_tickers.add(self.tickers[ticker]['pe_ticker'])
                         # self.insertOrder(ticker, trade)
                         
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         print(json.dumps({
                             'ohlc': ohlc,
-                            'ticker': ticker['pe_ticker']
+                            'ticker': self.tickers[ticker]['pe_ticker']
                         }, indent=2))
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
             else:

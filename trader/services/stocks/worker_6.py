@@ -50,7 +50,7 @@ class Worker6(TradeApp):
 
                     current_price = live_data['last_price']
                 
-                    if current_price > high and ticker['ce_ticker'] not in self.entered_tickers:
+                    if current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
                         entry_conditions = {
                             'ohlc': ohlc,
                             'current_price': current_price 
@@ -60,9 +60,9 @@ class Worker6(TradeApp):
                         print(json.dumps(entry_conditions, indent=2, default=str))
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         
-                        trade = self.generateLimitOrderBuyStockOption(ticker['ce_ticker'], 'ENTRY_STOCK_OPT')
+                        trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['ce_ticker'], 'ENTRY_STOCK_OPT')
                         self.sendTrade(trade)
-                        self.entered_tickers.add(ticker['ce_ticker'])
+                        self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
 
             time.sleep(300)
 
