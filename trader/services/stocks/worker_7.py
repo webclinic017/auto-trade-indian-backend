@@ -12,42 +12,38 @@ class Worker7(TradeApp):
             # print(now)
 
             if now.time() >= datetime.time(hour=9, minute=16) and now.time() <= datetime.time(hour=9, minute=22):
-                for ticker in self.stock_option_tickers:
-                    
-                    original_ticker = self.derivative_map[ticker]
-
+                
+                for ticker in self.tickers:
                     try:
-                        live_data = self.getLiveData(original_ticker)
+                        live_data = self.getLiveData(ticker)
                     except:
                         continue
                     
                     if ticker not in self.ohlc_tickers:
                         self.ohlc_tickers[ticker] = live_data['ohlc']
-
+                    
                     ohlc = self.ohlc_tickers[ticker]
                     
-                    
-
-                    if ohlc['open'] == ohlc['low'] and 'CE' in ticker and ticker not in self.entered_tickers:
-                        trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
+                    if ohlc['open'] == ohlc['low'] and ticker['ce_ticker'] not in self.entered_tickers:
+                        trade = self.generateLimitOrderBuyStockOption(ticker['ce_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
-                        self.entered_tickers.add(ticker)
+                        self.entered_tickers.add(ticker['ce_ticker'])
                         print(json.dumps({
                             'ohlc': ohlc,
-                            'ticker': ticker
+                            'ticker': ticker['ce_ticker']
                         }, indent=2))
                         # self.insertOrder(ticker, trade)
 
-                    elif ohlc['open'] == ohlc['high'] and 'PE' in ticker and ticker not in self.entered_tickers:
-                        trade = self.generateLimitOrderBuyStockOption(ticker, 'ENTRY_STOCK')
+                    elif ohlc['open'] == ohlc['high'] and ticker['pe_ticker'] not in self.entered_tickers:
+                        trade = self.generateLimitOrderBuyStockOption(ticker['pe_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
-                        self.entered_tickers.add(ticker)
+                        self.entered_tickers.add(ticker['pe_ticker'])
                         # self.insertOrder(ticker, trade)
                         
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         print(json.dumps({
                             'ohlc': ohlc,
-                            'ticker': ticker
+                            'ticker': ticker['pe_ticker']
                         }, indent=2))
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
             else:
@@ -63,26 +59,29 @@ class Worker7(TradeApp):
             
             for order in orders:
                 print(order)
-                ticker = order['ticker']
+                derivative = order['ticker']
+                ticker = self.derivative_map[derivative]
                 entry_price = self.averageEntryprice(order['data'])
                 original_ticker = self.derivative_map[ticker]
 
                 live_data = self.getLiveData(original_ticker)
+                live_data_der = self.getLiveData(derivative)
+                
                 ohlc = self.ohlc_tickers[ticker]
 
-                pnl = self.getPnl(entry_price, live_data['last_price'])
+                pnl = self.getPnl(entry_price, live_data_der['last_price'])
                 if pnl >= 4 or live_data['last_price'] < ohlc['low']:
                     print('-'*10 + 'EXIT' + '-'*10)
                     print(json.dumps({
-                        'ticker': ticker,
+                        'ticker': derivative,
                         'pnl': pnl,
                     }, indent=2))
                     print('-'*10 + 'EXIT' + '-'*10)
 
-                    trade = self.generateLimitOrderSellStockOption(ticker, 'EXIT')
+                    trade = self.generateLimitOrderSellStockOption(derivative, 'EXIT')
                     self.sendTrade(trade)
-                    self.entered_tickers.discard(ticker)
-                    self.deleteOrder(ticker)
+                    self.entered_tickers.discard(derivative)
+                    self.deleteOrder(derivative)
             
             time.sleep(10)
 
