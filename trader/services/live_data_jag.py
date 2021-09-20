@@ -36,19 +36,20 @@ def get_liveData(tickers):
 
 def main():
     data = json.loads(open('/app/data/tickers.json', 'r').read())
-    
-    stocks_options = []
-    for tick in data['tickers']:
-        for stock in data['tickers'][tick]:
-            stocks_options.append(f'NFO:{stock}')
 
-    index = []
-    for tick in data['index']:
-        index.append(f'NFO:{tick}')
-        
-    stocks = list(map(lambda x : f'NSE:{x}', list(data['tickers'].keys())))
-    
-    tickers = stocks_options + index + stocks
+    stocks=list(data['tickers'].keys()) 
+
+    stocks_options = []
+    for stock in data['tickers']:
+        stocks_options.append(data['tickers'][stock]['ce_ticker'])
+        stocks_options.append(data['tickers'][stock]['pe_ticker'])
+   
+    index_options = []
+    for stock in data['index']:
+        index_options.append(data['index'][stock]['ce_ticker'])
+        index_options.append(data['index'][stock]['pe_ticker'])
+
+    tickers = stocks_options + index_options + stocks
 
     t = threading.Thread(target=get_liveData, args=[tickers])
     t.setDaemon(True)

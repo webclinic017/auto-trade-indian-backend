@@ -11,7 +11,11 @@ class Worker4(TradeApp):
     
     def scalpBuy(self, ticker):
         rsi, slope = self.getRSISlope(ticker)
-        live_data = self.getLiveData(ticker, 'index')
+        try:
+            live_data = self.getLiveData(ticker, 'index')
+        except:
+            return
+
         ltp = live_data['last_price']
         now = datetime.datetime.now().time()
           
@@ -123,7 +127,7 @@ class Worker4(TradeApp):
                 })
 
 
-                if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(21, 25) or (delta_acceleration <= -2) or flag:
+                if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(21, 25):#  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
                     # send a exit signal
                     if 'buy' in order['endpoint']:
                         order['endpoint'] = order['endpoint'].replace('buy', 'sell')

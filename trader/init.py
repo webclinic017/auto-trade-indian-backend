@@ -92,8 +92,8 @@ services_stocks = [
     # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
-    {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
-    {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
+    # {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
+    # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
 ]
 
 services = services_index + services_stocks
