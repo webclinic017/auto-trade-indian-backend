@@ -12,7 +12,6 @@ nse = Nse()
 class Worker9(TradeApp):
 
     entered_tickers = set()
-    ohlc_tickers = {}
     
     def entryStrategy(self):
         while True:
@@ -47,31 +46,19 @@ class Worker9(TradeApp):
                     else:
                         continue
 
-                    if ticker not in self.ohlc_ticker:
-                        t = datetime.date.today()
-                        try:
-                            historical_data = self.getHistoricalData(ticker, t, t, '15minute')
-                        except:
-                            continue
-                        
-                        o, h, l, c = historical_data.loc[0, ['open','high','low','close']].values                        
-                        self.ohlc_ticker[ticker] = {
-                            'open': o, 'high': h, 'low': l, 'close': c
-                        }
                     
-                    ohlc = self.ohlc_tickers[ticker]
-                    
-                    if ohlc['open'] == ohlc['low'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    if live_data['buy_quantity'] > live_data['sell_quantity'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['ce_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
                         print(json.dumps({
-                            'ohlc': ohlc,
+                            'buy_quantity': live_data['buy_quantity'],
+                            'sell_quantity': live_data['sell_quantity'],
                             'ticker': self.tickers[ticker]['ce_ticker']
                         }, indent=2))
                         # self.insertOrder(ticker, trade)
 
-                    elif ohlc['open'] == ohlc['high'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                    elif live_data['sell_quantity'] > live_data['buy_quantity'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['pe_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['pe_ticker'])
@@ -79,7 +66,8 @@ class Worker9(TradeApp):
                         
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         print(json.dumps({
-                            'ohlc': ohlc,
+                            'buy_quantity': live_data['buy_quantity'],
+                            'sell_quantity': live_data['sell_quantity'],
                             'ticker': self.tickers[ticker]['pe_ticker']
                         }, indent=2))
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
@@ -97,17 +85,16 @@ class Worker9(TradeApp):
             for order in orders:
                 print(order)
                 derivative = order['ticker']
-                ticker = self.derivative_map[derivative]
+                # ticker = self.derivative_map[derivative]
                 entry_price = self.averageEntryprice(order['data'])
-                original_ticker = self.derivative_map[ticker]
 
-                live_data = self.getLiveData(original_ticker)
+                # live_data = self.getLiveData(ticker)
                 live_data_der = self.getLiveData(derivative)
                 
-                ohlc = self.ohlc_tickers[ticker]
+                ohlc = live_data_der['ohlc']
 
                 pnl = self.getPnl(entry_price, live_data_der['last_price'])
-                if pnl >= 4 or live_data['last_price'] < ohlc['low']:
+                if pnl >= 4 or live_data_der['last_price'] < ohlc['low']:
                     print('-'*10 + 'EXIT' + '-'*10)
                     print(json.dumps({
                         'ticker': derivative,
