@@ -5,7 +5,7 @@ import datetime, time, json, os
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
-class Worker6(TradeApp):
+class Worker8(TradeApp):
     quantity = 1
 
     entered_tickers = set()
@@ -135,5 +135,5 @@ class Worker6(TradeApp):
 
 
 def main():
-    app = Worker6(name='worker_6')
+    app = Worker8(name='worker_8')
     app.start()

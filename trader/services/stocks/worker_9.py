@@ -9,7 +9,7 @@ import datetime, time, json
 from nsetools import Nse
 nse = Nse()
 
-class Worker7(TradeApp):
+class Worker9(TradeApp):
 
     entered_tickers = set()
     ohlc_tickers = {}
@@ -124,5 +124,5 @@ class Worker7(TradeApp):
 
 
 def main():
-    app = Worker7(name='worker_7')
+    app = Worker9(name='worker_9')
     app.start()
