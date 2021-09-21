@@ -19,10 +19,11 @@ class TradeApp:
         # create a collection for storing all the orders for that particular collection
         date = datetime.date.today()
         self.orders_db = self.mongo['orders_' + str(date)]
-        self.orders_collection = self.orders_db[self.name]
+        self.orders_collection = self.orders_db[self.name + '_orders']
+        self.orders_collection_cache = self.orders_db[self.name]
         
         # this step is to clear all the database orders at the initialization step
-        self.orders_collection.delete_many({})
+        self.orders_collection_cache.delete_many({})
         
         # database for index
         self.data_db = self.mongo['intraday_' + str(date)]
@@ -62,29 +63,32 @@ class TradeApp:
         print(data)
         return data[f'{exchange}:{ticker}']
     
+    # create a completed order
+    def createOrder(self, order):
+        self.orders_collection.insert(order)
     
     # insert the order into the database
     def insertOrder(self, ticker, order):
-        result = self.orders_collection.update_one({'ticker':ticker}, {'$push': {'data':order}}, True)
+        result = self.orders_collection_cache.update_one({'ticker':ticker}, {'$push': {'data':order}}, True)
         return result
     
     # get the all orders
     def getAllOrders(self):
-        orders = self.orders_collection.find({})
+        orders = self.orders_collection_cache.find({})
         return list(orders)
     
     # delete the order document
     def deleteOrder(self, ticker):
-        self.orders_collection.delete_one({'ticker':ticker})
+        self.orders_collection_cache.delete_one({'ticker':ticker})
     
     # get one particular order
     def getOrder(self, ticker):
-        order = self.orders_collection.find_one({'ticker':ticker})
+        order = self.orders_collection_cache.find_one({'ticker':ticker})
         return order
     
     # update the order by ticker
     def updateOrder(self, ticker, update):
-        return self.orders_collection.update_one({'ticker':ticker}, update, True)
+        return self.orders_collection_cache.update_one({'ticker':ticker}, update, True)
     
     
     def getDataIndexTicker(self, ticker):
@@ -268,6 +272,7 @@ class TradeApp:
         
         if status:
             self.insertOrder(trade['exchange'] + ':' + trade['trading_symbol'], trade)
+            self.createOrder(trade)
         
         return status, data
     
