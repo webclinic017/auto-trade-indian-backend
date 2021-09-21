@@ -68,8 +68,11 @@ class Worker4(TradeApp):
                 except:
                     continue
                 
-                rsi, rsi_slope = self.getRSISlope(ticker)
-                
+                try:
+                    rsi, rsi_slope = self.getRSISlope(ticker)
+                except:
+                    rsi, rsi_slope = 999, 999
+
                 # print(ticker_data)
                 ltp = ticker_data['last_price']
 
