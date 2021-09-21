@@ -1,6 +1,13 @@
-# first 1 min strategy
+# Top gainers and Losers Strategy
+'''
+Description
+extract the top gainers and losers list from NSE which is a list
+in this strategy we will trade only the list of traders that are mentioned
+'''
 from interfaces.tradeapp import TradeApp
 import datetime, time, json
+from nsetools import Nse
+nse = Nse()
 
 class Worker7(TradeApp):
 
@@ -12,16 +19,37 @@ class Worker7(TradeApp):
             now = datetime.datetime.now()
             # print(now)
 
-            if now.time() >= datetime.time(hour=9, minute=21) and now.time() <= datetime.time(hour=9, minute=22):
+            if now.time() >= datetime.time(hour=9, minute=25):# and now.time() <= datetime.time(hour=9, minute=22):
+
+                Gainers=nse.get_top_gainers()
+                # Gainers=pd.DataFrame(Gainers)
+                Losers=nse.get_top_losers()
+                # Losers=pd.DataFrame(Losers)
                 
+                g=[]
+                
+                for item in Gainers:
+                    #g.append(item['symbol'])
+                    g.append("NSE:"+item['symbol'])
+
+                l=[]
+
+                for item in Losers:
+                    #g.append(item['symbol'])
+                    l.append("NSE:"+item['symbol'])
+
                 for ticker in self.tickers:
-                    try:
-                        live_data = self.getLiveData(ticker)
-                    except:
-                        continue
-                    
+                    if ticker in g or l:
+                        try:
+                            live_data = self.getLiveData(ticker)
+                        except:
+                            continue
+
+                    buy_quantity=0,
+                    sell_quantity=1915
+
                     if ticker not in self.ohlc_tickers:
-                        self.ohlc_tickers[ticker] = live_data['ohlc']
+                        self.ohlc_tickers[ticker] = list(live_data['buy_quantity'],live_data('sell_quantity'))
                     
                     ohlc = self.ohlc_tickers[ticker]
                     
