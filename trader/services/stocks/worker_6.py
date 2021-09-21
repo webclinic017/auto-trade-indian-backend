@@ -108,7 +108,7 @@ class Worker6(TradeApp):
                     self.entered_tickers.remove(derivative)
                     
                     print('-'*10 + 'EXIT CONDITION' + '-'*10)
-                    print(json.dumps(exit_contitions, indent=2))
+                    print(json.dumps(exit_contitions, indent=2, default=str))
                     print('-'*10 + 'EXIT CONDITION' + '-'*10)
             
             time.sleep(10)
