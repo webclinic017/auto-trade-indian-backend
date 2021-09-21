@@ -47,14 +47,14 @@ class Worker6(TradeApp):
                     self.ohlc_ticker[ticker]['current_price'] = live_data['last_price']
                     
                     ohlc = self.ohlc_ticker[ticker]['ohlc']
-                    open=self.ohlc_ticker[ticker]['open']
+                    open_=self.ohlc_ticker[ticker]['open']
                     high = self.ohlc_ticker[ticker]['high']
                     low = self.ohlc_ticker[ticker]['low']
 
 
                     current_price = live_data['last_price']
                 
-                    if open==low and current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    if open_==low and current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
                         entry_conditions = {
                             'ohlc': ohlc,
                             'current_price': current_price 
@@ -68,7 +68,7 @@ class Worker6(TradeApp):
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
                     
-                    elif open==high and current_price<low and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                    elif open_==high and current_price<low and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
                         entry_conditions={
                             'ohlc':ohlc,
                             'current_price':current_price
