@@ -31,7 +31,6 @@ class Worker6(TradeApp):
                         t = datetime.date.today()
                         try:
                             historical_data = self.getHistoricalData(ticker, t, t, '15minute')
-                            
                         except:
                             continue
                         

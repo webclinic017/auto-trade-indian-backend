@@ -44,12 +44,20 @@ class Worker7(TradeApp):
                             live_data = self.getLiveData(ticker)
                         except:
                             continue
+                    else:
+                        continue
 
-                    buy_quantity=0,
-                    sell_quantity=1915
-
-                    if ticker not in self.ohlc_tickers:
-                        self.ohlc_tickers[ticker] = list(live_data['buy_quantity'],live_data('sell_quantity'))
+                    if ticker not in self.ohlc_ticker:
+                        t = datetime.date.today()
+                        try:
+                            historical_data = self.getHistoricalData(ticker, t, t, '15minute')
+                        except:
+                            continue
+                        
+                        o, h, l, c = historical_data.loc[0, ['open','high','low','close']].values                        
+                        self.ohlc_ticker[ticker] = {
+                            'open': o, 'high': h, 'low': l, 'close': c
+                        }
                     
                     ohlc = self.ohlc_tickers[ticker]
                     
