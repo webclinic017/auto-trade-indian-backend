@@ -111,7 +111,7 @@ class Worker4(TradeApp):
                 })
 
 
-                if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(21, 25) or (delta_acceleration <= -2) or flag:
+                if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or rsi_slope < 0 or datetime.datetime.now().time() >= datetime.time(15, 25) or (delta_acceleration <= -2) or flag:
                     # send a exit signal
                     if 'buy' in order['endpoint']:
                         order['endpoint'] = order['endpoint'].replace('buy', 'sell')

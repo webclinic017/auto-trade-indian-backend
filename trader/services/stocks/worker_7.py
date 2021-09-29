@@ -71,7 +71,7 @@ class Worker7(TradeApp):
                 ohlc = self.ohlc_tickers[ticker]
 
                 pnl = self.getPnl(entry_price, live_data_der['last_price'])
-                if pnl >= 4 or live_data['last_price'] < ohlc['low']:
+                if pnl >= 4 or live_data['last_price'] < ohlc['low'] or datetime.datetime.now().time() >= datetime.time(15, 25):
                     print('-'*10 + 'EXIT' + '-'*10)
                     print(json.dumps({
                         'ticker': derivative,
@@ -81,7 +81,7 @@ class Worker7(TradeApp):
 
                     trade = self.generateLimitOrderSellStockOption(derivative, 'EXIT')
                     self.sendTrade(trade)
-                    self.entered_tickers.discard(derivative)
+                    # self.entered_tickers.discard(derivative)
                     self.deleteOrder(derivative)
             
             time.sleep(10)
