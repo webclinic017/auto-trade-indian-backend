@@ -1,11 +1,11 @@
-#15 min Breakout Strategy
+#OI Chain based strategy
 from interfaces.tradeapp import TradeApp
 import datetime, time, json, os
 
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
 
-class Worker6(TradeApp):
+class Worker10(TradeApp):
     quantity = 1
 
     entered_tickers = set()
@@ -16,7 +16,7 @@ class Worker6(TradeApp):
         # logic for entry
         while True:
             now = datetime.datetime.now().time()
-            if now >= datetime.time(9, 30):
+            if now >= datetime.time(9, 15):
                 
                 for ticker in self.tickers:
                     
@@ -31,6 +31,7 @@ class Worker6(TradeApp):
                         t = datetime.date.today()
                         try:
                             historical_data = self.getHistoricalData(ticker, t, t, '15minute')
+                            
                         except:
                             continue
                         
@@ -39,6 +40,7 @@ class Worker6(TradeApp):
                             'ohlc': {
                                 'open': o, 'high': h, 'low': l, 'close': c
                             },
+                            'open':o,
                             'high': h,
                             'low':  l
                         }
@@ -46,36 +48,39 @@ class Worker6(TradeApp):
                     self.ohlc_ticker[ticker]['current_price'] = live_data['last_price']
                     
                     ohlc = self.ohlc_ticker[ticker]['ohlc']
+                    open_=self.ohlc_ticker[ticker]['open']
                     high = self.ohlc_ticker[ticker]['high']
                     low = self.ohlc_ticker[ticker]['low']
 
+
                     current_price = live_data['last_price']
                 
-                    if current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    #if open_==low and current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    if self.tickers[ticker]['total_power']>400 and current_price > self.tickers[ticker]['ltp'] and current_price<self.tickers[ticker]['ce_target1'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
                         entry_conditions = {
-                            'ohlc': ohlc,
-                            'current_price': current_price, 
-                            'ticker':self.tickers[ticker]['ce_ticker'],
-                            'worker':'worker_6'
-                        }
+                            
+                            'current_price': current_price,
+                            'ticker': self.tickers[ticker]['ce_ticker'] 
+                        },
+
 
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
-                        print(json.dumps(entry_conditions, indent=2, default=str))
+                        print(entry_conditions)
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['ce_ticker'], 'ENTRY_STOCK_OPT')
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
                     
-                    elif current_price<low and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                    elif self.tickers[ticker]['total_power']<-400 and current_price < self.tickers[ticker]['ltp'] and current_price>self.tickers[ticker]['pe_target1'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
                         entry_conditions={
-                            'ohlc':ohlc,
-                            'current_price':current_price
+                            'current_price': current_price,
+                            'ticker': self.tickers[ticker]['pe_ticker']
 
                         }
 
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
-                        print(json.dumps(entry_conditions, indent=2, default=str))
+                        print(entry_conditions)
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
                         
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['pe_ticker'], 'ENTRY_STOCK_OPT')
@@ -90,6 +95,7 @@ class Worker6(TradeApp):
             for order_ in orders:
                 derivative = order_['ticker']
                 ticker = self.derivative_map[derivative]
+                master_ticker=self.tickers[ticker]
 
                 if ticker not in self.ohlc_ticker:
                     continue
@@ -105,46 +111,45 @@ class Worker6(TradeApp):
 
                 
                 exit_contitions = {
-                    'open': live_data['ohlc']['open'],
-                    'high': live_data['ohlc']['high'],
-                    'low': live_data['ohlc']['low'],
-                    'close': live_data['ohlc']['close'],
+                    # 'open': live_data['ohlc']['open'],
+                    # 'high': live_data['ohlc']['high'],
+                    # 'low': live_data['ohlc']['low'],
+                    # 'close': live_data['ohlc']['close'],
+                    'ticker':derivative,
                     'current_price': current_price,
-                    'ohlc_start': self.ohlc_ticker[ticker]['ohlc'],
+                    # 'ohlc_start': self.ohlc_ticker[ticker]['ohlc'],
                     'pnl': pnl
                 }
 
                 # if 'CE' in ticker:
                 ohlc = self.ohlc_ticker[ticker]['ohlc']
                 low = ohlc['low']
-                high=ohlc['high']
                 current_price = live_data['last_price']
 
-                if "CE" in derivative and current_price < low or pnl >= 10 or pnl<=-5 or datetime.datetime.now().time() >= datetime.time(15, 25):
+                if "CE" in derivative and current_price < master_ticker['ltp'] or pnl >= 5 or datetime.datetime.now().time() >= datetime.time(15, 25):
                     trade = self.generateLimitOrderSellStockOption(derivative, 'EXIT')
                     self.sendTrade(trade)
                     self.deleteOrder(derivative)
-                  # self.entered_tickers.remove(derivative)
+                    # self.entered_tickers.remove(derivative)
                     
                     print('-'*10 + 'EXIT CONDITION' + '-'*10)
-                    print(json.dumps(exit_contitions, indent=2, default=str))
+                    print(exit_contitions)
                     print('-'*10 + 'EXIT CONDITION' + '-'*10)
 
-                elif "PE" in derivative and current_price > high or pnl >= 10 or pnl<=-5 or datetime.datetime.now().time() >= datetime.time(15, 25):
+                elif "PE" in derivative and current_price > master_ticker['ltp'] or pnl >= 5 or datetime.datetime.now().time() >= datetime.time(15, 25):
                     trade = self.generateLimitOrderSellStockOption(derivative, 'EXIT')
                     self.sendTrade(trade)
                     self.deleteOrder(derivative)
-                  # self.entered_tickers.remove(derivative)
+                    # self.entered_tickers.remove(derivative)
                     
                     print('-'*10 + 'EXIT CONDITION' + '-'*10)
-                    print(json.dumps(exit_contitions, indent=2, default=str))
+                    print(exit_contitions)
                     print('-'*10 + 'EXIT CONDITION' + '-'*10)
-                
             
             time.sleep(10)
             
 
 
 def main():
-    app = Worker6(name='worker_6')
+    app = Worker10(name='worker_10')
     app.start()

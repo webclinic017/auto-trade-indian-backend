@@ -20,9 +20,9 @@ class Worker9(TradeApp):
 
             if now.time() >= datetime.time(hour=9, minute=25):# and now.time() <= datetime.time(hour=9, minute=22):
 
-                Gainers=nse.get_top_gainers()
+                Gainers=nse.get_top_fno_gainers()
                 # Gainers=pd.DataFrame(Gainers)
-                Losers=nse.get_top_losers()
+                Losers=nse.get_top_fno_losers()
                 # Losers=pd.DataFrame(Losers)
                 
                 g=[]
@@ -30,46 +30,60 @@ class Worker9(TradeApp):
                 for item in Gainers:
                     #g.append(item['symbol'])
                     g.append("NSE:"+item['symbol'])
+                # print('gainers', g)
 
                 l=[]
 
                 for item in Losers:
                     #g.append(item['symbol'])
                     l.append("NSE:"+item['symbol'])
+                # print('losers', l)
 
-                for ticker in self.tickers:
-                    if ticker in g or l:
-                        try:
-                            live_data = self.getLiveData(ticker)
-                        except:
-                            continue
-                    else:
+
+                for ticker in g or l:
+                    try:
+                        live_data=self.getLiveData(ticker)
+                    except:
                         continue
 
+                
+                
+                
+                # for ticker in self.tickers:
+                #     if ticker in g or l:
+                #         try:
+                #             live_data = self.getLiveData(ticker)
+                #         except:
+                #             continue
+                #     else:
+                #         continue
+
                     
-                    if live_data['buy_quantity'] > live_data['sell_quantity'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    if live_data['buy_quantity'] >= 1.5*live_data['sell_quantity'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                        # print(self.tickers[ticker]['ce_ticker'])
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['ce_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
-                        print(json.dumps({
+                        print({
                             'buy_quantity': live_data['buy_quantity'],
                             'sell_quantity': live_data['sell_quantity'],
                             'ticker': self.tickers[ticker]['ce_ticker']
-                        }, indent=2))
+                        })
                         # self.insertOrder(ticker, trade)
 
-                    elif live_data['sell_quantity'] > live_data['buy_quantity'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                    elif live_data['sell_quantity'] >= 1.5* live_data['buy_quantity'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                        # print(self.tickers[ticker]['pe_ticker'])
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['pe_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['pe_ticker'])
                         # self.insertOrder(ticker, trade)
                         
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
-                        print(json.dumps({
+                        print({
                             'buy_quantity': live_data['buy_quantity'],
                             'sell_quantity': live_data['sell_quantity'],
                             'ticker': self.tickers[ticker]['pe_ticker']
-                        }, indent=2))
+                        })
                         print('-'*10 + 'ENTRY CONDITION' + '-'*10)
             else:
                 print("Cant enter Worker 7")
@@ -94,17 +108,17 @@ class Worker9(TradeApp):
                 ohlc = live_data_der['ohlc']
 
                 pnl = self.getPnl(entry_price, live_data_der['last_price'])
-                if pnl >= 4 or live_data_der['last_price'] < ohlc['low']:
+                if pnl >= 10 or live_data_der['last_price'] < ohlc['low'] or datetime.datetime.now().time() >= datetime.time(15, 25) or pnl<=-5:
                     print('-'*10 + 'EXIT' + '-'*10)
-                    print(json.dumps({
+                    print({
                         'ticker': derivative,
                         'pnl': pnl,
-                    }, indent=2))
+                    })
                     print('-'*10 + 'EXIT' + '-'*10)
 
                     trade = self.generateLimitOrderSellStockOption(derivative, 'EXIT')
                     self.sendTrade(trade)
-                    self.entered_tickers.discard(derivative)
+                    # self.entered_tickers.remove(derivative)
                     self.deleteOrder(derivative)
             
             time.sleep(10)
