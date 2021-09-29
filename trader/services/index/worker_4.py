@@ -52,15 +52,8 @@ class Worker4(TradeApp):
             
             for order_ in orders:
                 ticker = order_['ticker']
-                
-                entry_price = 0
-                count = 0
-                
-                for order in order_['data']:
-                    entry_price += order['entry_price']
-                    count += 1    
-                
-                entry_price /= count
+                 
+                entry_price = self.averageEntryprice(order_['data'])
                 # print("Entry_Price", entry_price)
                 
                 try:
@@ -106,7 +99,7 @@ class Worker4(TradeApp):
 
                 delta_acceleration = ((cur_accleration-prev_acc)/prev_acc)*100
 
-                pnl = ((ltp - entry_price)/ltp) * 100
+                pnl = self.getPnl(entry_price, ticker_data)
                 print({
                     'entry_price':entry_price,
                     'pnl': pnl,
@@ -123,22 +116,11 @@ class Worker4(TradeApp):
 
                 if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(21, 25):#  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
                     # send a exit signal
-                    if 'buy' in order['endpoint']:
-                        order['endpoint'] = order['endpoint'].replace('buy', 'sell')
-                        order['price'] = ticker_data['depth']['buy'][1]['price']
-                    else:
-                        order['endpoint'] = order['endpoint'].replace('sell', 'buy')
-                        order['price'] = ticker_data['depth']['sell'][1]['price']
-                    
-                    trade = {
-                        'endpoint': order['endpoint'],
-                        'trading_symbol': order['trading_symbol'],
-                        'exchange': order['exchange'],
-                        'quantity': order['quantity'],
-                        'tag': 'EXIT',
-                        'uri': order['uri'],
-                        'price': order['price']
-                    }
+                    trade = self.generateMarketOrderBuyIndexOption(
+                        order_['ticker'],
+                        order_['quantity'],
+                        'EXIT'
+                    )
                     
                     self.sendTrade(trade)
                     
