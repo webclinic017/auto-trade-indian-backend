@@ -82,10 +82,10 @@ while True:
 # for the index trading
 services_index = [
     # {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
-    # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
+    {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
     # {'name':'compare', 'script':main_compare_index, 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    # {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
+    {'name':'worker_4_index', 'script':main_wk4_index, 'args':[]},
 ]
 
 # for stock trading
@@ -99,7 +99,7 @@ services_stocks = [
     {'name': 'worker_8_stock', 'script': main_wk8_stock, 'args': []},
     {'name': 'worker_9_stock', 'script': main_wk9_stock, 'args': []},
     {'name': 'worker_10_stock', 'script': main_wk10_stock, 'args': []},
-    {'name': 'worker_11_stock', 'script': main_wk11_stock, 'args': []}
+    # {'name': 'worker_11_stock', 'script': main_wk11_stock, 'args': []}
 ]
 
 services = services_index + services_stocks
