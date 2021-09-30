@@ -65,6 +65,7 @@ class TradeApp:
     
     # create a completed order
     def createOrder(self, order):
+        order['timestamp'] = str(datetime.datetime.now())
         self.orders_collection.insert(order)
     
     # insert the order into the database
