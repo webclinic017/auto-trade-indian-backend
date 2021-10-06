@@ -4,156 +4,165 @@ from collections import defaultdict
 import datetime, time
 import os
 from nsetools import Nse
-nse=Nse()
 
-os.environ['TZ'] = 'Asia/Kolkata'
+nse = Nse()
+
+os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()
+
+
 class Worker7(TradeApp):
+
     ohlc_ticker = {}
-    buy_quantity = 1
-    sell_quantity = 1
-    
+
+    NIFTY_QTY = 50
+    BANK_NIFTY_QTY = 25
+
     def entryStrategy(self):
         for ticker in self.index_tickers:
             if datetime.datetime.now().time() < datetime.time(9, 20):
                 continue
-        live_data=self.getLiveData(ticker)
+        live_data = self.getLiveData(ticker)
 
-        
-        live_banknifty=nse.get_index_quote('NIFTY BANK',as_json=False)
-        live_nifty=nse.get_index_quote('NIFTY BANK',as_json=False)
+        live_banknifty = nse.get_index_quote("NIFTY BANK", as_json=False)
+        live_nifty = nse.get_index_quote("NIFTY BANK", as_json=False)
 
-        t=datetime.date.today()
+        t = datetime.date.today()
 
-        
         rsi, slope = self.getRSISlope(ticker)
-        live_data = self.getLiveData(ticker, 'index')
+        live_data = self.getLiveData(ticker, "index")
 
-        ltp = live_data['last_price']
+        ltp = live_data["last_price"]
         now = datetime.datetime.now().time()
-          
-        
+
         log = {
-            'rsi': rsi,
-            'slope': slope,
-            'ticker': ticker,
-            'ltp': ltp,
+            "rsi": rsi,
+            "slope": slope,
+            "ticker": ticker,
+            "ltp": ltp,
         }
-        
+
         print(json.dumps(log, indent=2))
-        if rsi >= 40 and slope >= 0 and now>=datetime.time(9,30):
-            trade = self.generateMarketOrderBuyIndexOption(ticker, self.buy_quantity, 'ENTRY_INDEX')
+        if rsi >= 40 and slope >= 0 and now >= datetime.time(9, 30):
+
+            if "BANKNIFTY" in ticker:
+                quantity = self.BANK_NIFTY_QTY
+            else:
+                quantity = self.NIFTY_QTY
+
+            trade = self.generateMarketOrderBuyIndexOption(
+                ticker, quantity, "ENTRY_INDEX"
+            )
             self.sendTrade(trade)
             return
-    
-    
+
     # strategy for exit
     def exitStrategy(self):
-        m        = defaultdict(int)
-        acc      = defaultdict(list)
+        m = defaultdict(int)
+        acc = defaultdict(list)
         acc_drop = defaultdict(int)
 
         iterations = 0
 
         while True:
             orders = self.getAllOrders()
-            
+
             for order_ in orders:
-                ticker = order_['ticker']
-                 
-                entry_price = self.averageEntryprice(order_['data'])
+                ticker = order_["ticker"]
+
+                entry_price = self.averageEntryprice(order_["data"])
                 # print("Entry_Price", entry_price)
-                
+
                 try:
-                    ticker_data = self.getLiveData(ticker, 'index')
+                    ticker_data = self.getLiveData(ticker, "index")
                 except:
                     continue
-                
+
                 try:
                     rsi, rsi_slope = self.getRSISlope(ticker)
                 except:
                     rsi, rsi_slope = 999, 999
 
                 # print(ticker_data)
-                ltp = ticker_data['last_price']
+                ltp = ticker_data["last_price"]
 
-             
                 cur_accleration = (ltp - m[ticker]) / 100
                 # m[ticker] = ltp
                 acc[ticker].append(cur_accleration)
                 prev_acc = None
 
                 if iterations >= 2:
-                    acc[ticker] = acc[ticker][len(acc[ticker])-7:]
-                    #prev_acc = sum(acc[ticker]) / len(acc[ticker])
+                    acc[ticker] = acc[ticker][len(acc[ticker]) - 7 :]
+                    # prev_acc = sum(acc[ticker]) / len(acc[ticker])
                     try:
-                        prev_acc=acc[ticker][-2]
+                        prev_acc = acc[ticker][-2]
                     except:
-                        prev_acc= cur_accleration
+                        prev_acc = cur_accleration
                 else:
                     prev_acc = cur_accleration
 
-                
                 if cur_accleration < prev_acc:
                     acc_drop[ticker] += 1
                 else:
                     acc_drop[ticker] = 0
-            
+
                 flag = False
 
                 if acc_drop[ticker] >= 5:
                     flag = True
                     acc_drop[ticker] = 0
 
-                delta_acceleration = ((cur_accleration-prev_acc)/prev_acc)*100
+                delta_acceleration = ((cur_accleration - prev_acc) / prev_acc) * 100
 
                 pnl = self.getPnl(entry_price, ticker_data)
-                print({
-                    'entry_price':entry_price,
-                    'pnl': pnl,
-                    'accleration': cur_accleration,
-                    'prev_acc': prev_acc,
-                    'ticker': ticker,
-                    'rsi_slope': rsi_slope,
-                    'rsi': rsi,
-                    'delta_acc':delta_acceleration,
-                    'acc_drop': flag,
-                    'acc_drop_count':acc_drop[ticker]
-                })
+                print(
+                    {
+                        "entry_price": entry_price,
+                        "pnl": pnl,
+                        "accleration": cur_accleration,
+                        "prev_acc": prev_acc,
+                        "ticker": ticker,
+                        "rsi_slope": rsi_slope,
+                        "rsi": rsi,
+                        "delta_acc": delta_acceleration,
+                        "acc_drop": flag,
+                        "acc_drop_count": acc_drop[ticker],
+                    }
+                )
 
-
-                if ((ltp - entry_price)/ltp)* 100 >= 4 or rsi < 30 or datetime.datetime.now().time() >= datetime.time(21, 25):#  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
+                if (
+                    ((ltp - entry_price) / ltp) * 100 >= 4
+                    or rsi < 30
+                    or datetime.datetime.now().time() >= datetime.time(21, 25)
+                ):  #  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
                     # send a exit signal
                     trade = self.generateMarketOrderBuyIndexOption(
-                        order_['ticker'],
-                        order_['quantity'],
-                        'EXIT'
+                        order_["ticker"], order_["quantity"], "EXIT"
                     )
-                    
+
                     self.sendTrade(trade)
-                    
+
                     self.deleteOrder(ticker)
-                    
-                    print("-"*10 + " EXIT CONDITIONS " + "-"*10)
+
+                    print("-" * 10 + " EXIT CONDITIONS " + "-" * 10)
                     exit_cond = {
-                        'pnl': pnl,
-                        'rsi': rsi,
-                        'slope': rsi_slope,
-                        'ticker': ticker,
-                        'accleration': cur_accleration,
-                        'prev_acc': prev_acc,
-                        'delta_acc':delta_acceleration,
-                        'acc_drop': flag,
-                        'acc_drop_count':acc_drop[ticker]
+                        "pnl": pnl,
+                        "rsi": rsi,
+                        "slope": rsi_slope,
+                        "ticker": ticker,
+                        "accleration": cur_accleration,
+                        "prev_acc": prev_acc,
+                        "delta_acc": delta_acceleration,
+                        "acc_drop": flag,
+                        "acc_drop_count": acc_drop[ticker],
                     }
                     print(json.dumps(exit_cond, indent=3))
-                    print("-"*(10+17+10))
-                
-            
+                    print("-" * (10 + 17 + 10))
+
             iterations += 1
             time.sleep(10)
 
 
 def main():
-    app = Worker4(name='worker_4_index')
+    app = Worker7(name="worker_7_index")
     app.start()
