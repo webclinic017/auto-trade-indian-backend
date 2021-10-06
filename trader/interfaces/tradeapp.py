@@ -3,9 +3,7 @@ from pymongo import MongoClient
 import pandas as pd
 
 ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
-PUBLISHER_URI_INDEX_OPT = (
-    PUBLISHER_URI_STOCK_OPT
-) = PUBLISHER_URI_STOCKS = PUBLISHER_URI_STOCK_FUT = os.environ["PUBLISHER_URI"]
+PUBLISHER_URI = os.environ["PUBLISHER_URI"]
 
 
 class TradeApp:
@@ -129,7 +127,7 @@ class TradeApp:
             "exchange": "NFO",
             "quantity": quantity,
             "tag": tag,
-            "uri": PUBLISHER_URI_INDEX_OPT,
+            "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
         }
         return trade
@@ -144,7 +142,7 @@ class TradeApp:
             "exchange": "NFO",
             "quantity": quantity,
             "tag": tag,
-            "uri": PUBLISHER_URI_INDEX_OPT,
+            "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
         }
         return trade
@@ -160,7 +158,7 @@ class TradeApp:
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["sell"][1]["price"],
-            "uri": PUBLISHER_URI_STOCK_OPT,
+            "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
         }
@@ -177,7 +175,7 @@ class TradeApp:
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["buy"][1]["price"],
-            "uri": PUBLISHER_URI_STOCK_OPT,
+            "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
         }
@@ -194,7 +192,7 @@ class TradeApp:
             "quantity": quantity,
             "tag": tag,
             "price": live_data["depth"]["sell"][1]["price"],
-            "uri": PUBLISHER_URI_STOCKS,
+            "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
         }
@@ -211,7 +209,7 @@ class TradeApp:
             "quantity": quantity,
             "tag": tag,
             "price": live_data["depth"]["buy"][1]["price"],
-            "uri": PUBLISHER_URI_STOCKS,
+            "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
         }
@@ -228,7 +226,7 @@ class TradeApp:
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["sell"][1]["price"],
-            "uri": PUBLISHER_URI_STOCK_FUT,
+            "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
         }
@@ -245,7 +243,7 @@ class TradeApp:
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["buy"][1]["price"],
-            "uri": PUBLISHER_URI_STOCK_FUT,
+            "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
         }
