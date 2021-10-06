@@ -16,13 +16,17 @@ class Worker10(TradeApp):
         # logic for entry
         while True:
             now = datetime.datetime.now().time()
-            if now >= datetime.time(9, 15):
+            if now >= datetime.time(9, 45):
                 
                 for ticker in self.tickers:
                     
                     # get the live data of the original ticker
                     try:
                         live_data = self.getLiveData(ticker)
+                        ce_ticker = self.tickers[ticker]['ce_ticker']
+                        pe_ticker = self.tickers[ticker]['pe_ticker']
+                        live_ce = self.getLiveData(ce_ticker)
+                        live_pe = self.getLiveData(pe_ticker)
                     except:
                         continue
                     

@@ -43,23 +43,15 @@ class Worker9(TradeApp):
                 for ticker in g or l:
                     try:
                         live_data=self.getLiveData(ticker)
+                        ce_ticker = self.tickers[ticker]['ce_ticker']
+                        pe_ticker = self.tickers[ticker]['pe_ticker']
+                        live_ce = self.getLiveData(ce_ticker)
+                        live_pe = self.getLiveData(pe_ticker)
                     except:
                         continue
 
-                
-                
-                
-                # for ticker in self.tickers:
-                #     if ticker in g or l:
-                #         try:
-                #             live_data = self.getLiveData(ticker)
-                #         except:
-                #             continue
-                #     else:
-                #         continue
-
                     
-                    if live_data['buy_quantity'] >= 1.5*live_data['sell_quantity'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    if live_data['buy_quantity'] >= 1.5*live_data['sell_quantity'] and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers and self.price_diff(live_ce['depth']['sell'][0]['price'], live_ce['depth']['buy'][0]['price']) < 5:
                         # print(self.tickers[ticker]['ce_ticker'])
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['ce_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)
@@ -71,7 +63,7 @@ class Worker9(TradeApp):
                         })
                         # self.insertOrder(ticker, trade)
 
-                    elif live_data['sell_quantity'] >= 1.5* live_data['buy_quantity'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                    elif live_data['sell_quantity'] >= 1.5* live_data['buy_quantity'] and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers and self.price_diff(live_ce['depth']['sell'][0]['price'], live_ce['depth']['buy'][0]['price']) < 5:
                         # print(self.tickers[ticker]['pe_ticker'])
                         trade = self.generateLimitOrderBuyStockOption(self.tickers[ticker]['pe_ticker'], 'ENTRY_STOCK')
                         self.sendTrade(trade)

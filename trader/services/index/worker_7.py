@@ -3,15 +3,29 @@ import time, json, threading, datetime
 from collections import defaultdict
 import datetime, time
 import os
+from nsetools import Nse
+nse=Nse()
 
 os.environ['TZ'] = 'Asia/Kolkata'
 time.tzset()
-class Worker4(TradeApp):
-    
+class Worker7(TradeApp):
+    ohlc_ticker = {}
     buy_quantity = 1
     sell_quantity = 1
     
-    def scalpBuy(self, ticker):
+    def entryStrategy(self):
+        for ticker in self.index_tickers:
+            if datetime.datetime.now().time() < datetime.time(9, 20):
+                continue
+        live_data=self.getLiveData(ticker)
+
+        
+        live_banknifty=nse.get_index_quote('NIFTY BANK',as_json=False)
+        live_nifty=nse.get_index_quote('NIFTY BANK',as_json=False)
+
+        t=datetime.date.today()
+
+        
         rsi, slope = self.getRSISlope(ticker)
         live_data = self.getLiveData(ticker, 'index')
 
@@ -32,14 +46,6 @@ class Worker4(TradeApp):
             self.sendTrade(trade)
             return
     
-    # strategy for entry
-    def entryStrategy(self):
-        while True:
-            for ticker in self.index_tickers:
-                threading.Thread(target=self.scalpBuy, args=[ticker]).start()
-            
-            time.sleep(310)
-            
     
     # strategy for exit
     def exitStrategy(self):
