@@ -315,3 +315,8 @@ class TradeApp:
         # start the threads
         entry_strategy.start(); exit_startegy.start()
         entry_strategy.join(); exit_startegy.join()
+    
+    def price_diff(self,bidprice,offerprice):
+        pricediff=(offerprice-bidprice)*100/100
+        return pricediff
+        

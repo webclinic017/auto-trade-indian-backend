@@ -23,6 +23,10 @@ class Worker8(TradeApp):
                     # get the live data of the original ticker
                     try:
                         live_data = self.getLiveData(ticker)
+                        ce_ticker = self.tickers[ticker]['ce_ticker']
+                        pe_ticker = self.tickers[ticker]['pe_ticker']
+                        live_ce = self.getLiveData(ce_ticker)
+                        live_pe = self.getLiveData(pe_ticker)
                     except:
                         continue
                     
@@ -55,7 +59,7 @@ class Worker8(TradeApp):
 
                     current_price = live_data['last_price']
                 
-                    if open_==low and current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers:
+                    if open_==low and current_price > high and self.tickers[ticker]['ce_ticker'] not in self.entered_tickers and self.price_diff(live_ce['depth']['sell'][0]['price'], live_ce['depth']['buy'][0]['price']) < 5:
                         entry_conditions = {
                             'ohlc': ohlc,
                             'current_price': current_price 
@@ -73,7 +77,7 @@ class Worker8(TradeApp):
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]['ce_ticker'])
                     
-                    elif open_==high and current_price<low and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers:
+                    elif open_==high and current_price<low and self.tickers[ticker]['pe_ticker'] not in self.entered_tickers and self.price_diff(live_ce['depth']['sell'][0]['price'], live_ce['depth']['buy'][0]['price']) < 5:
                         entry_conditions={
                             'ohlc':ohlc,
                             'current_price':current_price
