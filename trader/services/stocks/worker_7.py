@@ -34,7 +34,7 @@ class Worker7(TradeApp):
                         not in self.entered_tickers
                     ):
                         trade = self.generateLimitOrderBuyStockOption(
-                            self.tickers[ticker]["ce_ticker"], "ENTRY_STOCK"
+                            self.tickers[ticker]["ce_ticker"], "ENTRY"
                         )
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]["ce_ticker"])
@@ -55,7 +55,7 @@ class Worker7(TradeApp):
                         not in self.entered_tickers
                     ):
                         trade = self.generateLimitOrderBuyStockOption(
-                            self.tickers[ticker]["pe_ticker"], "ENTRY_STOCK"
+                            self.tickers[ticker]["pe_ticker"], "ENTRY"
                         )
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]["pe_ticker"])

@@ -41,8 +41,8 @@ from services.live_data import main as live_data_main
 # from services.index.compare import main as main_compare_index
 
 # for the stocks
-from services.stocks.calculator import main as main_calculator_stock
-from services.stocks.scraper import main as main_scraper_stock
+# from services.stocks.calculator import main as main_calculator_stock
+# from services.stocks.scraper import main as main_scraper_stock
 # from services.stocks.worker_4 import main as main_wk4_stock
 from services.stocks.worker_6 import main as main_wk6_stock
 from services.stocks.worker_8 import main as main_wk8_stock

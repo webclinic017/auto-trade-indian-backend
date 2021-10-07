@@ -80,7 +80,7 @@ class Worker6(TradeApp):
                         print("-" * 10 + "ENTRY CONDITION" + "-" * 10)
 
                         trade = self.generateLimitOrderBuyStockOption(
-                            self.tickers[ticker]["ce_ticker"], "ENTRY_STOCK_OPT"
+                            self.tickers[ticker]["ce_ticker"], "ENTRY"
                         )
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]["ce_ticker"])
@@ -105,7 +105,7 @@ class Worker6(TradeApp):
                         print("-" * 10 + "ENTRY CONDITION" + "-" * 10)
 
                         trade = self.generateLimitOrderBuyStockOption(
-                            self.tickers[ticker]["pe_ticker"], "ENTRY_STOCK_OPT"
+                            self.tickers[ticker]["pe_ticker"], "ENTRY"
                         )
                         self.sendTrade(trade)
                         self.entered_tickers.add(self.tickers[ticker]["pe_ticker"])

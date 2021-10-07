@@ -22,10 +22,11 @@ class Worker7(TradeApp):
         for ticker in self.index_tickers:
             if datetime.datetime.now().time() < datetime.time(9, 20):
                 continue
-        live_data = self.getLiveData(ticker)
+        live_data_der = self.getLiveData(ticker)
+        live_data=self.getLiveData(self.data['Index'])
 
-        live_banknifty = nse.get_index_quote("NIFTY BANK", as_json=False)
-        live_nifty = nse.get_index_quote("NIFTY BANK", as_json=False)
+        nifty_live=self.getLiveData('NSE:NIFTY')
+        banknifty_live=self.getLiveData('NSE:NIFTY BANK')
 
         t = datetime.date.today()
 
@@ -51,7 +52,7 @@ class Worker7(TradeApp):
                 quantity = self.NIFTY_QTY
 
             trade = self.generateMarketOrderBuyIndexOption(
-                ticker, quantity, "ENTRY_INDEX"
+                ticker, quantity, "ENTRY"
             )
             self.sendTrade(trade)
             return

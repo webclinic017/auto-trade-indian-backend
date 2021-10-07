@@ -51,8 +51,8 @@ class Worker5(TradeApp):
                 for pair in pairs:
                     ticker_a, ticker_b = pair
                        
-                    trade_a = self.generateMarketOrderBuyIndexOption(ticker_a, self.quantity, 'ENTRY_INDEX')
-                    trade_b = self.generateMarketOrderBuyIndexOption(ticker_b, self.quantity, 'ENTRY_INDEX')
+                    trade_a = self.generateMarketOrderBuyIndexOption(ticker_a, self.quantity, 'ENTRY')
+                    trade_b = self.generateMarketOrderBuyIndexOption(ticker_b, self.quantity, 'ENTRY')
                     
                     self.sendTrade(trade_a)
                     self.sendTrade(trade_b)

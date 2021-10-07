@@ -82,7 +82,7 @@ class Worker8(TradeApp):
 
                         try:
                             trade = self.generateLimitOrderBuyStockOption(
-                                self.tickers[ticker]["ce_ticker"], "ENTRY_STOCK_OPT"
+                                self.tickers[ticker]["ce_ticker"], "ENTRY"
                             )
                         except:
                             continue
@@ -112,7 +112,7 @@ class Worker8(TradeApp):
 
                         try:
                             trade = self.generateLimitOrderBuyStockOption(
-                                self.tickers[ticker]["pe_ticker"], "ENTRY_STOCK_OPT"
+                                self.tickers[ticker]["pe_ticker"], "ENTRY"
                             )
                         except:
                             continue
