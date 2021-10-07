@@ -35,7 +35,7 @@ class Worker4(TradeApp):
         print(json.dumps(log, indent=2))
         if rsi >= 40 and slope >= 0 and now >= datetime.time(9, 30):
             trade = self.generateMarketOrderBuyIndexOption(
-                ticker, quantity, "ENTRY_INDEX"
+                ticker, quantity, "ENTRY"
             )
             self.sendTrade(trade)
             return

@@ -129,6 +129,7 @@ class TradeApp:
             "tag": tag,
             "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
+            'type': 'INDEXOPT'
         }
         return trade
 
@@ -144,6 +145,7 @@ class TradeApp:
             "tag": tag,
             "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
+            'type': 'INDEXOPT'
         }
         return trade
 
@@ -161,6 +163,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
+            'type': 'STOCKOPT'
         }
         return trade
 
@@ -178,6 +181,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
+            'type': 'STOCKOPT'
         }
         return trade
 
@@ -195,6 +199,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
+            'type': 'STOCK'
         }
         return trade
 
@@ -212,6 +217,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
+            'type': 'STOCK'
         }
         return trade
 
@@ -229,6 +235,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
+            'type': 'STOCKFUT'
         }
         return trade
 
@@ -246,6 +253,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
+            'type': 'STOCKFUT'
         }
         return trade
 

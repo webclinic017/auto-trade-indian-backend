@@ -3,10 +3,10 @@ import logging
 from time import sleep
 from .utils import RedisWorker5Dict
 
-PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI_INDEX_OPT']
-PUBLISHER_URI_STOCKS = os.environ['PUBLISHER_URI_STOCKS']
-PUBLISHER_URI_STOCK_OPT = os.environ['PUBLISHER_URI_STOCK_OPT']
-PUBLISHER_URI_STOCK_FUT = os.environ['PUBLISHER_URI_STOCK_FUT']
+PUBLISHER_URI_INDEX_OPT = os.environ['PUBLISHER_URI']
+PUBLISHER_URI_STOCKS = os.environ['PUBLISHER_URI']
+PUBLISHER_URI_STOCK_OPT = os.environ['PUBLISHER_URI']
+PUBLISHER_URI_STOCK_FUT = os.environ['PUBLISHER_URI']
 
 
 ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
@@ -73,7 +73,7 @@ def scalp_buy(symbol, quantity, n, redis_host='redis_server_index', redis_port=6
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
-                        'tag': 'ENTRY_INDEX',
+                        'tag': 'ENTRY',
                         'uri': PUBLISHER_URI_INDEX_OPT,
                         'ltp': ltp[f'NFO:{symbol}']['last_price']
                     }
@@ -103,7 +103,7 @@ def scalp_sell(symbol, quantity, n, redis_host='redis_server_index', redis_port=
                         'trading_symbol': symbol,
                         'exchange': 'NFO',
                         'quantity': quantity,
-                        'tag':'ENTRY_INDEX',
+                        'tag':'ENTRY',
                         'uri': PUBLISHER_URI_INDEX_OPT,
                         'ltp': ltp[f'NFO:{symbol}']['last_price']
                     }
@@ -162,7 +162,7 @@ def start_trade(document, quantity):
             'trading_symbol': ticker_a,
             'exchange': 'NFO',
             'quantity':quantity,
-            'tag': 'ENTRY_INDEX',
+            'tag': 'ENTRY',
             'uri': PUBLISHER_URI_INDEX_OPT
         }
     
@@ -177,7 +177,7 @@ def start_trade(document, quantity):
             'trading_symbol': ticker_b,
             'exchange': 'NFO',
             'quantity':quantity,
-            'tag': 'ENTRY_INDEX',
+            'tag': 'ENTRY',
             'uri': PUBLISHER_URI_INDEX_OPT
         }
         
@@ -252,7 +252,7 @@ def scalp_buy_stock(symbol, quantity, n, redis_host='redis_server_index', redis_
                     'trading_symbol': symbol,
                     'exchange': 'NSE',
                     'quantity': quantity,
-                    'tag': 'ENTRY_STOCK',
+                    'tag': 'ENTRY',
                     'uri': PUBLISHER_URI_STOCKS,
                     'ltp': quotes[f'NSE:{symbol}']['last_price']
                 }
@@ -283,7 +283,7 @@ def scalp_sell_stock(symbol, quantity, n, redis_host='redis_server_index', redis
                     'trading_symbol': symbol,
                     'exchange': 'NSE',
                     'quantity': quantity,
-                    'tag': 'ENTRY_STOCK',
+                    'tag': 'ENTRY',
                     'uri': PUBLISHER_URI_STOCKS,
                     'ltp': quotes[f'NSE:{symbol}']['last_price']
                 }
@@ -315,7 +315,7 @@ def scalp_buy_stock_option(symbol, quantity, n, redis_host='redis_server_index',
                             'trading_symbol': symbol,
                             'exchange': 'NFO',
                             'quantity': quantity,
-                            'tag': 'ENTRY_STOCK_OPT',
+                            'tag': 'ENTRY',
                             'price': quotes[ticker]['depth']['sell'][1]['price'],
                             'uri': PUBLISHER_URI_STOCK_OPT,
                             'ltp': quotes[ticker]['last_price']
@@ -349,7 +349,7 @@ def scalp_sell_stock_option(symbol, quantity, n, redis_host='redis_server_index'
                             'trading_symbol': symbol,
                             'exchange': 'NFO',
                             'quantity': quantity,
-                            'tag': 'ENTRY_STOCK_OPT',
+                            'tag': 'ENTRY',
                             'price': quotes[ticker]['depth']['buy'][1]['price'],
                             'uri': PUBLISHER_URI_STOCK_OPT,
                             'ltp': quotes[ticker]['last_price']
@@ -382,7 +382,7 @@ def scalp_buy_stock_fut(symbol, quantity, n, redis_host='redis_server_index', re
                             'trading_symbol': symbol,
                             'exchange': 'NFO',
                             'quantity': quantity,
-                            'tag': 'ENTRY_STOCK_FUT',
+                            'tag': 'ENTRY',
                             'price': quotes[ticker]['depth']['sell'][1]['price'],
                             'uri': PUBLISHER_URI_STOCK_FUT,
                             'ltp': quotes[ticker]['last_price']
@@ -416,7 +416,7 @@ def scalp_sell_stock_fut(symbol, quantity, n, redis_host='redis_server_index', r
                             'trading_symbol': symbol,
                             'exchange': 'NFO',
                             'quantity': quantity,
-                            'tag': 'ENTRY_STOCK_FUT',
+                            'tag': 'ENTRY',
                             'price': quotes[ticker]['depth']['buy'][1]['price'],
                             'uri': PUBLISHER_URI_STOCK_FUT,
                             'ltp': quotes[ticker]['last_price']
