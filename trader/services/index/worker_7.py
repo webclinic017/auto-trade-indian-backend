@@ -22,13 +22,19 @@ class Worker7(TradeApp):
         for ticker in self.index_tickers:
             if datetime.datetime.now().time() < datetime.time(9, 20):
                 continue
-        live_data_der = self.getLiveData(ticker)
-        live_data=self.getLiveData(self.data['Index'])
+            
+            live_data_der = self.getLiveData(ticker)
 
-        nifty_live=self.getLiveData('NSE:NIFTY')
-        banknifty_live=self.getLiveData('NSE:NIFTY BANK')
+            nifty_live=self.getLiveData('NSE:NIFTY')
+            banknifty_live=self.getLiveData('NSE:NIFTY BANK')
 
-        t = datetime.date.today()
+            if datetime.datetime.now().time() == datetime.time(9, 21):
+                nifty_high=nifty_live['ohlc']['high']
+                nifty_low=nifty_live['ohlc']['low']
+                banknifty_high=banknifty_live['ohlc']['high']
+                banknifty_low=banknifty_live['ohlc']['low']
+                
+            t = datetime.date.today()
 
         rsi, slope = self.getRSISlope(ticker)
         live_data = self.getLiveData(ticker, "index")
