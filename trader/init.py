@@ -6,6 +6,7 @@ time.tzset()
 REDIS_SERVER = os.environ["REDIS_HOST"]
 RABBIT_MQ_SERVER = os.environ["RABBIT_MQ_HOST"]
 ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
+ORDERS_SERVER = os.environ["ORDERS_HOST"]
 
 # wait for all services
 def wait_for_service():
@@ -72,13 +73,13 @@ for process in orders_process:
 
 
 # # wait for orders service to start
-# while True:
-#     try:
-#         requests.get(f"http://{ORDERS_SERVER}/")
-#         break
-#     except:
-#         time.sleep(1)
-#         continue
+while True:
+    try:
+        requests.get(f"http://{ORDERS_SERVER}/")
+        break
+    except:
+        time.sleep(1)
+        continue
 
 
 # add service as {'name':'foo', 'script':'./a.out'}

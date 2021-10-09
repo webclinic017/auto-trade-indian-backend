@@ -1,6 +1,5 @@
 from interfaces.tradeapp import TradeApp
-import time, json, threading, datetime
-from collections import defaultdict
+import time, json, datetime
 import datetime, time
 import os
 from nsetools import Nse
@@ -25,19 +24,17 @@ class Worker7(TradeApp):
             if datetime.datetime.now().time() < datetime.time(9, 20):
                 continue
 
-            live_data_der = self.getLiveData(ticker)
             rsi, slope = self.getRSISlope(ticker)
-
             nifty_live = self.getLiveData("NSE:NIFTY")
             banknifty_live = self.getLiveData("NSE:NIFTY BANK")
 
-            if datetime.datetime.now().time() == datetime.time(9, 21):
+            if datetime.datetime.now().time() >= datetime.time(9, 21):
                 nifty_fivehigh = nifty_live["ohlc"]["high"]
                 nifty_fivelow = nifty_live["ohlc"]["low"]
                 banknifty_fivehigh = banknifty_live["ohlc"]["high"]
                 banknifty_fivelow = banknifty_live["ohlc"]["low"]
 
-            if datetime.datetime.now().time() == datetime.time(9, 31):
+            if datetime.datetime.now().time() >= datetime.time(9, 31):
                 nifty_15high = nifty_live["ohlc"]["high"]
                 nifty_15low = nifty_live["ohlc"]["low"]
                 banknifty_15high = banknifty_live["ohlc"]["high"]
@@ -75,12 +72,6 @@ class Worker7(TradeApp):
         banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
         nifty_live = self.getLiveData("NSE:NIFTY")
         banknifty_live = self.getLiveData("NSE:NIFTY BANK")
-
-        m = defaultdict(int)
-        acc = defaultdict(list)
-        acc_drop = defaultdict(int)
-
-        iterations = 0
 
         while True:
             orders = self.getAllOrders()
