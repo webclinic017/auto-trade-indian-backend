@@ -15,7 +15,7 @@ class Worker4(TradeApp):
 
     def scalpBuy(self, ticker):
         rsi, slope = self.getRSISlope(ticker)
-        live_data = self.getLiveData(ticker, "index")
+        live_data = self.getLiveData(ticker)
 
         ltp = live_data["last_price"]
         now = datetime.datetime.now().time()
@@ -34,9 +34,7 @@ class Worker4(TradeApp):
 
         print(json.dumps(log, indent=2))
         if rsi >= 40 and slope >= 0 and now >= datetime.time(9, 30):
-            trade = self.generateMarketOrderBuyIndexOption(
-                ticker, quantity, "ENTRY"
-            )
+            trade = self.generateMarketOrderBuyIndexOption(ticker, quantity, "ENTRY")
             self.sendTrade(trade)
             return
 
@@ -66,7 +64,7 @@ class Worker4(TradeApp):
                 # print("Entry_Price", entry_price)
 
                 try:
-                    ticker_data = self.getLiveData(ticker, "index")
+                    ticker_data = self.getLiveData(ticker)
                 except:
                     continue
 
