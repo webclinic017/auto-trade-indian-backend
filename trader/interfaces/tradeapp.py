@@ -1,4 +1,4 @@
-import redis, json, threading, datetime, requests, os, time
+import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
 import pandas as pd
 
@@ -40,8 +40,8 @@ class TradeApp:
         self.tickers = self.data["tickers"]
 
     # get the live data for the particular ticker
-    def getLiveData(self, ticker_der, type_="stock"):
-        data = self.redis.get(ticker_der)
+    def getLiveData(self, ticker):
+        data = self.redis.get(ticker)
         return json.loads(data)
 
     # get the quote for a ticker
@@ -119,7 +119,7 @@ class TradeApp:
 
     # market order buy for index option
     def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker, "index")
+        live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
             "endpoint": "/place/market_order/buy",
@@ -129,13 +129,13 @@ class TradeApp:
             "tag": tag,
             "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
-            'type': 'INDEXOPT'
+            "type": "INDEXOPT",
         }
         return trade
 
     # market order sell for index option
     def generateMarketOrderSellIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker, "index")
+        live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
             "endpoint": "/place/market_order/sell",
@@ -145,7 +145,7 @@ class TradeApp:
             "tag": tag,
             "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
-            'type': 'INDEXOPT'
+            "type": "INDEXOPT",
         }
         return trade
 
@@ -163,7 +163,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
-            'type': 'STOCKOPT'
+            "type": "STOCKOPT",
         }
         return trade
 
@@ -181,7 +181,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
-            'type': 'STOCKOPT'
+            "type": "STOCKOPT",
         }
         return trade
 
@@ -199,7 +199,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
-            'type': 'STOCK'
+            "type": "STOCK",
         }
         return trade
 
@@ -217,7 +217,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
-            'type': 'STOCK'
+            "type": "STOCK",
         }
         return trade
 
@@ -235,7 +235,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
-            'type': 'STOCKFUT'
+            "type": "STOCKFUT",
         }
         return trade
 
@@ -253,7 +253,7 @@ class TradeApp:
             "uri": PUBLISHER_URI,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
-            'type': 'STOCKFUT'
+            "type": "STOCKFUT",
         }
         return trade
 
