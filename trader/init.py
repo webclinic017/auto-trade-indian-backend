@@ -1,18 +1,19 @@
 import pika, redis, time, os, requests, time
 
-os.environ['TZ'] = 'Asia/Kolkata'
+os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()
 
-REDIS_SERVER = os.environ['REDIS_HOST']
-RABBIT_MQ_SERVER = os.environ['RABBIT_MQ_HOST']
-ZERODHA_SERVER = os.environ['ZERODHA_WORKER_HOST']
-ORDERS_SERVER = os.environ['ORDERS_HOST']
+REDIS_SERVER = os.environ["REDIS_HOST"]
+RABBIT_MQ_SERVER = os.environ["RABBIT_MQ_HOST"]
+ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
 
 # wait for all services
 def wait_for_service():
-    while True:    
+    while True:
         try:
-            p = pika.BlockingConnection(pika.ConnectionParameters(host=RABBIT_MQ_SERVER))
+            p = pika.BlockingConnection(
+                pika.ConnectionParameters(host=RABBIT_MQ_SERVER)
+            )
             r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
             requests.get(f"http://{ZERODHA_SERVER}/")
             p.close()
@@ -20,15 +21,18 @@ def wait_for_service():
             break
         except:
             time.sleep(2)
-            continue    
+            continue
 
-print('waiting for services ...')
+
+print("waiting for services ...")
 wait_for_service()
-print('services are up running ...')
+print("services are up running ...")
 
 
 # import the object with aliase name Process
-from threading import Thread as Process # <-- change the type of process here to threading.Thread or multiprocess.Process
+from threading import (
+    Thread as Process,
+)  # <-- change the type of process here to threading.Thread or multiprocess.Process
 from services.live_data import main as live_data_main
 
 # for the index
@@ -54,33 +58,30 @@ from services.stocks.worker_11 import main as main_wk11_stock
 orders_process = {}
 
 orders_services = [
-    {'name':'live_data_service', 'script':live_data_main, 'args':[]},
+    {"name": "live_data_service", "script": live_data_main, "args": []},
 ]
 
 for service in orders_services:
-    orders_process[service['name']] = Process(
-        target=service['script'],
-        args=service['args']
+    orders_process[service["name"]] = Process(
+        target=service["script"], args=service["args"]
     )
 
 for process in orders_process:
     orders_process[process].start()
     time.sleep(1)
-    
 
 
-# wait for orders service to start
-while True:
-    try:
-        requests.get(f"http://{ORDERS_SERVER}/")
-        break
-    except:
-        time.sleep(1)
-        continue
+# # wait for orders service to start
+# while True:
+#     try:
+#         requests.get(f"http://{ORDERS_SERVER}/")
+#         break
+#     except:
+#         time.sleep(1)
+#         continue
 
 
 # add service as {'name':'foo', 'script':'./a.out'}
-
 # for the index trading
 services_index = [
     # {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
@@ -97,11 +98,11 @@ services_stocks = [
     # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
-    {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
-    # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
-    {'name': 'worker_8_stock', 'script': main_wk8_stock, 'args': []},
-    {'name': 'worker_9_stock', 'script': main_wk9_stock, 'args': []},
-    {'name': 'worker_10_stock', 'script': main_wk10_stock, 'args': []},
+    # {'name': 'worker_6_stock', 'script': main_wk6_stock, 'args': []},
+    # # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
+    # {'name': 'worker_8_stock', 'script': main_wk8_stock, 'args': []},
+    # {'name': 'worker_9_stock', 'script': main_wk9_stock, 'args': []},
+    # {'name': 'worker_10_stock', 'script': main_wk10_stock, 'args': []},
     # {'name': 'worker_11_stock', 'script': main_wk11_stock, 'args': []}
 ]
 
@@ -111,15 +112,12 @@ processes = {}
 
 # start each process from init.d as children
 for service in services:
-    processes[service['name']] = Process(
-        target=service['script'],
-        args=service['args']
-    )
-print('starting services ...')
+    processes[service["name"]] = Process(target=service["script"], args=service["args"])
+print("starting services ...")
 
 # start all processes
 for process in processes:
-    print(f'starting {process}')
+    print(f"starting {process}")
     processes[process].start()
     time.sleep(1)
 
