@@ -19,27 +19,33 @@ class Worker7(TradeApp):
     BANK_NIFTY_QTY = 25
 
     def entryStrategy(self):
+        nifty_gamechanger=self.data['index']['NSE:NIFTY 50']['ltp']
+        banknifty_gamechanger=self.data['index']['NSE:NIFTY BANK']['ltp']
         for ticker in self.index_tickers:
             if datetime.datetime.now().time() < datetime.time(9, 20):
                 continue
             
             live_data_der = self.getLiveData(ticker)
+            rsi, slope = self.getRSISlope(ticker)
 
             nifty_live=self.getLiveData('NSE:NIFTY')
             banknifty_live=self.getLiveData('NSE:NIFTY BANK')
+            
 
             if datetime.datetime.now().time() == datetime.time(9, 21):
-                nifty_high=nifty_live['ohlc']['high']
-                nifty_low=nifty_live['ohlc']['low']
-                banknifty_high=banknifty_live['ohlc']['high']
-                banknifty_low=banknifty_live['ohlc']['low']
+                nifty_fivehigh=nifty_live['ohlc']['high']
+                nifty_fivelow=nifty_live['ohlc']['low']
+                banknifty_fivehigh=banknifty_live['ohlc']['high']
+                banknifty_fivelow=banknifty_live['ohlc']['low']
+
+            if datetime.datetime.now().time() == datetime.time(9, 31):
+                nifty_15high=nifty_live['ohlc']['high']
+                nifty_15low=nifty_live['ohlc']['low']
+                banknifty_15high=banknifty_live['ohlc']['high']
+                banknifty_15low=banknifty_live['ohlc']['low']
                 
-            t = datetime.date.today()
-
-        rsi, slope = self.getRSISlope(ticker)
-        live_data = self.getLiveData(ticker, "index")
-
-        ltp = live_data["last_price"]
+            t = datetime.date.today()     
+               
         now = datetime.datetime.now().time()
 
         log = {
@@ -50,11 +56,11 @@ class Worker7(TradeApp):
         }
 
         print(json.dumps(log, indent=2))
-        if rsi >= 40 and slope >= 0 and now >= datetime.time(9, 30):
+        if rsi > 40 and slope > 0 and now > datetime.time(9, 30):
 
-            if "BANKNIFTY" in ticker:
+            if "BANKNIFTY" in ticker and banknifty_live['last_price']>banknifty_gamechanger:
                 quantity = self.BANK_NIFTY_QTY
-            else:
+            elif nifty_live>nifty_gamechanger:
                 quantity = self.NIFTY_QTY
 
             trade = self.generateMarketOrderBuyIndexOption(
@@ -65,6 +71,11 @@ class Worker7(TradeApp):
 
     # strategy for exit
     def exitStrategy(self):
+        nifty_gamechanger=self.data['index']['NSE:NIFTY 50']['ltp']
+        banknifty_gamechanger=self.data['index']['NSE:NIFTY BANK']['ltp']
+        nifty_live=self.getLiveData('NSE:NIFTY')
+        banknifty_live=self.getLiveData('NSE:NIFTY BANK')
+
         m = defaultdict(int)
         acc = defaultdict(list)
         acc_drop = defaultdict(int)
@@ -76,97 +87,48 @@ class Worker7(TradeApp):
 
             for order_ in orders:
                 ticker = order_["ticker"]
-
                 entry_price = self.averageEntryprice(order_["data"])
-                # print("Entry_Price", entry_price)
-
+               
                 try:
                     ticker_data = self.getLiveData(ticker, "index")
                 except:
                     continue
-
-                try:
-                    rsi, rsi_slope = self.getRSISlope(ticker)
-                except:
-                    rsi, rsi_slope = 999, 999
-
-                # print(ticker_data)
-                ltp = ticker_data["last_price"]
-
-                cur_accleration = (ltp - m[ticker]) / 100
-                # m[ticker] = ltp
-                acc[ticker].append(cur_accleration)
-                prev_acc = None
-
-                if iterations >= 2:
-                    acc[ticker] = acc[ticker][len(acc[ticker]) - 7 :]
-                    # prev_acc = sum(acc[ticker]) / len(acc[ticker])
-                    try:
-                        prev_acc = acc[ticker][-2]
-                    except:
-                        prev_acc = cur_accleration
-                else:
-                    prev_acc = cur_accleration
-
-                if cur_accleration < prev_acc:
-                    acc_drop[ticker] += 1
-                else:
-                    acc_drop[ticker] = 0
-
-                flag = False
-
-                if acc_drop[ticker] >= 5:
-                    flag = True
-                    acc_drop[ticker] = 0
-
-                delta_acceleration = ((cur_accleration - prev_acc) / prev_acc) * 100
-
+                            
+                ltp = ticker_data["last_price"]             
+               
                 pnl = self.getPnl(entry_price, ticker_data)
-                print(
-                    {
-                        "entry_price": entry_price,
-                        "pnl": pnl,
-                        "accleration": cur_accleration,
-                        "prev_acc": prev_acc,
-                        "ticker": ticker,
-                        "rsi_slope": rsi_slope,
-                        "rsi": rsi,
-                        "delta_acc": delta_acceleration,
-                        "acc_drop": flag,
-                        "acc_drop_count": acc_drop[ticker],
-                    }
-                )
-
-                if (
-                    ((ltp - entry_price) / ltp) * 100 >= 4
-                    or rsi < 30
-                    or datetime.datetime.now().time() >= datetime.time(21, 25)
-                ):  #  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
-                    # send a exit signal
+                if "BANK" and "CE" in ticker and pnl>=10 or datetime.datetime.now().time() >= datetime.time(21, 25) or banknifty_live<banknifty_gamechanger:
+              
                     trade = self.generateMarketOrderBuyIndexOption(
                         order_["ticker"], order_["quantity"], "EXIT"
                     )
-
                     self.sendTrade(trade)
-
                     self.deleteOrder(ticker)
 
-                    print("-" * 10 + " EXIT CONDITIONS " + "-" * 10)
-                    exit_cond = {
-                        "pnl": pnl,
-                        "rsi": rsi,
-                        "slope": rsi_slope,
-                        "ticker": ticker,
-                        "accleration": cur_accleration,
-                        "prev_acc": prev_acc,
-                        "delta_acc": delta_acceleration,
-                        "acc_drop": flag,
-                        "acc_drop_count": acc_drop[ticker],
-                    }
-                    print(json.dumps(exit_cond, indent=3))
-                    print("-" * (10 + 17 + 10))
+                if "BANK" and "PE" in ticker and pnl>=10 or datetime.datetime.now().time() >= datetime.time(21, 25) or banknifty_live>banknifty_gamechanger:
+              
+                    trade = self.generateMarketOrderBuyIndexOption(
+                        order_["ticker"], order_["quantity"], "EXIT"
+                    )
+                    self.sendTrade(trade)
+                    self.deleteOrder(ticker)
 
-            iterations += 1
+                elif "CE" in ticker and pnl>=10 or datetime.datetime.now().time() >= datetime.time(21, 25) or nifty_live<nifty_gamechanger:
+              
+                    trade = self.generateMarketOrderBuyIndexOption(
+                        order_["ticker"], order_["quantity"], "EXIT"
+                    )
+                    self.sendTrade(trade)
+                    self.deleteOrder(ticker)
+
+                elif "PE" in ticker and pnl>=10 or datetime.datetime.now().time() >= datetime.time(21, 25) or nifty_live>nifty_gamechanger:
+              
+                    trade = self.generateMarketOrderBuyIndexOption(
+                        order_["ticker"], order_["quantity"], "EXIT"
+                    )
+                    self.sendTrade(trade)
+                    self.deleteOrder(ticker)
+              
             time.sleep(10)
 
 
