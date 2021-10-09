@@ -92,3 +92,8 @@ kws.on_close = on_close
 
 def main():
     kws.connect(threaded=True)
+
+    from flask import Flask
+
+    app = Flask(__name__)
+    app.run("0.0.0.0", 8888)
