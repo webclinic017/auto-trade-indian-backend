@@ -1,6 +1,6 @@
 # OI Chain based strategy
 from interfaces.tradeapp import TradeApp
-import datetime, time, json, os
+import datetime, time, os
 
 os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()

@@ -3,7 +3,7 @@ from functions_db import get_key_token
 from flask import Flask, jsonify, request
 from zerodha_functions import *
 from functions_signals import compareResult, gen_data
-import threading, os, pika, json, kiteconnect, requests, datetime, websocket, time
+import os, json, kiteconnect, requests, datetime, websocket, time
 import math
 import pandas as pd
 import talib as tb  # type: ignore

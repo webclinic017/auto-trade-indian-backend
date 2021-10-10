@@ -61,9 +61,7 @@ class Worker6(TradeApp):
                     pnl >= 10
                     or live_data["last_price"] < self.ohlc_ticker[ticker]["low"]
                 ):
-                    trade = self.generateMarketOrderSellIndexOption(
-                        ticker, order_["quantity"], "EXIT"
-                    )
+                    trade = self.generateMarketOrderSellIndexOption(ticker, 1, "EXIT")
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
 

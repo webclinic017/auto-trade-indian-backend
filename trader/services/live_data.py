@@ -78,11 +78,8 @@ def on_close(ws, code, reason):
 def on_ticks(ws, ticks):
 
     for tick in ticks:
-        print(tick)
         ticker = ticker_map[tick["instrument_token"]]
         rdb.set(ticker, json.dumps(tick, default=str))
-
-    print(len(ticks))
 
 
 kws.on_connect = on_connect
@@ -96,4 +93,9 @@ def main():
     from flask import Flask
 
     app = Flask(__name__)
+
+    @app.route("/")
+    def index():
+        return "", 200
+
     app.run("0.0.0.0", 8888)
