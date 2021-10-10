@@ -125,18 +125,20 @@ class Worker9(TradeApp):
 
                 ohlc = live_data_der["ohlc"]
 
-                pnl = self.getPnl(entry_price, live_data_der["last_price"])
+                ltp = live_data_der["last_price"]
+                profit = entry_price * ((100 + 10.5) / 100)
+                loss = entry_price * ((100 - 5) / 100)
+
                 if (
-                    pnl >= 10
+                    ltp >= profit
                     or live_data_der["last_price"] < ohlc["low"]
                     or datetime.datetime.now().time() >= datetime.time(15, 25)
-                    or pnl <= -5
+                    or ltp <= loss
                 ):
                     print("-" * 10 + "EXIT" + "-" * 10)
                     print(
                         {
                             "ticker": derivative,
-                            "pnl": pnl,
                         }
                     )
                     print("-" * 10 + "EXIT" + "-" * 10)

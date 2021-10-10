@@ -129,7 +129,6 @@ class Worker6(TradeApp):
 
                 orders_list = order_["data"]
                 entry_price = self.averageEntryprice(orders_list)
-                pnl = self.getPnl(entry_price, live_data_der["last_price"])
 
                 exit_contitions = {
                     "open": live_data["ohlc"]["open"],
@@ -138,7 +137,6 @@ class Worker6(TradeApp):
                     "close": live_data["ohlc"]["close"],
                     "current_price": current_price,
                     "ohlc_start": self.ohlc_ticker[ticker]["ohlc"],
-                    "pnl": pnl,
                 }
 
                 # if 'CE' in ticker:
@@ -147,11 +145,14 @@ class Worker6(TradeApp):
                 high = ohlc["high"]
                 current_price = live_data["last_price"]
 
+                profit = entry_price * ((100 + 10) / 100)
+                loss = entry_price * ((100 - 5) / 100)
+
                 if (
                     "CE" in derivative
                     and current_price < low
-                    or pnl >= 10
-                    or pnl <= -5
+                    or live_data_der["last_price"] >= profit
+                    or live_data_der["last_price"] <= loss
                     or datetime.datetime.now().time() >= datetime.time(15, 25)
                 ):
                     trade = self.generateLimitOrderSellStockOption(derivative, "EXIT")
@@ -166,8 +167,8 @@ class Worker6(TradeApp):
                 elif (
                     "PE" in derivative
                     and current_price > high
-                    or pnl >= 10
-                    or pnl <= -5
+                    or live_data_der["last_price"] >= profit
+                    or live_data_der["last_price"] <= loss
                     or datetime.datetime.now().time() >= datetime.time(15, 25)
                 ):
                     trade = self.generateLimitOrderSellStockOption(derivative, "EXIT")

@@ -79,13 +79,12 @@ class Worker7(TradeApp):
                     continue
 
                 ltp = ticker_data["last_price"]
-
-                pnl = self.getPnl(entry_price, ticker_data)
+                profit = entry_price * ((100 + 10) / 100)
 
                 if (
                     "BANK"
                     and "CE" in ticker
-                    and pnl >= 10
+                    and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
                     or banknifty_live < banknifty_gamechanger
                 ):
@@ -99,7 +98,7 @@ class Worker7(TradeApp):
                 if (
                     "BANK"
                     and "PE" in ticker
-                    and pnl >= 10
+                    and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
                     or banknifty_live > banknifty_gamechanger
                 ):
@@ -112,7 +111,7 @@ class Worker7(TradeApp):
 
                 elif (
                     "CE" in ticker
-                    and pnl >= 10
+                    and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
                     or nifty_live < nifty_gamechanger
                 ):
@@ -125,7 +124,7 @@ class Worker7(TradeApp):
 
                 elif (
                     "PE" in ticker
-                    and pnl >= 10
+                    and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
                     or nifty_live > nifty_gamechanger
                 ):
