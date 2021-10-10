@@ -126,8 +126,8 @@ class Worker4(TradeApp):
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
                 ):  #  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
                     # send a exit signal
-                    trade = self.generateMarketOrderBuyIndexOption(
-                        order_["ticker"], order_["quantity"], "EXIT"
+                    trade = self.generateMarketOrderSellIndexOption(
+                        order_["ticker"], 1, "EXIT"
                     )
 
                     self.sendTrade(trade)

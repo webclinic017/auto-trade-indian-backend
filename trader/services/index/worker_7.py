@@ -20,6 +20,7 @@ class Worker7(TradeApp):
     def entryStrategy(self):
         nifty_gamechanger = self.data["index"]["NSE:NIFTY 50"]["ltp"]
         banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
+
         for ticker in self.index_tickers:
             if datetime.datetime.now().time() < datetime.time(9, 20):
                 continue
@@ -44,14 +45,6 @@ class Worker7(TradeApp):
 
         now = datetime.datetime.now().time()
 
-        log = {
-            "rsi": rsi,
-            "slope": slope,
-            "ticker": ticker,
-            "ltp": ltp,
-        }
-
-        print(json.dumps(log, indent=2))
         if rsi > 40 and slope > 0 and now > datetime.time(9, 30):
 
             if (
@@ -88,6 +81,7 @@ class Worker7(TradeApp):
                 ltp = ticker_data["last_price"]
 
                 pnl = self.getPnl(entry_price, ticker_data)
+
                 if (
                     "BANK"
                     and "CE" in ticker
@@ -96,8 +90,8 @@ class Worker7(TradeApp):
                     or banknifty_live < banknifty_gamechanger
                 ):
 
-                    trade = self.generateMarketOrderBuyIndexOption(
-                        order_["ticker"], order_["quantity"], "EXIT"
+                    trade = self.generateMarketOrderSellIndexOption(
+                        order_["ticker"], 1, "EXIT"
                     )
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
@@ -110,8 +104,8 @@ class Worker7(TradeApp):
                     or banknifty_live > banknifty_gamechanger
                 ):
 
-                    trade = self.generateMarketOrderBuyIndexOption(
-                        order_["ticker"], order_["quantity"], "EXIT"
+                    trade = self.generateMarketOrderSellIndexOption(
+                        order_["ticker"], 1, "EXIT"
                     )
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
@@ -123,8 +117,8 @@ class Worker7(TradeApp):
                     or nifty_live < nifty_gamechanger
                 ):
 
-                    trade = self.generateMarketOrderBuyIndexOption(
-                        order_["ticker"], order_["quantity"], "EXIT"
+                    trade = self.generateMarketOrderSellIndexOption(
+                        order_["ticker"], 1, "EXIT"
                     )
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
@@ -136,8 +130,8 @@ class Worker7(TradeApp):
                     or nifty_live > nifty_gamechanger
                 ):
 
-                    trade = self.generateMarketOrderBuyIndexOption(
-                        order_["ticker"], order_["quantity"], "EXIT"
+                    trade = self.generateMarketOrderSellIndexOption(
+                        order_["ticker"], 1, "EXIT"
                     )
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
