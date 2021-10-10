@@ -145,10 +145,12 @@ class Worker10(TradeApp):
                 low = ohlc["low"]
                 current_price = live_data["last_price"]
 
+                profit = entry_price * ((100 + 5) / 100)
+
                 if (
                     "CE" in derivative
                     and current_price < master_ticker["ltp"]
-                    or pnl >= 5
+                    or current_price >= profit
                     or datetime.datetime.now().time() >= datetime.time(15, 25)
                 ):
                     trade = self.generateLimitOrderSellStockOption(derivative, "EXIT")
@@ -163,7 +165,7 @@ class Worker10(TradeApp):
                 elif (
                     "PE" in derivative
                     and current_price > master_ticker["ltp"]
-                    or pnl >= 5
+                    or current_price >= profit
                     or datetime.datetime.now().time() >= datetime.time(15, 25)
                 ):
                     trade = self.generateLimitOrderSellStockOption(derivative, "EXIT")

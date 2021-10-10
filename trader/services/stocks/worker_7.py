@@ -93,9 +93,9 @@ class Worker7(TradeApp):
 
                 ohlc = self.ohlc_tickers[ticker]
 
-                pnl = self.getPnl(entry_price, live_data_der["last_price"])
+                profit = entry_price * ((100 + 4) / 100)
                 if (
-                    pnl >= 4
+                    live_data_der["last_price"] >= profit
                     or live_data["last_price"] < ohlc["low"]
                     or datetime.datetime.now().time() >= datetime.time(15, 25)
                 ):
@@ -104,7 +104,7 @@ class Worker7(TradeApp):
                         json.dumps(
                             {
                                 "ticker": derivative,
-                                "pnl": pnl,
+                                "profit": profit - live_data_der["last_price"],
                             },
                             indent=2,
                         )

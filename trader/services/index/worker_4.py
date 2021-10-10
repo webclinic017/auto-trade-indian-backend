@@ -120,8 +120,9 @@ class Worker4(TradeApp):
                     }
                 )
 
+                profit = entry_price * ((100 + 4) / 100)
                 if (
-                    ((ltp - entry_price) / ltp) * 100 >= 4
+                    ltp >= profit
                     or rsi < 30
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
                 ):  #  rsi_slope < 0 or (delta_acceleration <= -2) or flag:
@@ -136,7 +137,7 @@ class Worker4(TradeApp):
 
                     print("-" * 10 + " EXIT CONDITIONS " + "-" * 10)
                     exit_cond = {
-                        "pnl": pnl,
+                        "profit": profit - entry_price,
                         "rsi": rsi,
                         "slope": rsi_slope,
                         "ticker": ticker,

@@ -55,10 +55,10 @@ class Worker6(TradeApp):
                 entry_price = self.averageEntryprice(order_["data"])
 
                 live_data = self.getLiveData(ticker)
-                pnl = self.getPnl(entry_price, live_data["last_price"])
+                profit = entry_price * ((100 + 10) / 100)
 
                 if (
-                    pnl >= 10
+                    live_data["last_price"] >= profit
                     or live_data["last_price"] < self.ohlc_ticker[ticker]["low"]
                 ):
                     trade = self.generateMarketOrderSellIndexOption(ticker, 1, "EXIT")
