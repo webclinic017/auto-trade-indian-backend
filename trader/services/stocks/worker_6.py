@@ -29,7 +29,8 @@ class Worker6(TradeApp):
                         live_ce = self.getLiveData(ce_ticker)
                         live_pe = self.getLiveData(pe_ticker)
 
-                    except:
+                    except Exception as e:
+                        print(e)
                         continue
 
                     if ticker not in self.ohlc_ticker:
