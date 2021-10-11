@@ -50,7 +50,8 @@ class Worker9(TradeApp):
                         pe_ticker = self.tickers[ticker]["pe_ticker"]
                         live_ce = self.getLiveData(ce_ticker)
                         live_pe = self.getLiveData(pe_ticker)
-                    except:
+                    except Exception as e:
+                        print(e)
                         continue
 
                     if (

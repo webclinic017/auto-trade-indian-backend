@@ -37,10 +37,10 @@ from threading import (
 from services.live_data import main as live_data_main
 
 # for the index
-from services.index.worker_4 import main as main_wk4_index
+# from services.index.worker_4 import main as main_wk4_index
 
 # from services.index.worker_5 import main as main_wk5
-from services.index.worker_6 import main as main_wk6_index
+# from services.index.worker_6 import main as main_wk6_index
 
 # from services.index.scraper import main as main_scraper_index
 # from services.index.calculator import main as main_calculator_index
@@ -90,8 +90,8 @@ services_index = [
     # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
     # {'name':'compare', 'script':main_compare_index, 'args':[]},
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    {"name": "worker_4_index", "script": main_wk4_index, "args": []},
-    {"name": "worker_6_index", "script": main_wk6_index, "args": []},
+    # {"name": "worker_4_index", "script": main_wk4_index, "args": []},
+    # {"name": "worker_6_index", "script": main_wk6_index, "args": []},
 ]
 
 # for stock trading

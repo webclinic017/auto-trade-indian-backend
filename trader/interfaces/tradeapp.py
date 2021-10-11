@@ -41,7 +41,9 @@ class TradeApp:
 
     # get the live data for the particular ticker
     def getLiveData(self, ticker):
+        # print(ticker)
         data = self.redis.get(ticker)
+        # print(data)
         return json.loads(data)
 
     # get the quote for a ticker
@@ -259,9 +261,9 @@ class TradeApp:
 
     # function to send the trade
     def sendTrade(self, trade):
-        # if datetime.datetime.now().time() >= datetime.time(18, 00):
-        #     print("\ncant enter now\n")
-        #     return False, {}
+        if datetime.datetime.now().time() >= datetime.time(18, 00):
+            print("\ncant enter now\n")
+            return False, {}
 
         response = requests.post(
             f"http://{ZERODHA_SERVER}" + trade["endpoint"], json=trade

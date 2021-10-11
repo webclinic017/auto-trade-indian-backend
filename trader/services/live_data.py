@@ -32,7 +32,7 @@ for ticker in db["tickers"]:
         pass
     pe_ticker = db["tickers"][ticker]["pe_ticker"].split(":")[1]
     try:
-        ticker_map[token_map[ce_ticker]["instrument_token"]] = db["tickers"][ticker][
+        ticker_map[token_map[pe_ticker]["instrument_token"]] = db["tickers"][ticker][
             "pe_ticker"
         ]
     except:

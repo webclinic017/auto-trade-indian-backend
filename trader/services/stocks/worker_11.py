@@ -24,7 +24,8 @@ class Worker11(TradeApp):
                     # get the live data of the original ticker
                     try:
                         live_data = self.getLiveData(ticker)
-                    except:
+                    except Exception as e:
+                        print(e)
                         continue
 
                     # if ticker not in self.ohlc_ticker:

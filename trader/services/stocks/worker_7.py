@@ -15,7 +15,7 @@ class Worker7(TradeApp):
 
             if now.time() >= datetime.time(
                 hour=9, minute=21
-            ) and now.time() <= datetime.time(hour=9, minute=22):
+            ) and now.time() <= datetime.time(hour=9, minute=30):
 
                 for ticker in self.tickers:
                     try:
