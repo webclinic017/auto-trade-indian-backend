@@ -84,8 +84,8 @@ class Worker9(TradeApp):
                         and self.tickers[ticker]["pe_ticker"]
                         not in self.entered_tickers
                         and self.price_diff(
-                            live_ce["depth"]["sell"][0]["price"],
-                            live_ce["depth"]["buy"][0]["price"],
+                            live_pe["depth"]["sell"][0]["price"],
+                            live_pe["depth"]["buy"][0]["price"],
                         )
                         < 5
                     ):
