@@ -270,6 +270,8 @@ class TradeApp:
         )
         status, data = response.ok, response.json()
 
+        print(json.dumps(trade, indent=2, default=str))
+
         if status:
             self.insertOrder(trade["exchange"] + ":" + trade["trading_symbol"], trade)
             self.createOrder(trade)
@@ -318,4 +320,4 @@ class TradeApp:
 
     def price_diff(self, bidprice, offerprice):
         pricediff = (offerprice - bidprice) * 100 / 100
-        return pricediff
+        return abs(pricediff)
