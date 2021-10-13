@@ -41,6 +41,7 @@ from services.live_data import main as live_data_main
 
 # from services.index.worker_5 import main as main_wk5
 # from services.index.worker_6 import main as main_wk6_index
+from services.index.worker_7 import main as main_wk7_index
 
 # from services.index.scraper import main as main_scraper_index
 # from services.index.calculator import main as main_calculator_index
@@ -50,11 +51,12 @@ from services.live_data import main as live_data_main
 # from services.stocks.calculator import main as main_calculator_stock
 # from services.stocks.scraper import main as main_scraper_stock
 # from services.stocks.worker_4 import main as main_wk4_stock
-from services.stocks.worker_6 import main as main_wk6_stock
-from services.stocks.worker_8 import main as main_wk8_stock
-from services.stocks.worker_9 import main as main_wk9_stock
-from services.stocks.worker_10 import main as main_wk10_stock
-from services.stocks.worker_11 import main as main_wk11_stock
+# from services.stocks.worker_6 import main as main_wk6_stock
+# from services.stocks.worker_8 import main as main_wk8_stock
+# from services.stocks.worker_9 import main as main_wk9_stock
+# from services.stocks.worker_10 import main as main_wk10_stock
+# from services.stocks.worker_11 import main as main_wk11_stock
+from services.stocks.worker_sample import main as main_sample
 
 # orders service start
 orders_process = {}
@@ -92,6 +94,7 @@ services_index = [
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     # {"name": "worker_4_index", "script": main_wk4_index, "args": []},
     # {"name": "worker_6_index", "script": main_wk6_index, "args": []},
+    {"name": "worker_7_index", "script": main_wk7_index, "args": []}
 ]
 
 # for stock trading
@@ -100,12 +103,13 @@ services_stocks = [
     # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
     # {'name':'compare', 'script':'', 'args':[]},
     # {'name':'worker_4_stock', 'script':main_wk4_stock, 'args':[]},
-    {"name": "worker_6_stock", "script": main_wk6_stock, "args": []},
+    # {"name": "worker_6_stock", "script": main_wk6_stock, "args": []},
     # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
-    {"name": "worker_8_stock", "script": main_wk8_stock, "args": []},
-    {"name": "worker_9_stock", "script": main_wk9_stock, "args": []},
-    {"name": "worker_10_stock", "script": main_wk10_stock, "args": []},
-    {"name": "worker_11_stock", "script": main_wk11_stock, "args": []},
+    # {"name": "worker_8_stock", "script": main_wk8_stock, "args": []},
+    # {"name": "worker_9_stock", "script": main_wk9_stock, "args": []},
+    # {"name": "worker_10_stock", "script": main_wk10_stock, "args": []},
+    # {"name": "worker_11_stock", "script": main_wk11_stock, "args": []},
+    # {"name": "main_sample", "script": main_sample, "args": []}
 ]
 
 services = services_index + services_stocks
