@@ -59,6 +59,7 @@ class Worker6(TradeApp):
 
                     current_price = live_data["last_price"]
 
+
                     if (
                         current_price > high
                         and self.tickers[ticker]["ce_ticker"]
