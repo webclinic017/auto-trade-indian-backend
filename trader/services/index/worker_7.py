@@ -26,8 +26,13 @@ class Worker7(TradeApp):
                 continue
 
             rsi, slope = self.getRSISlope(ticker)
-            nifty_live = self.getLiveData("NSE:NIFTY")
-            banknifty_live = self.getLiveData("NSE:NIFTY BANK")
+
+            try:
+                nifty_live = self.getLiveData("NSE:NIFTY 50")
+                banknifty_live = self.getLiveData("NSE:NIFTY BANK")
+            except Exception as e:
+                print(e)
+                continue
 
             if datetime.datetime.now().time() >= datetime.time(9, 21):
                 nifty_fivehigh = nifty_live["ohlc"]["high"]
@@ -43,30 +48,69 @@ class Worker7(TradeApp):
 
             t = datetime.date.today()
 
-        now = datetime.datetime.now().time()
+            now = datetime.datetime.now().time()
 
-        if rsi > 40 and slope > 0 and now > datetime.time(9, 30):
+            if rsi > 40 and slope > 0 and now > datetime.time(9, 30):
+                for ticker in self.index_tickers:
+                    if datetime.datetime.now().time() < datetime.time(9, 20):
+                        continue
 
-            if (
-                "BANKNIFTY" in ticker
-                and banknifty_live["last_price"] > banknifty_gamechanger
-            ):
-                quantity = self.BANK_NIFTY_QTY
-            elif nifty_live > nifty_gamechanger:
-                quantity = self.NIFTY_QTY
+                    rsi, slope = self.getRSISlope(ticker)
 
-            trade = self.generateMarketOrderBuyIndexOption(ticker, quantity, "ENTRY")
-            self.sendTrade(trade)
-            return
+                    try:
+                        nifty_live = self.getLiveData("NSE:NIFTY 50")
+                        banknifty_live = self.getLiveData("NSE:NIFTY BANK")
+                    except Exception as e:
+                        print(e)
+                        continue
+
+                    if datetime.datetime.now().time() >= datetime.time(9, 21):
+                        nifty_fivehigh = nifty_live["ohlc"]["high"]
+                        nifty_fivelow = nifty_live["ohlc"]["low"]
+                        banknifty_fivehigh = banknifty_live["ohlc"]["high"]
+                        banknifty_fivelow = banknifty_live["ohlc"]["low"]
+
+                    if datetime.datetime.now().time() >= datetime.time(9, 31):
+                        nifty_15high = nifty_live["ohlc"]["high"]
+                        nifty_15low = nifty_live["ohlc"]["low"]
+                        banknifty_15high = banknifty_live["ohlc"]["high"]
+                        banknifty_15low = banknifty_live["ohlc"]["low"]
+
+                    t = datetime.date.today()
+
+                    now = datetime.datetime.now().time()
+
+                    if (
+                        "BANKNIFTY" in ticker
+                        and banknifty_live["last_price"] > banknifty_gamechanger
+                    ):
+                        quantity = self.BANK_NIFTY_QTY
+                        trade = self.generateMarketOrderBuyIndexOption(
+                            ticker, quantity, "ENTRY"
+                        )
+                        self.sendTrade(trade)
+                    elif nifty_live["last_price"] > nifty_gamechanger:
+                        quantity = self.NIFTY_QTY
+
+                        trade = self.generateMarketOrderBuyIndexOption(
+                            ticker, quantity, "ENTRY"
+                        )
+                        self.sendTrade(trade)
+
+                time.sleep(300)
 
     # strategy for exit
     def exitStrategy(self):
         nifty_gamechanger = self.data["index"]["NSE:NIFTY 50"]["ltp"]
         banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
-        nifty_live = self.getLiveData("NSE:NIFTY")
-        banknifty_live = self.getLiveData("NSE:NIFTY BANK")
 
         while True:
+            try:
+                nifty_live = self.getLiveData("NSE:NIFTY 50")
+                banknifty_live = self.getLiveData("NSE:NIFTY BANK")
+            except:
+                continue
+
             orders = self.getAllOrders()
 
             for order_ in orders:
@@ -82,11 +126,11 @@ class Worker7(TradeApp):
                 profit = entry_price * ((100 + 10) / 100)
 
                 if (
-                    "BANK"
+                    "BANK" in ticker
                     and "CE" in ticker
                     and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
-                    or banknifty_live < banknifty_gamechanger
+                    or banknifty_live["last_price"] < banknifty_gamechanger
                 ):
 
                     trade = self.generateMarketOrderSellIndexOption(
@@ -96,11 +140,11 @@ class Worker7(TradeApp):
                     self.deleteOrder(ticker)
 
                 if (
-                    "BANK"
+                    "BANK" in ticker
                     and "PE" in ticker
                     and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
-                    or banknifty_live > banknifty_gamechanger
+                    or banknifty_live["last_price"] > banknifty_gamechanger
                 ):
 
                     trade = self.generateMarketOrderSellIndexOption(
@@ -113,7 +157,7 @@ class Worker7(TradeApp):
                     "CE" in ticker
                     and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
-                    or nifty_live < nifty_gamechanger
+                    or nifty_live["last_price"] < nifty_gamechanger
                 ):
 
                     trade = self.generateMarketOrderSellIndexOption(
@@ -126,7 +170,7 @@ class Worker7(TradeApp):
                     "PE" in ticker
                     and ltp >= profit
                     or datetime.datetime.now().time() >= datetime.time(21, 25)
-                    or nifty_live > nifty_gamechanger
+                    or nifty_live["last_price"] > nifty_gamechanger
                 ):
 
                     trade = self.generateMarketOrderSellIndexOption(
