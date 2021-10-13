@@ -39,6 +39,13 @@ for ticker in db["tickers"]:
         pass
 
 for ticker in db["index"]:
+
+    trading_symbol = ticker.split(":")[1]
+    try:
+        ticker_map[token_map[trading_symbol]["instrument_token"]] = ticker
+    except:
+        pass
+
     try:
         ce_ticker = db["index"][ticker]["ce_ticker"].split(":")[1]
         ticker_map[token_map[ce_ticker]["instrument_token"]] = db["index"][ticker][

@@ -131,6 +131,7 @@ class TradeApp:
             "tag": tag,
             "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
+            "price": live_data["depth"]["sell"][1]["price"],
             "type": "INDEXOPT",
         }
         return trade
@@ -147,6 +148,7 @@ class TradeApp:
             "tag": tag,
             "uri": PUBLISHER_URI,
             "entry_price": live_data["last_price"],
+            "price": live_data["depth"]["buy"][1]["price"],
             "type": "INDEXOPT",
         }
         return trade
