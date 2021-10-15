@@ -1,5 +1,6 @@
 from kiteconnect import KiteTicker
 import requests, os, json, redis
+from threading import Thread
 
 # ZERODHA WORKER
 ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
@@ -82,11 +83,14 @@ def on_close(ws, code, reason):
     ws.stop()
 
 
-def on_ticks(ws, ticks):
-
+def appendTickers(ticks):
     for tick in ticks:
         ticker = ticker_map[tick["instrument_token"]]
         rdb.set(ticker, json.dumps(tick, default=str))
+
+def on_ticks(ws, ticks):
+    Thread(target=appendTickers, args=[ticks]).run()
+    
 
 
 kws.on_connect = on_connect
