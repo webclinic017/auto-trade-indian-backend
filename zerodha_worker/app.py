@@ -105,6 +105,8 @@ def place_market_buy_order():
             data["entry_price"] = live_price
             data["ltp"] = live_price
 
+            market_buy_order(kite, data['trading_symbol'], data['exchange'], data['quantity'], tag=data['tag'])
+
             send_notification(
                 {
                     "notification": {
@@ -139,6 +141,8 @@ def place_market_sell_order():
             data["entry_price"] = kite.ltp(f"{exchange}:{ticker}")[
                 f"{exchange}:{ticker}"
             ]["last_price"]
+
+            market_sell_order(kite,data["trading_symbol"], data["exchange"], data["quantity"],data["tag"])
 
             send_notification(
                 {
@@ -177,6 +181,7 @@ def place_limit_buy_order():
                 f"{exchange}:{ticker}"
             ]["last_price"]
 
+            limit_buy_order(kite,data["trading_symbol"],data["exchange"],data["quantity"],data["price"])
             send_notification(
                 {
                     "notification": {
@@ -214,6 +219,7 @@ def place_limit_sell_order():
                 f"{exchange}:{ticker}"
             ]["last_price"]
 
+            limit_sell_order(kite,data["trading_symbol"],data["exchange"],data["quantity"],data["price"],data["tag"])
             send_notification(
                 {
                     "notification": {
