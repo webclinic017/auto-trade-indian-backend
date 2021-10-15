@@ -41,7 +41,8 @@ from services.live_data import main as live_data_main
 
 # from services.index.worker_5 import main as main_wk5
 # from services.index.worker_6 import main as main_wk6_index
-from services.index.worker_7 import main as main_wk7_index
+# from services.index.worker_7 import main as main_wk7_index
+from services.index.worker_8 import main as main_wk8_index
 
 # from services.index.scraper import main as main_scraper_index
 # from services.index.calculator import main as main_calculator_index
@@ -94,7 +95,8 @@ services_index = [
     # {'name':'worker_5', 'script':main_wk5, 'args':[]},
     # {"name": "worker_4_index", "script": main_wk4_index, "args": []},
     # {"name": "worker_6_index", "script": main_wk6_index, "args": []},
-    {"name": "worker_7_index", "script": main_wk7_index, "args": []}
+    # {"name": "worker_7_index", "script": main_wk7_index, "args": []}
+    {"name": "worker_8_index", "script": main_wk8_index, "args": []}
 ]
 
 # for stock trading
