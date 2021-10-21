@@ -50,17 +50,17 @@ class Worker8(TradeApp):
                 #the below line sends trade to front end
                 self.sendTrade(trade)
 
-            if banknifty_live['last_price']>self.banknifty_gamechanger:
-                ticker=self.data['index']['NSE:NIFTY BANK']['ce_ticker']
-                trade=self.generateMarketOrderBuyIndexOption(ticker,25,'ENTRY')
-                #the below line sends trade to front end
-                self.sendTrade(trade)
+            # if banknifty_live['last_price']>self.banknifty_gamechanger:
+            #     ticker=self.data['index']['NSE:NIFTY BANK']['ce_ticker']
+            #     trade=self.generateMarketOrderBuyIndexOption(ticker,25,'ENTRY')
+            #     #the below line sends trade to front end
+            #     self.sendTrade(trade)
 
-            if banknifty_live['last_price']<self.banknifty_gamechanger:
-                ticker=self.data['index']['NSE:NIFTY BANK']['pe_ticker']
-                trade=self.generateMarketOrderBuyIndexOption(ticker,25,'ENTRY')
-                #the below line sends trade to front end
-                self.sendTrade(trade)
+            # if banknifty_live['last_price']<self.banknifty_gamechanger:
+            #     ticker=self.data['index']['NSE:NIFTY BANK']['pe_ticker']
+            #     trade=self.generateMarketOrderBuyIndexOption(ticker,25,'ENTRY')
+            #     #the below line sends trade to front end
+            #     self.sendTrade(trade)
 
             time.sleep(300)
 
@@ -109,7 +109,7 @@ class Worker8(TradeApp):
 
                 
 
-                if livedata['last_price']>=profit_price:
+                if livedata['last_price']>=profit_price or datetime.datetime.now().time() >= datetime.time(15, 10):
                     trade=self.generateMarketOrderSellIndexOption(ticker,50,'EXIT')
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)

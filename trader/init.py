@@ -96,7 +96,7 @@ services_index = [
     # {"name": "worker_4_index", "script": main_wk4_index, "args": []},
     # {"name": "worker_6_index", "script": main_wk6_index, "args": []},
     # {"name": "worker_7_index", "script": main_wk7_index, "args": []}
-    {"name": "worker_8_index", "script": main_wk8_index, "args": []}
+    # {"name": "worker_8_index", "script": main_wk8_index, "args": []}
 ]
 
 # for stock trading
@@ -111,7 +111,7 @@ services_stocks = [
     # {"name": "worker_9_stock", "script": main_wk9_stock, "args": []},
     # {"name": "worker_10_stock", "script": main_wk10_stock, "args": []},
     # {"name": "worker_11_stock", "script": main_wk11_stock, "args": []},
-    # {"name": "main_sample", "script": main_sample, "args": []}
+    {"name": "main_sample", "script": main_sample, "args": []}
 ]
 
 services = services_index + services_stocks
