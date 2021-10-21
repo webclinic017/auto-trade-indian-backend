@@ -13,9 +13,17 @@ class OpenInterestStrategy(TradeApp):
             now = datetime.datetime.now().time()
             if now >= datetime.time(9, 30) and now <= datetime.time(14, 30):
                 for ticker in self.tickers:
-                    live_data = self.getLiveData(ticker)
-                    live_data_ce = self.getLiveData(self.tickers[ticker]["ce_ticker"])
-                    live_data_pe = self.getLiveData(self.tickers[ticker]["pe_ticker"])
+
+                    try:
+                        live_data = self.getLiveData(ticker)
+                        live_data_ce = self.getLiveData(
+                            self.tickers[ticker]["ce_ticker"]
+                        )
+                        live_data_pe = self.getLiveData(
+                            self.tickers[ticker]["pe_ticker"]
+                        )
+                    except:
+                        continue
 
                     if (
                         self.tickers[ticker]["total_power"] > 500
