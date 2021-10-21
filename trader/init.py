@@ -58,6 +58,7 @@ from services.index.worker_8 import main as main_wk8_index
 # from services.stocks.worker_10 import main as main_wk10_stock
 # from services.stocks.worker_11 import main as main_wk11_stock
 from services.stocks.worker_sample import main as main_sample
+from services.stocks.open_interest import OpenInterestStrategy
 
 # orders service start
 orders_process = {}
@@ -96,7 +97,7 @@ services_index = [
     # {"name": "worker_4_index", "script": main_wk4_index, "args": []},
     # {"name": "worker_6_index", "script": main_wk6_index, "args": []},
     # {"name": "worker_7_index", "script": main_wk7_index, "args": []}
-    {"name": "worker_8_index", "script": main_wk8_index, "args": []}
+    # {"name": "worker_8_index", "script": main_wk8_index, "args": []}
 ]
 
 # for stock trading
@@ -112,6 +113,11 @@ services_stocks = [
     # {"name": "worker_10_stock", "script": main_wk10_stock, "args": []},
     # {"name": "worker_11_stock", "script": main_wk11_stock, "args": []},
     # {"name": "main_sample", "script": main_sample, "args": []}
+    {
+        "name": "open_interest",
+        "script": OpenInterestStrategy(name="open_interest_stockopt").start(),
+        "args": [],
+    }
 ]
 
 services = services_index + services_stocks
