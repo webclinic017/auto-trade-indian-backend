@@ -11,11 +11,14 @@ from nsetools import Nse
 nse = Nse()
 
 
-class Worker9(TradeApp):
+class gainerloser(TradeApp):
+  
 
     entered_tickers = set()
 
     def entryStrategy(self):
+
+        
         while True:
             now = datetime.datetime.now()
             # print(now)
@@ -78,7 +81,7 @@ class Worker9(TradeApp):
                             }
                         )
                         # self.insertOrder(ticker, trade)
-
+                    
                     elif (
                         live_data["sell_quantity"] >= 1.5 * live_data["buy_quantity"]
                         and self.tickers[ticker]["pe_ticker"]
@@ -153,5 +156,5 @@ class Worker9(TradeApp):
 
 
 def main():
-    app = Worker9(name="worker_9")
+    app = gainerloser(name="gainer_loser")
     app.start()
