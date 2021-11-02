@@ -57,13 +57,13 @@ class openinterestindex(TradeApp):
                 self.sendTrade(trade)
 
             print('banknifty_slope',banknifty_slope)
-            if banknifty_live['last_price']>self.banknifty_gamechanger and banknifty_slope>0 and self.banknifty_totalpower>3000:
+            if banknifty_live['last_price']>self.banknifty_gamechanger and banknifty_slope>0 and self.banknifty_totalpower>30000:
                 ticker=self.data['index']['NSE:NIFTY BANK']['ce_ticker']
                 trade=self.generateMarketOrderBuyIndexOption(ticker,25,'ENTRY')
                 #the below line sends trade to front end
                 self.sendTrade(trade)
 
-            if banknifty_live['last_price']<self.banknifty_gamechanger and banknifty_slope<0 and self.banknifty_totalpower<-3000:
+            if banknifty_live['last_price']<self.banknifty_gamechanger and banknifty_slope<0 and self.banknifty_totalpower<-30000:
                 ticker=self.data['index']['NSE:NIFTY BANK']['pe_ticker']
                 trade=self.generateMarketOrderBuyIndexOption(ticker,25,'ENTRY')
                 #the below line sends trade to front end
@@ -116,7 +116,7 @@ class openinterestindex(TradeApp):
 
                 
 
-                if livedata['last_price']>=profit_price:
+                if livedata['last_price']>=profit_price or datetime.datetime.now().time() >= datetime.time(15, 10):
                     print(profit_price," profit")
                     trade=self.generateMarketOrderSellIndexOption(ticker,50,'EXIT')
                     self.sendTrade(trade)
