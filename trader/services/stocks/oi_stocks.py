@@ -3,7 +3,7 @@ import datetime
 import time
 
 
-class OpenInterestStrategy(TradeApp):
+class openintereststocks(TradeApp):
 
     entered_tickers = set()
 
@@ -11,7 +11,7 @@ class OpenInterestStrategy(TradeApp):
 
         while True:
             now = datetime.datetime.now().time()
-            if now >= datetime.time(9, 30) and now <= datetime.time(14, 30):
+            if now >= datetime.time(9, 30) and now <= datetime.time(12, 30):
                 for ticker in self.tickers:
 
                     try:
@@ -35,7 +35,7 @@ class OpenInterestStrategy(TradeApp):
                         buy = live_data_ce["depth"]["buy"][0]["price"]
                         sell = live_data_ce["depth"]["sell"][0]["price"]
                         diff_percent = (abs(sell - buy) / buy) * 100
-
+                        print('diff_percent in oi_stocks',ticker,diff_percent)
                         if diff_percent < 5:
                             trade = self.generateLimitOrderBuyStockOption(
                                 self.tickers[ticker]["ce_ticker"], "ENTRY"
@@ -53,6 +53,7 @@ class OpenInterestStrategy(TradeApp):
                         buy = live_data_pe["depth"]["buy"][0]["price"]
                         sell = live_data_pe["depth"]["sell"][0]["price"]
                         diff_percent = (abs(sell - buy) / buy) * 100
+                        print('diff_percent in oi_stocks',ticker,diff_percent)
 
                         if diff_percent < 5:
                             trade = self.generateLimitOrderBuyStockOption(
@@ -62,7 +63,7 @@ class OpenInterestStrategy(TradeApp):
                             self.entered_tickers.add(self.tickers[ticker]["pe_ticker"])
                 time.sleep(300)
             else:
-                continue
+                time.sleep(1)
 
     def exitStrategy(self):
 
@@ -75,6 +76,10 @@ class OpenInterestStrategy(TradeApp):
 
                 live_ticker = self.getLiveData(ticker)
                 live_derivative = self.getLiveData(derivative)
+                orders_list=order["data"]
+                entry_price=self.averageEntryprice(orders_list)
+                profit = entry_price * ((100 + 10) / 100)
+                loss = entry_price * ((100 - 5) / 100)
 
                 if "CE" in derivative:
                     if (
@@ -86,6 +91,7 @@ class OpenInterestStrategy(TradeApp):
                         )
                         self.sendTrade(trade)
                         self.deleteOrder(derivative)
+                
                 elif "PE" in derivative:
                     if (
                         live_ticker["last_price"] <= self.tickers[ticker]["pe_target2"]
@@ -96,9 +102,15 @@ class OpenInterestStrategy(TradeApp):
                         )
                         self.sendTrade(trade)
                         self.deleteOrder(derivative)
-                elif datetime.datetime.now() >= datetime.time(15, 10):
+
+
+                elif datetime.datetime.now() >= datetime.time(15, 10) or live_derivative['last_price'] >= profit:
                     trade = self.generateLimitOrderSellStockOption(derivative, "EXIT")
                     self.sendTrade(trade)
                     self.deleteOrder(derivative)
 
             time.sleep(10)
+
+def main():
+    app=openintereststocks(name='oi_stocks')
+    app.start()
