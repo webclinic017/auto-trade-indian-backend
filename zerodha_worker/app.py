@@ -23,15 +23,8 @@ def send_notification(data, uri):
         pass
 
 
-mongo_clients = MongoClient(
-    "mongodb+srv://jag:rtut12#$@cluster0.alwvk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-)
-
-
 zerodha_id = os.environ["USERNAME"]
-api_key, access_token = get_key_token(
-    zerodha_id, mongo_clients["client_details"]["clients"]
-)
+api_key, access_token = get_key_token(zerodha_id)
 
 print(api_key, access_token)
 
