@@ -1,17 +1,38 @@
 import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
 import pandas as pd
+from kiteconnect import KiteConnect
+import talib as tb  # type: ignore
+import numpy as np
+import math
+import websocket
 
-ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
-PUBLISHER_URI = os.environ["PUBLISHER_URI"]
+from interfaces.constants import (
+    LIMIT_ORDER_BUY,
+    LIMIT_ORDER_SELL,
+    MARKET_ORDER_BUY,
+    MARKET_ORDER_SELL,
+    MONGO,
+    PUBLISHER,
+    QUOTE,
+    REDIS,
+)
 
 
 class TradeApp:
     def __init__(self, name):
-        self.redis = redis.StrictRedis(host="redis_server_index", port=6379)
-        self.mongo = MongoClient(host="db", port=27017)
+        self.redis = redis.StrictRedis(host=REDIS, port=6379)
+        self.mongo = MongoClient(host=MONGO, port=27017)
         self.name = name
-        self.token_map = requests.get(f"http://{ZERODHA_SERVER}/get/token_map").json()
+
+        self.kite = KiteConnect(os.environ["API_KEY"], os.environ["ACCESS_TOKEN"])
+
+        # generate the token map
+        instruments = self.kite.instruments()
+        self.token_map = {}
+        for instrument in instruments:
+            self.token_map[instrument["tradingsymbol"]] = instrument
+
         # create a collection for storing all the orders for that particular collection
         date = datetime.date.today()
         self.orders_db = self.mongo["orders_" + str(date)]
@@ -39,6 +60,17 @@ class TradeApp:
 
         self.tickers = self.data["tickers"]
 
+    # publish the notification to the end users
+    def sendNotification(self, trade):
+        socket = websocket.create_connection(trade["uri"])
+
+        trade.pop("uri")
+
+        socket.send(json.dumps(trade))
+        socket.close()
+
+        return
+
     # get the live data for the particular ticker
     def getLiveData(self, ticker):
         # print(ticker)
@@ -49,7 +81,7 @@ class TradeApp:
     # get the quote for a ticker
     def getQuote(self, exchange, ticker):
         data = requests.post(
-            f"http://{ZERODHA_SERVER}/get/quote",
+            QUOTE,
             json={"tickers": [f"{exchange}:{ticker}"]},
         ).json()
         print(data)
@@ -97,26 +129,35 @@ class TradeApp:
 
     # function to get rsi and slope
     def getRSISlope(self, ticker):
-        ticker = ticker.split(":")[1]
-        data = requests.get(f"http://{ZERODHA_SERVER}/get/rsi/{ticker}/7").json()
-        return data["last_rsi"], data["last_slope"]
+
+        tdate = datetime.date.today()
+        fdate = tdate - datetime.timedelta(4)
+
+        df = self.getHistoricalData(ticker, fdate, tdate, "15minute")
+
+        df["rsi"] = tb.RSI(df["close"], 14)
+        df_slope = df.copy()
+        df_slope = df_slope.iloc[-1 * 7 :, :]
+        df_slope["slope"] = tb.LINEARREG_SLOPE(df["rsi"], 7)
+        df_slope["slope_deg"] = df_slope["slope"].apply(math.atan).apply(np.rad2deg)
+
+        last_rsi, last_deg = (
+            df_slope.tail(1)["rsi"].values[0],
+            df_slope.tail(1)["slope_deg"].values[0],
+        )
+
+        return last_rsi, last_deg
 
     # historical data
     def getHistoricalData(self, ticker, fdate, tdate, interval):
         ticker = ticker.split(":")[1]
         token = self.token_map[ticker]["instrument_token"]
-        data = requests.post(
-            f"http://{ZERODHA_SERVER}/get/historical_data",
-            json={
-                "fdate": str(fdate),
-                "tdate": str(tdate),
-                "token": token,
-                "interval": interval,
-            },
-        ).json()
+
+        data = self.kite.historical_data(token, fdate, tdate, interval)
 
         df = pd.DataFrame(data)
         df["date"] = pd.to_datetime(df["date"])
+
         return df
 
     # market order buy for index option
@@ -124,12 +165,12 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/market_order/buy",
+            "endpoint": MARKET_ORDER_BUY,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": quantity,
             "tag": tag,
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "entry_price": live_data["last_price"],
             "price": live_data["depth"]["sell"][1]["price"],
             "type": "INDEXOPT",
@@ -141,12 +182,12 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/market_order/sell",
+            "endpoint": MARKET_ORDER_SELL,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": quantity,
             "tag": tag,
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "entry_price": live_data["last_price"],
             "price": live_data["depth"]["buy"][1]["price"],
             "type": "INDEXOPT",
@@ -158,13 +199,13 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/limit_order/buy",
+            "endpoint": LIMIT_ORDER_BUY,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["sell"][1]["price"],
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
             "type": "STOCKOPT",
@@ -176,13 +217,13 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/limit_order/sell",
+            "endpoint": LIMIT_ORDER_SELL,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["buy"][1]["price"],
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
             "type": "STOCKOPT",
@@ -194,13 +235,13 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/limit_order/buy",
+            "endpoint": LIMIT_ORDER_BUY,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": quantity,
             "tag": tag,
             "price": live_data["depth"]["sell"][1]["price"],
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
             "type": "STOCK",
@@ -212,13 +253,13 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/limit_order/sell",
+            "endpoint": LIMIT_ORDER_SELL,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": quantity,
             "tag": tag,
             "price": live_data["depth"]["buy"][1]["price"],
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
             "type": "STOCK",
@@ -230,13 +271,13 @@ class TradeApp:
         live_data = self.getLiveData(ticker)
         ticker = ticker.split(":")[1]
         trade = {
-            "endpoint": "/place/limit_order/buy",
+            "endpoint": LIMIT_ORDER_BUY,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["sell"][1]["price"],
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
             "type": "STOCKFUT",
@@ -248,13 +289,13 @@ class TradeApp:
         ticker = ticker.split(":")[1]
         live_data = self.getLiveData(ticker)
         trade = {
-            "endpoint": "/place/limit_order/sell",
+            "endpoint": LIMIT_ORDER_SELL,
             "trading_symbol": ticker,
             "exchange": "NFO",
             "quantity": self.token_map[ticker]["lot_size"],
             "tag": tag,
             "price": live_data["depth"]["buy"][1]["price"],
-            "uri": PUBLISHER_URI,
+            "uri": PUBLISHER,
             "ltp": live_data["last_price"],
             "entry_price": live_data["last_price"],
             "type": "STOCKFUT",
@@ -263,22 +304,14 @@ class TradeApp:
 
     # function to send the trade
     def sendTrade(self, trade):
-        if datetime.datetime.now().time() >= datetime.time(18, 00):
-            print("\ncant enter now\n")
-            return False, {}
-
-        response = requests.post(
-            f"http://{ZERODHA_SERVER}" + trade["endpoint"], json=trade
-        )
-        status, data = response.ok, response.json()
+        self.sendNotification(trade)
 
         print(json.dumps(trade, indent=2, default=str))
 
-        if status:
-            self.insertOrder(trade["exchange"] + ":" + trade["trading_symbol"], trade)
-            self.createOrder(trade)
+        self.insertOrder(trade["exchange"] + ":" + trade["trading_symbol"], trade)
+        self.createOrder(trade)
 
-        return status, data
+        return
 
     # function for average entry price
     def averageEntryprice(self, orders):
@@ -298,6 +331,10 @@ class TradeApp:
         except:
             pnl = 0
         return pnl
+
+    def price_diff(self, bidprice, offerprice):
+        pricediff = (offerprice - bidprice) * 100 / 100
+        return abs(pricediff)
 
     # method for the entry condition
     def entryStrategy(self):
@@ -319,7 +356,3 @@ class TradeApp:
         exit_startegy.start()
         entry_strategy.join()
         exit_startegy.join()
-
-    def price_diff(self, bidprice, offerprice):
-        pricediff = (offerprice - bidprice) * 100 / 100
-        return abs(pricediff)

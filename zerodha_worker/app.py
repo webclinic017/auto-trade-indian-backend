@@ -1,4 +1,3 @@
-from pymongo import MongoClient
 from functions_db import get_key_token
 from flask import Flask, jsonify, request
 from zerodha_functions import *
@@ -37,9 +36,6 @@ token_map = {}
 for instrument in instruments:
     token_map[instrument["tradingsymbol"]] = instrument
 
-
-EXIT_SERVER = os.environ["ORDERS_HOST"]
-# print(token_map[instrument['tradingsymbol']])
 
 # start the flask server
 app = Flask(__name__)

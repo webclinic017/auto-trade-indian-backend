@@ -1,18 +1,22 @@
-from kiteconnect import KiteTicker
-import requests, os, json, redis
+from kiteconnect import KiteTicker, KiteConnect
+import os, json, redis
 from threading import Thread
 
-# ZERODHA WORKER
-ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
-REDIS_SERVER = os.environ["REDIS_HOST"]
+from interfaces.constants import REDIS
 
 # get the api_key and access_token
-credentials = requests.get(f"http://{ZERODHA_SERVER}/get_api_key_token").json()
-api_key, access_token = credentials["api_key"], credentials["access_token"]
+api_key, access_token = os.environ["API_KEY"], os.environ["ACCESS_TOKEN"]
 
+# kiteticker
+kws = KiteTicker(api_key=api_key, access_token=access_token)
+# kite connect
+kite = KiteConnect(api_key=api_key, access_token=access_token)
 
 # first make the mapping of ticker --> token
-token_map = requests.get(f"http://{ZERODHA_SERVER}/get/token_map").json()
+instruments = kite.instruments()
+token_map = {}
+for instrument in instruments:
+    token_map[instrument["tradingsymbol"]] = instrument
 
 # second make the mapping of token --> ticker
 ticker_map = {}
@@ -66,11 +70,8 @@ for ticker in db["index"]:
 
 tokens = list(ticker_map.keys())
 
-# kiteticker
-kws = KiteTicker(api_key=api_key, access_token=access_token)
-
 # redis connection
-rdb = redis.Redis(host=REDIS_SERVER)
+rdb = redis.Redis(host=REDIS)
 
 # callbacks on websockets
 def on_connect(ws, response):
@@ -88,9 +89,9 @@ def appendTickers(ticks):
         ticker = ticker_map[tick["instrument_token"]]
         rdb.set(ticker, json.dumps(tick, default=str))
 
+
 def on_ticks(ws, ticks):
     Thread(target=appendTickers, args=[ticks]).run()
-    
 
 
 kws.on_connect = on_connect

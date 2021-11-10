@@ -1,22 +1,24 @@
 import pika, redis, time, os, requests, time
+from interfaces.constants import LIVE_DATA, RABBIT_MQ, REDIS
+
+from utils.auth import get_key_token
 
 os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()
 
-REDIS_SERVER = os.environ["REDIS_HOST"]
-RABBIT_MQ_SERVER = os.environ["RABBIT_MQ_HOST"]
-ZERODHA_SERVER = os.environ["ZERODHA_WORKER_HOST"]
-ORDERS_SERVER = os.environ["ORDERS_HOST"]
+# get the api key and access token and set it as the environment variable
+api_key, access_token = get_key_token(os.environ["USERNAME"])
+
+# set the api key and the access token
+os.environ["API_KEY"] = api_key
+os.environ["ACCESS_TOKEN"] = access_token
 
 # wait for all services
 def wait_for_service():
     while True:
         try:
-            p = pika.BlockingConnection(
-                pika.ConnectionParameters(host=RABBIT_MQ_SERVER)
-            )
-            r = redis.StrictRedis(host=REDIS_SERVER, port=6379, decode_responses=True)
-            requests.get(f"http://{ZERODHA_SERVER}/")
+            p = pika.BlockingConnection(pika.ConnectionParameters(host=RABBIT_MQ))
+            r = redis.StrictRedis(host=REDIS, port=6379, decode_responses=True)
             p.close()
             r.close()
             break
@@ -37,28 +39,8 @@ from threading import (
 from services.live_data import main as live_data_main
 
 # for the index
-# from services.index.worker_4 import main as main_wk4_index
-
-# from services.index.worker_5 import main as main_wk5
-# from services.index.worker_6 import main as main_wk6_index
-# from services.index.worker_7 import main as main_wk7_index
 from services.index.oi_index import main as main_oi_index
 
-# from services.index.scraper import main as main_scraper_index
-# from services.index.calculator import main as main_calculator_index
-# from services.index.compare import main as main_compare_index
-
-# for the stocks
-# from services.stocks.calculator import main as main_calculator_stock
-# from services.stocks.scraper import main as main_scraper_stock
-# from services.stocks.worker_4 import main as main_wk4_stock
-# from services.stocks.worker_6 import main as main_wk6_stock
-# from services.stocks.worker_8 import main as main_wk8_stock
-# from services.stocks.gainers_losers import main as main_gl_stock
-# from services.stocks.worker_10 import main as main_wk10_stock
-# from services.stocks.worker_11 import main as main_wk11_stock
-# from services.stocks.worker_sample import main as main_sample
-# from services.stocks.oi_stocks import main as main_oi_stocks
 
 # orders service start
 orders_process = {}
@@ -80,45 +62,19 @@ for process in orders_process:
 # # wait for orders service to start
 while True:
     try:
-        requests.get(f"http://{ORDERS_SERVER}/")
+        requests.get(LIVE_DATA)
         break
-    except:
+    except Exception as e:
+        print(e)
         time.sleep(1)
         continue
 
 
-# add service as {'name':'foo', 'script':'./a.out'}
 # for the index trading
-services_index = [
-    # {'name':'scrapper', 'script':main_scraper_index, 'args':[]},
-    # {'name':'calculator', 'script':main_calculator_index, 'args':[os.environ['EXPIRY_DATE_INDEX']]},
-    # {'name':'compare', 'script':main_compare_index, 'args':[]},
-    # {'name':'worker_5', 'script':main_wk5, 'args':[]},
-    # {"name": "worker_4_index", "script": main_wk4_index, "args": []},
-    # {"name": "worker_6_index", "script": main_wk6_index, "args": []},
-    # {"name": "worker_7_index", "script": main_wk7_index, "args": []}
-    {"name": "oi_index", "script": main_oi_index, "args": []}
-]
+services_index = [{"name": "oi_index", "script": main_oi_index, "args": []}]
 
 # for stock trading
-services_stocks = [
-    # {'name':'scrapper', 'script':main_scraper_stock, 'args':[]},
-    # {'name':'calculator', 'script':main_calculator_stock, 'args':[os.environ['EXPIRY_DATE_STOCK']]},
-    # {'name':'compare', 'script':'', 'args':[]},
-    # {'name':'oi_stocks', 'script':main_oi_stocks, 'args':[]},
-    # {"name": "worker_6_stock", "script": main_wk6_stock, "args": []},
-    # {'name': 'worker_7_stock', 'script': main_wk7_stock, 'args': []},
-    # {"name": "worker_8_stock", "script": main_wk8_stock, "args": []},
-    # {"name": "gainer_loser", "script": main_gl_stock, "args": []},
-    # {"name": "worker_10_stock", "script": main_wk10_stock, "args": []},
-    # {"name": "worker_11_stock", "script": main_wk11_stock, "args": []},
-    # {"name": "main_sample", "script": main_sample, "args": []}
-    # {
-    #     "name": "open_interest",
-    #     "script": OpenInterestStrategy(name="open_interest_stockopt").start(),
-    #     "args": [],
-    # }
-]
+services_stocks = []
 
 services = services_index + services_stocks
 

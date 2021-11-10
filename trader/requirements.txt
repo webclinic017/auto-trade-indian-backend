@@ -8,3 +8,5 @@ redis
 pandas
 nsetools
 kiteconnect
+statsmodels
+pandas

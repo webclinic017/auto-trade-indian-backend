@@ -13,35 +13,34 @@ services:
       driver: none
 
   # message queue for IPC
-  rabbit_mq_index:
+  rabbit_mq:
     image: rabbitmq:3-management
     logging:
       driver: none
 
   # redis pub sub broker and in memory cache
-  redis_server_index:
+  redis_server:
     image: redis:alpine
     logging:
       driver: none
 
   # web service for zerodha api
-  zerodha_worker_index:
-    build: ./zerodha_worker
-    volumes:
-      - ./zerodha_worker:/app
-    command:
-      ["sh", "./wait-for.sh", "rabbit_mq_index:5672", "--", "python", "app.py"]
-    env_file:
-      - .env
-      - auth.env
-    restart: always
-    depends_on:
-      - rabbit_mq_index
-      - db
-      - redis_server_index
+  # zerodha_worker:
+  #   build: ./zerodha_worker
+  #   volumes:
+  #     - ./zerodha_worker:/app
+  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
+  #   env_file:
+  #     - .env
+  #     - auth.env
+  #   restart: always
+  #   depends_on:
+  #     - rabbit_mq
+  #     - db
+  #     - redis_server
 
   # trader operating system
-  trader_index:
+  trader:
     build: ./trader
     volumes:
       - ./trader:/app
@@ -50,5 +49,5 @@ services:
       - .env
       - auth.env
     restart: always
-    depends_on:
-      - zerodha_worker_index
+    # depends_on:
+    #   - zerodha_worker
