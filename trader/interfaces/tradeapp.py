@@ -154,7 +154,6 @@ class TradeApp:
         token = self.token_map[ticker]["instrument_token"]
 
         data = self.kite.historical_data(token, fdate, tdate, interval)
-
         df = pd.DataFrame(data)
         df["date"] = pd.to_datetime(df["date"])
 

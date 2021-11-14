@@ -17,8 +17,6 @@ class OpenInterestIndex(TradeApp):
         self.banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
         self.banknifty_totalpower = self.data["index"]["NSE:NIFTY BANK"]["total_power"]
 
-        print(self.nifty_gamechanger)
-
         while True:
             if datetime.datetime.now().time() > datetime.time(
                 9, 20

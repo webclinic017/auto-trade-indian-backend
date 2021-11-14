@@ -1,8 +1,0 @@
-kiteconnect
-pymongo
-dnspython
-websocket-client
-flask
-pika
-statsmodels
-pandas
