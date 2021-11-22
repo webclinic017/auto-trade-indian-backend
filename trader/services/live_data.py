@@ -91,7 +91,7 @@ def appendTickers(ticks):
 
 
 def on_ticks(ws, ticks):
-    Thread(target=appendTickers, args=[ticks]).run()
+    appendTickers(ticks)
 
 
 kws.on_connect = on_connect

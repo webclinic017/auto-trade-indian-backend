@@ -23,6 +23,7 @@ class FiveMinIndex(TradeApp):
             ) and datetime.datetime.now().time() < datetime.time(9, 21):
                 self.nifty_5min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
                 self.banknifty_5min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
+                break
 
             elif datetime.datetime.now().time() > datetime.time(
                 9, 30
