@@ -7,7 +7,7 @@ os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()
 
 # get the api key and access token and set it as the environment variable
-api_key, access_token = get_key_token(os.environ["USERNAME"])
+api_key, access_token = get_key_token(os.environ["AUTH_TOKEN"])
 
 # set the api key and the access token
 os.environ["API_KEY"] = api_key
