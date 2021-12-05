@@ -20,14 +20,14 @@ class FiveMinIndex(TradeApp):
 
         while True:
 
-            if datetime.datetime.now() < datetime.time(9, 30):
+            if datetime.datetime.now() > datetime.time(9, 20) and datetime.datetime.now() < datetime.time(9, 30):
                 nifty = self.getHistoricalDataDict(
                     "NSE:NIFTY 50", today, today, "5min"
                 )[0]
                 banknifty = self.banknifty_5min = self.getHistoricalDataDict(
                     "NSE:NIFTY BANK", today, today, "5min"
                 )[0]
-            else:
+            elif datetime.datetime.now() > datetime.time(9, 30):
                 nifty = self.getHistoricalDataDict(
                     "NSE:NIFTY 50", today, today, "15min"
                 )[0]
