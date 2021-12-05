@@ -16,26 +16,29 @@ class FiveMinIndex(TradeApp):
         self.nifty_totalpower = self.data["index"]["NSE:NIFTY 50"]["total_power"]
         self.banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
         self.banknifty_totalpower = self.data["index"]["NSE:NIFTY BANK"]["total_power"]
+        today = datetime.date.today()
 
         while True:
 
-            if datetime.datetime.now() > datetime.time(
-                9, 20
-            ) and datetime.datetime.now() < datetime.time(9, 30):
-                today = datetime.date.today()
-                self.nifty_5min = self.getHistoricalDataDict(
+            if datetime.datetime.now() < datetime.time(9, 30):
+                nifty = self.getHistoricalDataDict(
                     "NSE:NIFTY 50", today, today, "5min"
                 )[0]
-                self.nifty_15min = self.getHistoricalDataDict(
-                    "NSE:NIFTY 50", today, today, "15min"
-                )[0]
-                self.banknifty_5min = self.getHistoricalDataDict(
+                banknifty = self.banknifty_5min = self.getHistoricalDataDict(
                     "NSE:NIFTY BANK", today, today, "5min"
                 )[0]
-                self.banknifty_15min = self.getHistoricalDataDict(
+            else:
+                nifty = self.getHistoricalDataDict(
+                    "NSE:NIFTY 50", today, today, "15min"
+                )[0]
+                banknifty = self.banknifty_5min = self.getHistoricalDataDict(
                     "NSE:NIFTY BANK", today, today, "15min"
                 )[0]
-                continue
+
+            nifty_low = nifty["low"]
+            nifty_high = nifty["high"]
+            banknifty_low = banknifty["low"]
+            banknifty_high = banknifty["high"]
 
             nifty_live = self.getLiveData("NSE:NIFTY 50")
             banknifty_live = self.getLiveData("NSE:NIFTY BANK")
@@ -43,7 +46,7 @@ class FiveMinIndex(TradeApp):
             _, banknifty_slope = self.getRSISlope("NSE:NIFTY BANK")
 
             if (
-                nifty_live["last_price"] > self.nifty_5min["high"]
+                nifty_live["last_price"] > nifty_high
                 and nifty_slope > 0
                 and datetime.datetime.now().time() > datetime.time(9, 25)
             ):  # and nifty_live['last_price']>self.nifty_5min['high']:
@@ -53,7 +56,7 @@ class FiveMinIndex(TradeApp):
                 self.sendTrade(trade)
 
             if (
-                nifty_live["last_price"] < self.nifty_5min["low"]
+                nifty_live["last_price"] < nifty_low
                 and nifty_slope < 0
                 and datetime.datetime.now().time() > datetime.time(9, 25)
             ):
@@ -63,7 +66,7 @@ class FiveMinIndex(TradeApp):
                 self.sendTrade(trade)
 
             if (
-                banknifty_live["last_price"] > self.banknifty_5min["high"]
+                banknifty_live["last_price"] > banknifty_high
                 and banknifty_slope > 0
                 and datetime.datetime.now().time() > datetime.time(9, 25)
             ):
@@ -73,7 +76,7 @@ class FiveMinIndex(TradeApp):
                 self.sendTrade(trade)
 
             if (
-                banknifty_live["last_price"] < self.banknifty_5min["low"]
+                banknifty_live["last_price"] < banknifty_low
                 and banknifty_slope < 0
                 and datetime.datetime.now().time() > datetime.time(9, 25)
             ):
