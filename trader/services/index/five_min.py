@@ -9,6 +9,8 @@ class FiveMinIndex(TradeApp):
     nifty_15min = {}
     banknifty_5min = {}
     banknifty_15min = {}
+    nifty = None
+    banknifty = None
 
     def entryStrategy(self):
 
@@ -17,23 +19,29 @@ class FiveMinIndex(TradeApp):
         self.banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
         self.banknifty_totalpower = self.data["index"]["NSE:NIFTY BANK"]["total_power"]
         today = datetime.date.today()
+        getDataAf920 = True
+        getDataAf930 = True
 
         while True:
+            if datetime.datetime.now() > datetime.time(9, 20) and datetime.datetime.now() < datetime.time(9, 23):
+                if getDataAf920:
+                    self.nifty = self.getHistoricalDataDict(
+                        "NSE:NIFTY 50", today, today, "5min"
+                    )[0]
+                    self.banknifty = self.banknifty_5min = self.getHistoricalDataDict(
+                        "NSE:NIFTY BANK", today, today, "5min"
+                    )[0]
+                    getDataAf920 = False
 
-            if datetime.datetime.now() > datetime.time(9, 20) and datetime.datetime.now() < datetime.time(9, 30):
-                nifty = self.getHistoricalDataDict(
-                    "NSE:NIFTY 50", today, today, "5min"
-                )[0]
-                banknifty = self.banknifty_5min = self.getHistoricalDataDict(
-                    "NSE:NIFTY BANK", today, today, "5min"
-                )[0]
             elif datetime.datetime.now() > datetime.time(9, 30):
-                nifty = self.getHistoricalDataDict(
-                    "NSE:NIFTY 50", today, today, "15min"
-                )[0]
-                banknifty = self.banknifty_5min = self.getHistoricalDataDict(
-                    "NSE:NIFTY BANK", today, today, "15min"
-                )[0]
+                if getDataAf930:
+                    nifty = self.getHistoricalDataDict(
+                        "NSE:NIFTY 50", today, today, "15min"
+                    )[0]
+                    banknifty = self.banknifty_5min = self.getHistoricalDataDict(
+                        "NSE:NIFTY BANK", today, today, "15min"
+                    )[0]
+                    getDataAf930 = False
 
             nifty_low = nifty["low"]
             nifty_high = nifty["high"]
