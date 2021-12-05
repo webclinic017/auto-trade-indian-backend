@@ -159,6 +159,13 @@ class TradeApp:
 
         return df
 
+    def getHistoricalDataDict(self, ticker, fdate, tdate, interval):
+        ticker = ticker.split(":")[1]
+        token = self.token_map[ticker]["instrument_token"]
+
+        data = self.kite.historical_data(token, fdate, tdate, interval)
+        return data
+
     # market order buy for index option
     def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
         live_data = self.getLiveData(ticker)

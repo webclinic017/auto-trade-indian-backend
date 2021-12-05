@@ -18,27 +18,24 @@ class FiveMinIndex(TradeApp):
         self.banknifty_totalpower = self.data["index"]["NSE:NIFTY BANK"]["total_power"]
 
         while True:
-            if datetime.datetime.now().time() > datetime.time(
+
+            if datetime.datetime.now() > datetime.time(
                 9, 20
-            ) and datetime.datetime.now().time() < datetime.time(9, 21):
-                self.nifty_5min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_5min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                break
-
-            elif datetime.datetime.now().time() > datetime.time(
-                9, 30
-            ) and datetime.datetime.now().time() < datetime.time(9, 31):
-                self.nifty_15min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_15min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                break
-            else:
-                self.nifty_5min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_5min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                self.nifty_15min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_15min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                break
-
-        while True:
+            ) and datetime.datetime.now() < datetime.time(9, 30):
+                today = datetime.date.today()
+                self.nifty_5min = self.getHistoricalDataDict(
+                    "NSE:NIFTY 50", today, today, "5min"
+                )[0]
+                self.nifty_15min = self.getHistoricalDataDict(
+                    "NSE:NIFTY 50", today, today, "15min"
+                )[0]
+                self.banknifty_5min = self.getHistoricalDataDict(
+                    "NSE:NIFTY BANK", today, today, "5min"
+                )[0]
+                self.banknifty_15min = self.getHistoricalDataDict(
+                    "NSE:NIFTY BANK", today, today, "15min"
+                )[0]
+                continue
 
             nifty_live = self.getLiveData("NSE:NIFTY 50")
             banknifty_live = self.getLiveData("NSE:NIFTY BANK")
