@@ -4,41 +4,24 @@ import datetime, time
 
 
 class OpenInterestIndex(TradeApp):
-
-    nifty_5min = {}
-    nifty_15min = {}
-    banknifty_5min = {}
-    banknifty_15min = {}
-
     def entryStrategy(self):
 
         self.nifty_gamechanger = self.data["index"]["NSE:NIFTY 50"]["ltp"]
         self.nifty_totalpower = self.data["index"]["NSE:NIFTY 50"]["total_power"]
+
         self.banknifty_gamechanger = self.data["index"]["NSE:NIFTY BANK"]["ltp"]
         self.banknifty_totalpower = self.data["index"]["NSE:NIFTY BANK"]["total_power"]
 
-        while True:
-            if datetime.datetime.now().time() > datetime.time(
-                9, 20
-            ) and datetime.datetime.now().time() < datetime.time(9, 21):
-                self.nifty_5min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_5min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                break
+        self.nifty_prev_high = self.data["index"]["NSE:NIFTY 50"]["prev_high"]
+        self.nifty_prev_low = self.data["index"]["NSE:NIFTY 50"]["prev_low"]
 
-            elif datetime.datetime.now().time() > datetime.time(
-                9, 30
-            ) and datetime.datetime.now().time() < datetime.time(9, 31):
-                self.nifty_15min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_15min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                break
-            else:
-                self.nifty_5min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_5min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                self.nifty_15min = self.getLiveData("NSE:NIFTY 50")["ohlc"]
-                self.banknifty_15min = self.getLiveData("NSE:NIFTY BANK")["ohlc"]
-                break
+        self.banknifty_prev_high = self.data["index"]["NSE:NIFTY BANK"]["prev_high"]
+        self.banknifty_prev_low = self.data["index"]["NSE:NIFTY BANK"]["prev_low"]
 
         while True:
+            # pause until 9 : 20
+            if datetime.datetime.now().time() < datetime.time(9, 20):
+                continue
 
             nifty_live = self.getLiveData("NSE:NIFTY 50")
             banknifty_live = self.getLiveData("NSE:NIFTY BANK")
@@ -47,10 +30,10 @@ class OpenInterestIndex(TradeApp):
             print("nifty_slope", nifty_slope)
 
             if (
-                nifty_live["last_price"] > self.nifty_gamechanger
+                nifty_live["last_price"] > self.nifty_prev_low
                 and nifty_slope > 0
                 and self.nifty_totalpower > 10000
-            ):  # and nifty_live['last_price']>self.nifty_5min['high']:
+            ):
                 ticker = self.data["index"]["NSE:NIFTY 50"]["ce_ticker"]
                 print(nifty_slope)
                 trade = self.generateMarketOrderBuyIndexOption(ticker, 50, "ENTRY")
@@ -58,7 +41,7 @@ class OpenInterestIndex(TradeApp):
                 self.sendTrade(trade)
 
             if (
-                nifty_live["last_price"] < self.nifty_gamechanger
+                nifty_live["last_price"] < self.nifty_prev_high
                 and nifty_slope < 0
                 and self.nifty_totalpower < -10000
             ):
@@ -69,7 +52,7 @@ class OpenInterestIndex(TradeApp):
 
             print("banknifty_slope", banknifty_slope)
             if (
-                banknifty_live["last_price"] > self.banknifty_gamechanger
+                banknifty_live["last_price"] > self.banknifty_prev_low
                 and banknifty_slope > 0
                 and self.banknifty_totalpower > 30000
             ):
@@ -79,7 +62,7 @@ class OpenInterestIndex(TradeApp):
                 self.sendTrade(trade)
 
             if (
-                banknifty_live["last_price"] < self.banknifty_gamechanger
+                banknifty_live["last_price"] < self.banknifty_prev_high
                 and banknifty_slope < 0
                 and self.banknifty_totalpower < -30000
             ):
@@ -99,14 +82,14 @@ class OpenInterestIndex(TradeApp):
                 ticker = order["ticker"]
                 entryprice = self.averageEntryprice(order["data"])
                 profit_price = entryprice * 110 / 100
-                loss_price = entryprice * 95 / 100
+                # loss_price = entryprice * 95 / 100
                 livedata = self.getLiveData(ticker)
                 livedata_nifty = self.getLiveData("NSE:NIFTY 50")
                 livedata_banknifty = self.getLiveData("NSE:NIFTY BANK")
 
                 if "CE" in ticker:
                     if (
-                        livedata_nifty["last_price"] < self.nifty_gamechanger
+                        livedata_nifty["last_price"] < self.nifty_prev_low
                         and "BANKNIFTY" not in ticker
                     ):
                         trade = self.generateMarketOrderSellIndexOption(
@@ -117,7 +100,7 @@ class OpenInterestIndex(TradeApp):
                         continue
 
                     elif (
-                        livedata_banknifty["last_price"] < self.banknifty_gamechanger
+                        livedata_banknifty["last_price"] < self.banknifty_prev_low
                         and "BANKNIFTY" in ticker
                     ):
                         trade = self.generateMarketOrderSellIndexOption(
@@ -129,7 +112,7 @@ class OpenInterestIndex(TradeApp):
 
                 elif "PE" in ticker:
                     if (
-                        livedata_nifty["last_price"] > self.nifty_gamechanger
+                        livedata_nifty["last_price"] > self.nifty_prev_high
                         and "BANKNIFTY" not in ticker
                     ):
                         trade = self.generateMarketOrderSellIndexOption(
@@ -140,7 +123,7 @@ class OpenInterestIndex(TradeApp):
                         continue
 
                     elif (
-                        livedata_banknifty["last_price"] > self.banknifty_gamechanger
+                        livedata_banknifty["last_price"] > self.banknifty_prev_high
                         and "BANKNIFTY" in ticker
                     ):
                         trade = self.generateMarketOrderSellIndexOption(
@@ -152,7 +135,7 @@ class OpenInterestIndex(TradeApp):
 
                 if (
                     livedata["last_price"] >= profit_price
-                    or livedata["last_price"] <= loss_price
+                    # or livedata["last_price"] <= loss_price
                     or datetime.datetime.now().time() >= datetime.time(15, 10)
                 ):
                     print(profit_price, " profit")

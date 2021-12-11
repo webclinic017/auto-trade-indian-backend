@@ -40,7 +40,8 @@ from services.live_data import main as live_data_main
 
 # for the index
 from services.index.oi_index import main as main_oi_index
-
+from services.index.five_min import main as main_five_min
+from services.index.fifteen_min import main as main_fifteen_min
 
 # orders service start
 orders_process = {}
@@ -71,7 +72,11 @@ while True:
 
 
 # for the index trading
-services_index = [{"name": "oi_index", "script": main_oi_index, "args": []}]
+services_index = [
+    {"name": "oi_index", "script": main_oi_index, "args": []},
+    {"name": "index_5minute", "script": main_five_min, "args": []},
+    {"name": "index_15minute", "script": main_fifteen_min, "args": []},
+]
 
 # for stock trading
 services_stocks = []

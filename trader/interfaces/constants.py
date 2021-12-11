@@ -19,3 +19,12 @@ MARKET_ORDER_BUY = "/place/market_order/buy"
 MARKET_ORDER_SELL = "/place/market_order/sell"
 LIMIT_ORDER_BUY = "/place/limit_order/buy"
 LIMIT_ORDER_SELL = "/place/limit_order/sell"
+
+MODE = os.environ["mode"]
+
+
+def getOrderUrl(path):
+    return "https://auto.bittrade.space" + path
+
+
+AUTH_TOKEN = os.environ["AUTH_TOKEN"]

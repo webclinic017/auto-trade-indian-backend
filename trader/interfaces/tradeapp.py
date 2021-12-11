@@ -8,14 +8,17 @@ import math
 import websocket
 
 from interfaces.constants import (
+    AUTH_TOKEN,
     LIMIT_ORDER_BUY,
     LIMIT_ORDER_SELL,
     MARKET_ORDER_BUY,
     MARKET_ORDER_SELL,
+    MODE,
     MONGO,
     PUBLISHER,
     QUOTE,
     REDIS,
+    getOrderUrl,
 )
 
 
@@ -63,12 +66,10 @@ class TradeApp:
     # publish the notification to the end users
     def sendNotification(self, trade):
         socket = websocket.create_connection(trade["uri"])
-
         trade.pop("uri")
 
         socket.send(json.dumps(trade))
         socket.close()
-
         return
 
     # get the live data for the particular ticker
@@ -308,16 +309,26 @@ class TradeApp:
         }
         return trade
 
+    def placeTradeWithAPI(self, trade):
+        uri = getOrderUrl(trade["endpoint"])
+        requests.post(uri, data=trade, headers={"Authorization": f"Token {AUTH_TOKEN}"})
+
     # function to send the trade
     def sendTrade(self, trade):
-        self.sendNotification(trade)
-
         print(json.dumps(trade, indent=2, default=str))
 
-        self.insertOrder(trade["exchange"] + ":" + trade["trading_symbol"], trade)
-        self.createOrder(trade)
+        if MODE == "global":
+            self.sendNotification(trade)
+        else:
+            try:
+                self.placeTradeWithAPI(trade)
+            except Exception as e:
+                print(e)
+                return
 
-        return
+        if trade["tag"] == "ENTRY":
+            self.insertOrder(trade["exchange"] + ":" + trade["trading_symbol"], trade)
+            self.createOrder(trade)
 
     # function for average entry price
     def averageEntryprice(self, orders):
