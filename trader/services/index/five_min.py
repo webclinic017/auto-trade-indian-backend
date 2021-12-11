@@ -10,6 +10,8 @@ class FiveMinIndex(TradeApp):
 
     def entryStrategy(self):
         today = datetime.date.today()
+        getDataAf920 = True
+        getDataAf930 = True
 
         while True:
             if datetime.datetime.now().time() < datetime.time(9, 20):
