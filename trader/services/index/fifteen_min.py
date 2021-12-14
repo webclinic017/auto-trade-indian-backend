@@ -147,7 +147,7 @@ class FifteenMinIndex(TradeApp):
 
                 # EXIT FOR PROFIT OR END OF DAY
                 if livedata["last_price"] >= profit_price or (
-                    datetime.datetime.now().time() >= datetime.time(3, 10)
+                    datetime.datetime.now().time() >= datetime.time(15, 10)
                 ):
                     trade = self.generateMarketOrderSellIndexOption(ticker, 50, "EXIT")
                     self.sendTrade(trade)

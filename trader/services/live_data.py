@@ -84,6 +84,10 @@ def on_close(ws, code, reason):
     ws.stop()
 
 
+def on_error(code, reason):
+    print(code, reason)
+
+
 def appendTickers(ticks):
     for tick in ticks:
         ticker = ticker_map[tick["instrument_token"]]
@@ -97,6 +101,7 @@ def on_ticks(ws, ticks):
 kws.on_connect = on_connect
 kws.on_ticks = on_ticks
 kws.on_close = on_close
+kws.on_error = on_error
 
 
 def main():

@@ -104,7 +104,7 @@ class BullBear(TradeApp):
 
             for order in orders:
                 ticker = order["ticker"]
-                entryprice = self.averageEntryprice(orders["data"])
+                entryprice = self.averageEntryprice(order["data"])
                 livedata = self.getLiveData(ticker)
                 nifty_live = self.getLiveData("NSE:NIFTY 50")
                 banknifty_live = self.getLiveData("NSE:NIFTY BANK")
@@ -125,6 +125,7 @@ class BullBear(TradeApp):
                         )
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
+                        continue
 
                 if ticker_type == "NIFTY" and "CE" in ticker:
                     if (
@@ -136,6 +137,7 @@ class BullBear(TradeApp):
                         )
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
+                        continue
 
                 if ticker_type == "BANKNIFTY" and "PE" in ticker:
                     if (
@@ -147,6 +149,7 @@ class BullBear(TradeApp):
                         )
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
+                        continue
 
                 if ticker_type == "NIFTY" and "PE" in ticker:
                     if (
@@ -158,6 +161,7 @@ class BullBear(TradeApp):
                         )
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
+                        continue
 
                 if (
                     livedata["last_price"] >= profit_price
@@ -168,5 +172,11 @@ class BullBear(TradeApp):
                     trade = self.generateMarketOrderSellIndexOption(ticker, 50, "EXIT")
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
+                    continue
 
             time.sleep(10)
+
+
+def main():
+    app = BullBear(name="bull_bear_index")
+    app.start()
