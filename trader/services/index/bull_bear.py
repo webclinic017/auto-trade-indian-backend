@@ -120,6 +120,11 @@ class BullBear(TradeApp):
                         self.banknifty_low != None
                         and banknifty_live["last_price"] < self.banknifty_low
                     ):
+                        print(
+                            "BANKNIFTY LIVE: {}, BANKNIFTY_LOW: {}".format(
+                                banknifty_live["live"], self.banknifty_low
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -132,6 +137,11 @@ class BullBear(TradeApp):
                         self.nifty_low != None
                         and nifty_live["last_price"] < self.nifty_low
                     ):
+                        print(
+                            "NIFTY LIVE: {}, NIFTY_LOW: {}".format(
+                                nifty_live["live"], self.nifty_low
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -144,6 +154,11 @@ class BullBear(TradeApp):
                         self.banknifty_high != None
                         and banknifty_live["last_price"] > self.banknifty_high
                     ):
+                        print(
+                            "BANKNIFTY LIVE: {}, BANKNIFTY_HIGH: {}".format(
+                                banknifty_live["live"], self.banknifty_high
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -156,6 +171,11 @@ class BullBear(TradeApp):
                         self.nifty_high != None
                         and nifty_live["last_price"] > self.nifty_high
                     ):
+                        print(
+                            "NIFTY LIVE: {}, NIFTY_HIGH: {}".format(
+                                nifty_live["live"], self.nifty_high
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )

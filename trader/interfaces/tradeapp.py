@@ -315,6 +315,7 @@ class TradeApp:
 
     # function to send the trade
     def sendTrade(self, trade):
+        print(datetime.datetime.now())
         print(json.dumps(trade, indent=2, default=str))
 
         if MODE == "global":
