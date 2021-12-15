@@ -10,8 +10,6 @@ class FiveMinIndex(TradeApp):
 
     def entryStrategy(self):
         today = datetime.date.today()
-        getDataAf920 = True
-        getDataAf930 = True
 
         while True:
             if datetime.datetime.now().time() < datetime.time(9, 20):
@@ -107,6 +105,12 @@ class FiveMinIndex(TradeApp):
                         livedata_banknifty["last_price"]
                         < self.banknifty_5min_ohlc["low"]
                     ):
+                        print(
+                            "BANKNIFTY LIVE: {}, BANKNIFTY_5min_LOW: {}".format(
+                                livedata_banknifty["last_price"],
+                                self.banknifty_5min_ohlc["low"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -120,6 +124,13 @@ class FiveMinIndex(TradeApp):
                         livedata_banknifty["last_price"]
                         > self.banknifty_5min_ohlc["high"]
                     ):
+                        print(
+                            "BANKNIFTY_LIVE: {}, BANKNIFTY 5min HIGH: {}".format(
+                                livedata_banknifty["last_price"],
+                                self.banknifty_5min_ohlc["high"],
+                            )
+                        )
+
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -130,6 +141,12 @@ class FiveMinIndex(TradeApp):
                 # NIFTY CE
                 if ticker_type == "NIFTY" and "CE" in ticker:
                     if livedata_nifty["last_price"] < self.nifty_5min_ohlc["low"]:
+                        print(
+                            "NIFTY_LIVE: {}, NIFTY 5min LOW: {}".format(
+                                livedata_nifty["last_price"],
+                                self.nifty_5min_ohlc["low"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -140,6 +157,12 @@ class FiveMinIndex(TradeApp):
                 # NIFTY PE
                 if ticker_type == "NIFTY" and "PE" in ticker:
                     if livedata_nifty["last_price"] > self.nifty_5min_ohlc["high"]:
+                        print(
+                            "NIFTY_LIVE: {}, NIFTY 5min HIGH: {}".format(
+                                livedata_nifty["last_price"],
+                                self.nifty_5min_ohlc["high"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -151,6 +174,7 @@ class FiveMinIndex(TradeApp):
                 if livedata["last_price"] >= profit_price or (
                     datetime.datetime.now().time() >= datetime.time(15, 10)
                 ):
+                    print("PROFIT: {}".format(livedata))
                     trade = self.generateMarketOrderSellIndexOption(ticker, 50, "EXIT")
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)

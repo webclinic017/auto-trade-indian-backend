@@ -105,6 +105,12 @@ class FifteenMinIndex(TradeApp):
                         livedata_banknifty["last_price"]
                         < self.banknifty_15min_ohlc["low"]
                     ):
+                        print(
+                            "BANKNIFTY_LIVE: {}, BANKNIFTY 15min LOW: {}".format(
+                                livedata_banknifty["last_price"],
+                                self.banknifty_15min_ohlc["low"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -118,6 +124,12 @@ class FifteenMinIndex(TradeApp):
                         livedata_banknifty["last_price"]
                         > self.banknifty_15min_ohlc["high"]
                     ):
+                        print(
+                            "BANKNIFTY_LIVE: {}, BANKNIFTY 15min HIGH: {}".format(
+                                livedata_banknifty["last_price"],
+                                self.banknifty_15min_ohlc["high"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -128,6 +140,12 @@ class FifteenMinIndex(TradeApp):
                 # NIFTY CE
                 if ticker_type == "NIFTY" and "CE" in ticker:
                     if livedata_nifty["last_price"] < self.nifty_15min_ohlc["low"]:
+                        print(
+                            "NIFTY_LIVE: {}, NIFTY 15min LOW: {}".format(
+                                livedata_nifty["last_price"],
+                                self.nifty_15min_ohlc["low"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -138,6 +156,12 @@ class FifteenMinIndex(TradeApp):
                 # NIFTY PE
                 if ticker_type == "NIFTY" and "PE" in ticker:
                     if livedata_nifty["last_price"] > self.nifty_15min_ohlc["high"]:
+                        print(
+                            "NIFTY_LIVE: {}, NIFTY 15min HIGH: {}".format(
+                                livedata_nifty["last_price"],
+                                self.nifty_15min_ohlc["high"],
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -149,6 +173,7 @@ class FifteenMinIndex(TradeApp):
                 if livedata["last_price"] >= profit_price or (
                     datetime.datetime.now().time() >= datetime.time(15, 10)
                 ):
+                    print("PROFIT: {}".format(livedata))
                     trade = self.generateMarketOrderSellIndexOption(ticker, 50, "EXIT")
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)

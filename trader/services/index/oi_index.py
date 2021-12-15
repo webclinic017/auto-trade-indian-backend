@@ -92,6 +92,11 @@ class OpenInterestIndex(TradeApp):
                         livedata_nifty["last_price"] < self.nifty_prev_low
                         and "BANKNIFTY" not in ticker
                     ):
+                        print(
+                            "NIFTY_LIVE: {}, NIFTY_PREV_LOW: {}".format(
+                                livedata_nifty["last_price"], self.nifty_prev_low
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -103,6 +108,12 @@ class OpenInterestIndex(TradeApp):
                         livedata_banknifty["last_price"] < self.banknifty_prev_low
                         and "BANKNIFTY" in ticker
                     ):
+                        print(
+                            "BANKNIFTY_LIVE: {}, BANKNIFTY_PREV_LOW: {}".format(
+                                livedata_banknifty["last_price"],
+                                self.banknifty_prev_low,
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 25, "EXIT"
                         )
@@ -115,6 +126,11 @@ class OpenInterestIndex(TradeApp):
                         livedata_nifty["last_price"] > self.nifty_prev_high
                         and "BANKNIFTY" not in ticker
                     ):
+                        print(
+                            "NIFTY_LIVE: {}, NIFTY_PREV_HIGH: {}".format(
+                                livedata_nifty["last_price"], self.nifty_prev_high
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
@@ -126,6 +142,12 @@ class OpenInterestIndex(TradeApp):
                         livedata_banknifty["last_price"] > self.banknifty_prev_high
                         and "BANKNIFTY" in ticker
                     ):
+                        print(
+                            "BANKNIFTY_LIVE: {}, BANKNIFTY_PREV_HIGH: {}".format(
+                                livedata_banknifty["last_price"],
+                                self.banknifty_prev_high,
+                            )
+                        )
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 25, "EXIT"
                         )
@@ -138,7 +160,7 @@ class OpenInterestIndex(TradeApp):
                     # or livedata["last_price"] <= loss_price
                     or datetime.datetime.now().time() >= datetime.time(15, 10)
                 ):
-                    print(profit_price, " profit")
+                    print("PROFIT: {}".format(livedata))
                     trade = self.generateMarketOrderSellIndexOption(ticker, 50, "EXIT")
                     self.sendTrade(trade)
                     self.deleteOrder(ticker)
