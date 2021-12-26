@@ -132,7 +132,52 @@ class BullBear(TradeApp):
 
             pe_ticker_nifty = self.data["index"]["NSE:NIFTY 50"]["pe_ticker"]
             pe_ticker_banknifty = self.data["index"]["NSE:NIFTY BANK"]["pe_ticker"]
+            
+            print(datetime.datetime.now(), "*****current time*****")
+            print(nifty_live["last_price"], "nifty current price")
+            print(self.nifty_first5min_ohlc["high"], "nifty first fiveminute high")
+            print(self.nifty_first5min_ohlc["low"], "nifty first fiveminute low")
+            print(self.nifty_latestopen, "nifty latest open")
+            print(self.nifty_latesthigh, "nifty latest high")
+            print(self.nifty_latestlow, "nifty latest low")
+            print(self.nifty_latestclose, "nifty latest close")
+            print(
+                abs(self.nifty_latestopen - self.nifty_latestclose),
+                "niftyopen-nifty close",
+            )
+            print(
+                abs(self.nifty_latesthigh - self.nifty_latestlow),
+                "niftyhigh-nifty low",
+            )
 
+            print(banknifty_live["last_price"], "banknifty current price")
+            print(
+                self.banknifty_first5min_ohlc["high"],
+                "banknifty first fiveminute high",
+            )
+            print(
+                self.banknifty_first5min_ohlc["low"],
+                "banknifty first fiveminute low",
+            )
+            print(self.banknifty_latestopen, "banknifty latest open")
+            print(self.banknifty_latesthigh, "banknifty latest high")
+            print(self.banknifty_latestlow, "banknifty latest low")
+            print(self.banknifty_latestclose, "banknifty latest close")
+            print(
+                abs(self.banknifty_latestopen - self.banknifty_latestclose),
+                "bankniftyopen-banknifty close",
+            )
+            print(
+                abs(self.banknifty_latesthigh - self.banknifty_latestlow),
+                "bankniftyhigh-banknifty low",
+            )
+            print(self.nifty_profitcount, "nifty profit count")
+            print(self.nifty_losscount, "nifty loss count")
+            print(self.banknifty_profitcount, "banknifty profit count")
+            print(self.banknifty_losscount, "banknifty loss count")
+
+
+        
             # CE TICKER
             if (
                 nifty_live["last_price"] > self.nifty_first5min_ohlc["high"]
@@ -195,49 +240,7 @@ class BullBear(TradeApp):
                 banknifty_live = self.getLiveData("NSE:NIFTY BANK")
                 profit_price = entryprice * 110 / 100
 
-                print(datetime.datetime.now(), "current time")
-                print(nifty_live["last_price"], "nifty current price")
-                print(self.nifty_first5min_ohlc["high"], "nifty first fiveminute high")
-                print(self.nifty_first5min_ohlc["low"], "nifty first fiveminute low")
-                print(self.nifty_latestopen, "nifty latest open")
-                print(self.nifty_latesthigh, "nifty latest high")
-                print(self.nifty_latestlow, "nifty latest low")
-                print(self.nifty_latestclose, "nifty latest close")
-                print(
-                    abs(self.nifty_latestopen - self.nifty_latestclose),
-                    "niftyopen-nifty close",
-                )
-                print(
-                    abs(self.nifty_latesthigh - self.nifty_latestlow),
-                    "niftyhigh-nifty low",
-                )
-
-                print(banknifty_live["last_price"], "banknifty current price")
-                print(
-                    self.banknifty_first5min_ohlc["high"],
-                    "banknifty first fiveminute high",
-                )
-                print(
-                    self.banknifty_first5min_ohlc["low"],
-                    "banknifty first fiveminute low",
-                )
-                print(self.banknifty_latestopen, "banknifty latest open")
-                print(self.banknifty_latesthigh, "banknifty latest high")
-                print(self.banknifty_latestlow, "banknifty latest low")
-                print(self.banknifty_latestclose, "banknifty latest close")
-                print(
-                    abs(self.banknifty_latestopen - self.banknifty_latestclose),
-                    "bankniftyopen-banknifty close",
-                )
-                print(
-                    abs(self.banknifty_latesthigh - self.banknifty_latestlow),
-                    "bankniftyhigh-banknifty low",
-                )
-                print(self.nifty_profitcount, "nifty profit count")
-                print(self.nifty_losscount, "nifty loss count")
-                print(self.banknifty_profitcount, "banknifty profit count")
-                print(self.banknifty_losscount, "banknifty loss count")
-
+                
                 if "BANK" in ticker:
                     ticker_type = "BANKNIFTY"
                 else:
