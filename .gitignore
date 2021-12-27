@@ -3,3 +3,5 @@ db/
 tickers.json
 auth.env
 .env
+entry.json
+exit.json

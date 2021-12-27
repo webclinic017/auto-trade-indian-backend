@@ -84,7 +84,7 @@ def on_close(ws, code, reason):
     ws.stop()
 
 
-def on_error(code, reason):
+def on_error(ws, code, reason):
     print(code, reason)
 
 

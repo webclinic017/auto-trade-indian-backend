@@ -20,9 +20,10 @@ MARKET_ORDER_SELL = "/place/market_order/sell"
 LIMIT_ORDER_BUY = "/place/limit_order/buy"
 LIMIT_ORDER_SELL = "/place/limit_order/sell"
 
+BITTRADE_HOST = os.environ['BITTRADE_HOST']
 
 def getOrderUrl(path):
-    return "https://auto.bittrade.space" + path
+    return BITTRADE_HOST + path
 
 
 AUTH_TOKEN = os.environ["AUTH_TOKEN"]

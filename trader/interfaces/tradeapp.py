@@ -180,6 +180,7 @@ class TradeApp:
             "uri": PUBLISHER,
             "entry_price": live_data["last_price"],
             "price": live_data["depth"]["sell"][1]["price"],
+            "ltp": live_data["last_price"],
             "type": "INDEXOPT",
         }
         return trade
@@ -198,6 +199,7 @@ class TradeApp:
             "entry_price": live_data["last_price"],
             "price": live_data["depth"]["buy"][1]["price"],
             "type": "INDEXOPT",
+            "ltp": live_data["last_price"],
         }
         return trade
 
@@ -311,7 +313,14 @@ class TradeApp:
 
     def placeTradeWithAPI(self, trade):
         uri = getOrderUrl(trade["endpoint"])
-        requests.post(uri, data=trade, headers={"Authorization": f"Token {AUTH_TOKEN}"})
+        response = requests.post(
+            uri,
+            headers={
+                "Authorization": f"Token {AUTH_TOKEN}",
+            },
+            json=trade,
+        )
+        print(json.dumps(response.json(), indent=2))
 
     # function to send the trade
     def sendTrade(self, trade):
