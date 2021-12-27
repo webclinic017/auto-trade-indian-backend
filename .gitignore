@@ -5,3 +5,4 @@ auth.env
 .env
 entry.json
 exit.json
+data.json
