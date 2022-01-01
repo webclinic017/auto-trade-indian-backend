@@ -4,7 +4,7 @@ from interfaces.tradeapp import TradeApp
 import time
 
 
-class TestStrategy(TradeApp):
+class ExampleStrategy(TradeApp):
     today = datetime.date.today() - datetime.timedelta(3)
 
     def entryStrategy(self):

@@ -21,23 +21,23 @@ class Trade:
         endpoint: str,
         trading_symbol: str,
         exchange: str,
-        quantity: str,
+        quantity: int,
         tag: TradeTag,
         publisher: str,
-        entry_price: str,
-        price: str,
-        ltp: str,
+        entry_price: int,
+        price: int,
+        ltp: int,
         type: TradeType,
     ):
         self.endpoint: str = endpoint
         self.trading_symbol: str = trading_symbol
         self.exchange: str = exchange
-        self.quantity: str = quantity
+        self.quantity: int = quantity
         self.tag: TradeTag = tag
         self.publisher: str = publisher
-        self.entry_price: str = entry_price
-        self.price: str = price
-        self.ltp: str = ltp
+        self.entry_price: int = entry_price
+        self.price: int = price
+        self.ltp: int = ltp
         self.type: TradeType = type
 
     def json(self):
