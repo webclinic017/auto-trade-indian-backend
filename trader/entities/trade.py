@@ -1,4 +1,5 @@
 from enum import Enum
+import json
 
 
 class TradeType(Enum):
@@ -9,7 +10,7 @@ class TradeType(Enum):
     STOCKFUT = "STOCKFUT"
 
 
-class TradeTag:
+class TradeTag(Enum):
     ENTRY = "ENTRY"
     EXIT = "EXIT"
 
@@ -38,3 +39,19 @@ class Trade:
         self.price: str = price
         self.ltp: str = ltp
         self.type: TradeType = type
+
+    def json(self):
+        return json.dumps(
+            {
+                "endpoint": self.endpoint,
+                "trading_symbol": self.trading_symbol,
+                "exchange": self.exchange,
+                "quantity": self.quantity,
+                "tag": self.tag.value,
+                "publisher": self.publisher,
+                "entry_price": self.entry_price,
+                "price": self.price,
+                "ltp": self.ltp,
+                "type": self.type.value,
+            }
+        )
