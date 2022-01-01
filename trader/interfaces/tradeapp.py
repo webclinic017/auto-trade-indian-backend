@@ -1,3 +1,4 @@
+from typing import List
 import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
 import pandas as pd
@@ -19,7 +20,7 @@ from interfaces.constants import (
     REDIS,
     getOrderUrl,
 )
-from entities.zerodha import LiveTicker
+from entities.zerodha import HistoricalDataInterval, HistoricalOHLC, LiveTicker
 
 
 class TradeApp:
@@ -158,11 +159,23 @@ class TradeApp:
 
         return df
 
-    def getHistoricalDataDict(self, ticker, fdate, tdate, interval):
+    def getHistoricalDataDict(
+        self,
+        ticker: str,
+        fdate: datetime.datetime,
+        tdate: datetime.datetime,
+        interval: HistoricalDataInterval,
+    ) -> List[HistoricalOHLC]:
         ticker = ticker.split(":")[1]
         token = self.token_map[ticker]["instrument_token"]
 
-        data = self.kite.historical_data(token, fdate, tdate, interval)
+        data: List[HistoricalOHLC] = []
+
+        for historical_data in self.kite.historical_data(
+            token, fdate, tdate, interval.value
+        ):
+            data.append(historical_data)
+
         return data
 
     # market order buy for index option
@@ -353,7 +366,7 @@ class TradeApp:
     def getPnl(self, entry_price, live_price):
         try:
             pnl = ((live_price - entry_price) / entry_price) * 100
-        except:
+        except ZeroDivisionError:
             pnl = 0
         return pnl
 

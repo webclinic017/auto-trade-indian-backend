@@ -43,6 +43,7 @@ from services.index.oi_index import main as main_oi_index
 from services.index.five_min import main as main_five_min
 from services.index.fifteen_min import main as main_fifteen_min
 from services.index.bull_bear import main as main_bull_bear
+from services.index.test_strategy import TestStrategy
 
 # orders service start
 orders_process = {}
@@ -74,7 +75,8 @@ while True:
 
 # for the index trading
 services_index = [
-    {"name": "bull_bear", "script": main_bull_bear, "args": []},
+    # {"name": "bull_bear", "script": main_bull_bear, "args": []},
+    {"name": "test", "script": TestStrategy(name="test").start, "args": []}
 ]
 
 # for stock trading

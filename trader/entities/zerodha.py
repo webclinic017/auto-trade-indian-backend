@@ -1,5 +1,6 @@
 from typing import List, Union
 import datetime
+from enum import Enum
 
 
 class OHLC:
@@ -52,3 +53,18 @@ class LiveTicker:
         self.ohlc = OHLC(live_ticker.get("ohlc"))
         self.tradable: bool = live_ticker.get("tradable", False)
         self.depth: Depth = Depth(live_ticker.get("depth", {}))
+
+
+class HistoricalDataInterval(Enum):
+    INTERVAL_1_MINUTE = "1minuite"
+    INTERVAL_3_MINUTE = "3minute"
+    INTERVAL_5_MINUTE = "5minute"
+    INTERVAL_10_MINUTE = "10minute"
+    INTERVAL_15_MINUTE = "15minute"
+    INTERVAL_1_DAY = "1day"
+
+
+class HistoricalOHLC(OHLC):
+    def __init__(self, ohlc: dict):
+        super().__init__(ohlc)
+        self.time: datetime.datetime = ohlc.get("time")
