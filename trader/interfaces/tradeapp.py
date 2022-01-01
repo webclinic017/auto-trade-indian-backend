@@ -6,7 +6,6 @@ import talib as tb  # type: ignore
 import numpy as np
 import math
 import websocket
-
 from interfaces.constants import (
     AUTH_TOKEN,
     LIMIT_ORDER_BUY,
@@ -20,6 +19,7 @@ from interfaces.constants import (
     REDIS,
     getOrderUrl,
 )
+from entities.zerodha import LiveTicker
 
 
 class TradeApp:
@@ -73,11 +73,9 @@ class TradeApp:
         return
 
     # get the live data for the particular ticker
-    def getLiveData(self, ticker):
-        # print(ticker)
+    def getLiveData(self, ticker) -> LiveTicker:
         data = self.redis.get(ticker)
-        # print(data)
-        return json.loads(data)
+        return LiveTicker(json.loads(data))
 
     # get the quote for a ticker
     def getQuote(self, exchange, ticker):
