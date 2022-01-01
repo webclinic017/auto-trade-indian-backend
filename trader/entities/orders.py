@@ -39,7 +39,6 @@ class OrderExecutor:
             self.entries[trade.trading_symbol] = Order(
                 trade.trading_symbol,
                 trade.exchange,
-                trade.endpoint,
                 trade.quantity,
                 trade.entry_price,
             )
