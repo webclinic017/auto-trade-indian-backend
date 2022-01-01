@@ -50,7 +50,7 @@ class LiveTicker:
         self.timestamp: datetime.datetime = live_ticker.get("timestamp")
         self.oi: int = live_ticker.get("oi")
         self.oi_day_low: int = live_ticker.get("oi_day_low")
-        self.ohlc = OHLC(live_ticker.get("ohlc"))
+        self.ohlc = OHLC(live_ticker.get("ohlc", {}))
         self.tradable: bool = live_ticker.get("tradable", False)
         self.depth: Depth = Depth(live_ticker.get("depth", {}))
 
