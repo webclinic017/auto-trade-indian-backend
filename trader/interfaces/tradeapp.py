@@ -1,3 +1,4 @@
+import random
 import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
 import pandas as pd
@@ -18,6 +19,7 @@ from interfaces.constants import (
     PUBLISHER,
     QUOTE,
     REDIS,
+    TRADE_ENV,
     getOrderUrl,
 )
 
@@ -169,7 +171,16 @@ class TradeApp:
 
     # market order buy for index option
     def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
+        if TRADE_ENV == 'prod':
+            live_data = self.getLiveData(ticker)
+        else:
+            live_data = {
+                'last_price': random.randint(80, 100),
+                'depth': {
+                    'sell': [{}, {'price': random.randint(80, 100)}]
+                }
+            }
+
         ticker = ticker.split(":")[1]
         trade = {
             "endpoint": MARKET_ORDER_BUY,
@@ -187,8 +198,18 @@ class TradeApp:
 
     # market order sell for index option
     def generateMarketOrderSellIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
+        if TRADE_ENV == 'prod':
+            live_data = self.getLiveData(ticker)
+        else:
+            live_data = {
+                'last_price': random.randint(80, 100),
+                'depth': {
+                    'buy': [{}, {'price': random.randint(80, 100)}]
+                }
+            }
         ticker = ticker.split(":")[1]
+
+
         trade = {
             "endpoint": MARKET_ORDER_SELL,
             "trading_symbol": ticker,

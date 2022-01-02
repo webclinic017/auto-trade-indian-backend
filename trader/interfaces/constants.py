@@ -29,3 +29,5 @@ def getOrderUrl(path):
 AUTH_TOKEN = os.environ["AUTH_TOKEN"]
 
 MODE = os.environ["MODE"]
+
+TRADE_ENV = os.environ['TRADE_ENV']
