@@ -40,10 +40,12 @@ class FifteenMinIndex(TradeApp):
             if nifty_live["last_price"] > self.nifty_15min_ohlc["high"] and (
                 ce_ticker_nifty not in self.entered_tickers
             ):
+
                 trade = self.generateMarketOrderBuyIndexOption(
                     ce_ticker_nifty, 50, "ENTRY"
                 )
 
+                
                 self.sendTrade(trade)
                 self.entered_tickers.add(ce_ticker_nifty)
 

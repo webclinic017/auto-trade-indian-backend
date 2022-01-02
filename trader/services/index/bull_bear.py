@@ -1,6 +1,7 @@
 import datetime, time
 from interfaces.tradeapp import TradeApp
 from threading import Thread
+import pandas as pd
 
 
 class BullBear(TradeApp):
@@ -22,6 +23,9 @@ class BullBear(TradeApp):
     banknifty_profitcount = 0
     banknifty_losscount = 0
 
+    nifty_df = None
+    banknifty_df = None
+
     def isValuesNone(self):
         return (
             self.nifty_first5min_ohlc == None
@@ -41,7 +45,7 @@ class BullBear(TradeApp):
 
         while True:
             if datetime.datetime.now().time() < datetime.time(
-                9, 30
+                10, 35, 2
             ) or datetime.datetime.now().time() > datetime.time(15, 10):
                 continue
 
@@ -49,9 +53,13 @@ class BullBear(TradeApp):
                 "NSE:NIFTY 50", today, today, "5minute"
             )
 
+            self.nifty_df = pd.DataFrame(nifty_historical)
+
             banknifty_historical = self.getHistoricalDataDict(
                 "NSE:NIFTY BANK", today, today, "5minute"
             )
+
+            self.banknifty_df = pd.DataFrame(banknifty_historical)
 
             if self.nifty_first5min_ohlc == None:
                 self.nifty_first5min_ohlc = nifty_historical[0]
@@ -59,8 +67,8 @@ class BullBear(TradeApp):
             if self.banknifty_first5min_ohlc == None:
                 self.banknifty_first5min_ohlc = banknifty_historical[0]
 
-            self.latest_niftyhistorical = nifty_historical[-2]
-            self.latest_bankniftyhistorical = banknifty_historical[-2]
+            self.latest_niftyhistorical = nifty_historical[-1]
+            self.latest_bankniftyhistorical = banknifty_historical[-1]
 
             if (
                 self.nifty_latestlow == None
@@ -110,7 +118,7 @@ class BullBear(TradeApp):
                 != self.banknifty_latestclose
             ):
                 self.banknifty_latestclose = self.latest_bankniftyhistorical["close"]
-
+            
             time.sleep(10)
 
     def entryStrategy(self):
@@ -118,7 +126,7 @@ class BullBear(TradeApp):
 
         while True:
             if (
-                datetime.datetime.now().time() < datetime.time(9, 31)
+                datetime.datetime.now().time() < datetime.time(10, 35, 3)
                 or datetime.datetime.now().time() > datetime.time(15, 10)
                 or self.isValuesNone()
             ):
@@ -150,6 +158,8 @@ class BullBear(TradeApp):
                 "niftyhigh-nifty low",
             )
 
+            print(self.nifty_df.tail())
+
             print(banknifty_live["last_price"], "banknifty current price")
             print(
                 self.banknifty_first5min_ohlc["high"],
@@ -176,7 +186,7 @@ class BullBear(TradeApp):
             print(self.banknifty_profitcount, "banknifty profit count")
             print(self.banknifty_losscount, "banknifty loss count")
 
-
+            print(self.banknifty_df.tail())
         
             # CE TICKER
             if (
@@ -258,6 +268,11 @@ class BullBear(TradeApp):
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
+
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+                        print("banknifty live: ", banknifty_live["last_price"], " banknifty latestlow: ", self.banknifty_latestlow)
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
                         self.banknifty_losscount += 1
@@ -272,6 +287,11 @@ class BullBear(TradeApp):
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
+
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+                        print("nifty live: ", nifty_live["last_price"], " nifty latestlow: ", self.nifty_latestlow)
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
                         self.nifty_losscount += 1
@@ -286,6 +306,11 @@ class BullBear(TradeApp):
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
+
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+                        print("banknifty live: ", banknifty_live["last_price"], " banknifty latesthigh: ", self.banknifty_latesthigh)
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
 
@@ -300,6 +325,11 @@ class BullBear(TradeApp):
                         trade = self.generateMarketOrderSellIndexOption(
                             ticker, 50, "EXIT"
                         )
+
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+                        print("nifty live: ", nifty_live["last_price"], " nifty latesthigh: ", self.nifty_latesthigh)
+                        print("\n\n\n*****EXIT CONDITIONS*****\n\n\n")
+
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
 

@@ -42,6 +42,7 @@ from services.live_data import main as live_data_main
 from services.index.oi_index import main as main_oi_index
 from services.index.five_min import main as main_five_min
 from services.index.fifteen_min import main as main_fifteen_min
+from services.index.bull_bear_latest import main as main_bull_bear_latest
 from services.index.bull_bear import main as main_bull_bear
 
 # orders service start
@@ -74,7 +75,7 @@ while True:
 
 # for the index trading
 services_index = [
-    {"name": "bull_bear", "script": main_bull_bear, "args": []},
+    {"name": "bull_bear", "script": main_bull_bear_latest, "args": []},
 ]
 
 # for stock trading
