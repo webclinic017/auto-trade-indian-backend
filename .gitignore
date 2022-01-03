@@ -6,3 +6,4 @@ auth.env
 entry.json
 exit.json
 .vscode/
+data.json

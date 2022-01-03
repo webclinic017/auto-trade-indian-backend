@@ -1,4 +1,5 @@
 from typing import List
+import random
 import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
 import pandas as pd
@@ -18,9 +19,12 @@ from interfaces.constants import (
     PUBLISHER,
     QUOTE,
     REDIS,
+    TRADE_ENV,
     getOrderUrl,
+    LIVE_DATA,
 )
 from entities.zerodha import HistoricalDataInterval, HistoricalOHLC, LiveTicker
+import time
 
 
 class TradeApp:
@@ -64,18 +68,32 @@ class TradeApp:
 
         self.tickers = self.data["tickers"]
 
+        self.ws = websocket.WebSocket()
+        self.ws.connect(PUBLISHER)
+
     # publish the notification to the end users
     def sendNotification(self, trade):
-        socket = websocket.create_connection(trade["uri"])
         trade.pop("uri")
 
-        socket.send(json.dumps(trade))
-        socket.close()
+        self.ws.send(json.dumps(trade))
         return
 
     # get the live data for the particular ticker
     def getLiveData(self, ticker) -> LiveTicker:
+        ticker = ticker.split(":")[1]
+
         data = self.redis.get(ticker)
+
+        if data == None:
+            requests.get(
+                LIVE_DATA
+                + "subscribe"
+                + "/"
+                + str(self.token_map[ticker]["instrument_token"])
+            )
+            time.sleep(3)
+            data = self.redis.get(ticker)
+
         return LiveTicker(json.loads(data))
 
     # get the quote for a ticker
@@ -90,7 +108,7 @@ class TradeApp:
     # create a completed order
     def createOrder(self, order):
         order["timestamp"] = str(datetime.datetime.now())
-        self.orders_collection.insert(order)
+        self.orders_collection.insert_one(order)
 
     # insert the order into the database
     def insertOrder(self, ticker, order):
@@ -180,7 +198,14 @@ class TradeApp:
 
     # market order buy for index option
     def generateMarketOrderBuyIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
+        if TRADE_ENV == "prod":
+            live_data = self.getLiveData(ticker)
+        else:
+            live_data = {
+                "last_price": random.randint(80, 100),
+                "depth": {"sell": [{}, {"price": random.randint(80, 100)}]},
+            }
+
         ticker = ticker.split(":")[1]
         trade = {
             "endpoint": MARKET_ORDER_BUY,
@@ -198,8 +223,15 @@ class TradeApp:
 
     # market order sell for index option
     def generateMarketOrderSellIndexOption(self, ticker, quantity, tag):
-        live_data = self.getLiveData(ticker)
+        if TRADE_ENV == "prod":
+            live_data = self.getLiveData(ticker)
+        else:
+            live_data = {
+                "last_price": random.randint(80, 100),
+                "depth": {"buy": [{}, {"price": random.randint(80, 100)}]},
+            }
         ticker = ticker.split(":")[1]
+
         trade = {
             "endpoint": MARKET_ORDER_SELL,
             "trading_symbol": ticker,
@@ -349,7 +381,6 @@ class TradeApp:
 
         if trade["tag"] == "ENTRY":
             self.insertOrder(trade["exchange"] + ":" + trade["trading_symbol"], trade)
-            self.createOrder(trade)
 
     # function for average entry price
     def averageEntryprice(self, orders):
