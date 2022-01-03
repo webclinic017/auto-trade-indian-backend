@@ -11,5 +11,6 @@ class Publisher:
 
     def publish_trade(self, trade: Trade):
         payload = trade.json()
+        print(payload)
 
         self.ws.send(payload)

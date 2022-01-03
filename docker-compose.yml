@@ -11,11 +11,6 @@ services:
     logging:
       driver: none
 
-  rabbit_mq:
-    image: rabbitmq:3-management
-    logging:
-      driver: none
-
   redis_server:
     image: redis:alpine
     logging:

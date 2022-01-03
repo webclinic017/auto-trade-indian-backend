@@ -53,5 +53,6 @@ class Trade:
                 "price": self.price,
                 "ltp": self.ltp,
                 "type": self.type.value,
-            }
+            },
+            indent=1,
         )

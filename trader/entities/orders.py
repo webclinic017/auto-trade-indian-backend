@@ -58,3 +58,9 @@ class OrderExecutor:
 
         # publish the trade to the publisher
         self.publisher.publish_trade(trade)
+
+    def exit_trade(self, trade: Trade):
+        self.clean_order(trade.trading_symbol)
+
+        # publish trade to publisher
+        self.publisher.publish_trade(trade)

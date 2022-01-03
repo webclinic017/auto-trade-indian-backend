@@ -2,9 +2,9 @@ import datetime
 from kiteconnect.connect import KiteConnect
 import os
 import time
-from trader.entities.orders import Order, OrderExecutor, OrderExecutorType
-from trader.entities.zerodha import ZerodhaKite
-from trader.interfaces.constants import PUBLISHER
+from entities.orders import Order, OrderExecutor, OrderExecutorType
+from entities.zerodha import ZerodhaKite
+from interfaces.constants import PUBLISHER
 import threading
 
 
@@ -36,19 +36,19 @@ class TradeBot(OrderExecutor):
 
     def _entry_strategy(self, interval=300):
         while True:
-            time_now = datetime.datetime.now().time()
-            if time_now < self.entry_time_start:
-                continue
+            # time_now = datetime.datetime.now().time()
+            # if time_now < self.entry_time_start:
+            #     continue
 
-            if time_now > self.entry_time_end:
-                return
+            # if time_now > self.entry_time_end:
+            #     return
 
             self.entry_strategy()
             time.sleep(interval)
 
-    def _exit_strategy(self, interval=50):
+    def _exit_strategy(self, interval=10):
         while True:
-            tickers = self.entries.keys()
+            tickers = set(self.entries.keys()).copy()
 
             for ticker in tickers:
                 if ticker in self.entries:

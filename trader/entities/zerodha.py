@@ -6,6 +6,7 @@ from kiteconnect.connect import KiteConnect
 import redis
 import requests
 import time
+import json
 
 
 class OHLC:
@@ -85,7 +86,7 @@ class ZerodhaKite:
 
         self.token_map = {}
         for instrument in self.instruments:
-            self.token_map[instrument["instrument_token"]] = instrument
+            self.token_map[instrument["tradingsymbol"]] = instrument
 
         self.redis = redis.StrictRedis(host=REDIS)
 
@@ -104,7 +105,10 @@ class ZerodhaKite:
         interval: HistoricalDataInterval,
     ) -> List[HistoricalOHLC]:
         _data = self.kite.historical_data(
-            self.token_map[tradingsymbol], start_time, end_time, interval.value
+            self.token_map[tradingsymbol]["instrument_token"],
+            start_time,
+            end_time,
+            interval.value,
         )
 
         data: List[HistoricalOHLC] = []
@@ -134,9 +138,13 @@ class ZerodhaKite:
         data = self.redis.get(tradingsymbol)
 
         if data == None:
-            self._get_live("subscribe" + "/" + str(self.token_map[tradingsymbol]))
+            self._get_live(
+                "subscribe"
+                + "/"
+                + str(self.token_map[tradingsymbol]["instrument_token"])
+            )
             time.sleep(2)
 
             data = self.redis.get(tradingsymbol)
 
-        return LiveTicker(data)
+        return LiveTicker(json.loads(data))
