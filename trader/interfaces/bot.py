@@ -4,6 +4,7 @@ import os
 import time
 from trader.entities.orders import Order, OrderExecutor, OrderExecutorType
 from trader.interfaces.constants import PUBLISHER
+import threading
 
 
 class TradeBot(OrderExecutor):
@@ -50,3 +51,10 @@ class TradeBot(OrderExecutor):
                     self.exit_strategy(self.entries[ticker])
 
             time.sleep(interval)
+
+    def start(self):
+        entry_thread = threading.Thread(target=self._entry_strategy)
+        exit_thread = threading.Thread(target=self._exit_strategy)
+
+        entry_thread.start()
+        exit_thread.start()
