@@ -3,6 +3,7 @@ from kiteconnect.connect import KiteConnect
 import os
 import time
 from trader.entities.orders import Order, OrderExecutor, OrderExecutorType
+from trader.entities.zerodha import ZerodhaKite
 from trader.interfaces.constants import PUBLISHER
 import threading
 
@@ -18,9 +19,12 @@ class TradeBot(OrderExecutor):
     ):
         super().__init__(publisher_uri=publisher_uri, mode=mode)
         self.name = name
+
         self.kite = KiteConnect(
             api_key=os.environ["API_KEY"], access_token=os.environ["ACCESS_TOKEN"]
         )
+        self.zerodha = ZerodhaKite(self.kite)
+
         self.entry_time_start = entry_time_start
         self.entry_time_end = entry_time_end
 

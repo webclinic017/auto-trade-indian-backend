@@ -1,6 +1,11 @@
-from typing import List, Union
+from typing import DefaultDict, List, Union
 import datetime
 from enum import Enum
+from constants.index import LIVE_DATA, REDIS
+from kiteconnect.connect import KiteConnect
+import redis
+import requests
+import time
 
 
 class OHLC:
@@ -68,3 +73,70 @@ class HistoricalOHLC(OHLC):
     def __init__(self, ohlc: dict):
         super().__init__(ohlc)
         self.time: datetime.datetime = ohlc.get("time")
+
+
+from collections import defaultdict
+
+
+class ZerodhaKite:
+    def __init__(self, kite: KiteConnect):
+        self.kite = kite
+        self.instruments = self.kite.instruments()
+
+        self.token_map = {}
+        for instrument in self.instruments:
+            self.token_map[instrument["instrument_token"]] = instrument
+
+        self.redis = redis.StrictRedis(host=REDIS)
+
+        self.historical_data_cache: DefaultDict[
+            str, List[HistoricalOHLC]
+        ] = defaultdict(list)
+
+    def _get_live(self, endpoint):
+        return requests.get(LIVE_DATA + endpoint)
+
+    def historical_data(
+        self,
+        tradingsymbol: str,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        interval: HistoricalDataInterval,
+    ) -> List[HistoricalOHLC]:
+        _data = self.kite.historical_data(
+            self.token_map[tradingsymbol], start_time, end_time, interval.value
+        )
+
+        data: List[HistoricalOHLC] = []
+        for ohlc in _data:
+            data.append(HistoricalOHLC(ohlc))
+
+        return data
+
+    def historical_data_today(self, tradingsymbol, interval: HistoricalDataInterval):
+        if self.historical_data_cache == []:
+            self.historical_data_cache[tradingsymbol] = self.historical_data(
+                tradingsymbol, datetime.date.today(), datetime.date.today(), interval
+            )
+            return self.historical_data_cache
+
+        start_time = self.historical_data_cache[tradingsymbol][-1].time
+        end_time = datetime.datetime.now()
+
+        data = self.historical_data(tradingsymbol, start_time, end_time, interval)
+
+        self.historical_data_cache[tradingsymbol].pop()
+        self.historical_data_cache[tradingsymbol].extend(data)
+
+        return self.historical_data_cache[tradingsymbol]
+
+    def live_data(self, tradingsymbol) -> LiveTicker:
+        data = self.redis.get(tradingsymbol)
+
+        if data == None:
+            self._get_live("subscribe" + "/" + str(self.token_map[tradingsymbol]))
+            time.sleep(2)
+
+            data = self.redis.get(tradingsymbol)
+
+        return LiveTicker(data)
