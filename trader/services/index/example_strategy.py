@@ -5,7 +5,7 @@ import time
 
 
 class ExampleStrategy(TradeApp):
-    today = datetime.date.today() - datetime.timedelta(3)
+    today = datetime.date.today() - datetime.timedelta(1)
 
     def entryStrategy(self):
         while True:
