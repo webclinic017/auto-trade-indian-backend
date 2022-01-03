@@ -1,8 +1,4 @@
-import datetime
 import math
-from entities.zerodha import HistoricalDataInterval
-from interfaces.tradeapp import TradeApp
-import time
 from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.trade import Trade, TradeTag, TradeType
