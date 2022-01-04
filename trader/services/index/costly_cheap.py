@@ -2,8 +2,8 @@ from interfaces.tradeapp import TradeApp
 import math
 import random
 import time
-
 from interfaces.constants import TRADE_ENV
+import datetime
 
 """
 NIFTY 50 -> {'tradable': False, 'mode': 'full', 'instrument_token': 256265, 'last_price': 17354.05, 'ohlc': {'high': 17400.8, 'low': 17238.5, 'open': 17244.5, 'close': 17203.95}, 'change': 0.8724740539236544, 'exchange_timestamp': '2021-12-31 18:25:52'}
@@ -59,6 +59,14 @@ class CostlyCheap(TradeApp):
 
     def entryStrategy(self):
         while True:
+
+            if (
+                datetime.datetime.now().time() < datetime.time(9, 33, 3)
+                or datetime.datetime.now().time() > datetime.time(15, 10)
+               
+            ):
+                continue
+
             costly, cheap = self.getCostlyCheap()
 
             print("COSTLY", costly)
