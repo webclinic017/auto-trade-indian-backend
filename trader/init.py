@@ -77,9 +77,9 @@ while True:
 
 # for the index trading
 services_index = [
-    # {"name": "bull_bear", "script": main_bull_bear_latest, "args": []},
+    {"name": "bull_bear", "script": main_bull_bear_latest, "args": []},
     # {"name": "buyers_sellers", "script": main_buyers_sellers, "args": ['22', '1', '06']},
-    {"name": "costly_cheap", "script": main_costly_cheap, "args": ['22', '1', '06']},
+    # {"name": "costly_cheap", "script": main_costly_cheap, "args": ['22', '1', '06']},
 ]
 
 # for stock trading

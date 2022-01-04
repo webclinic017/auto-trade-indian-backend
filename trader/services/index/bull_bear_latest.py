@@ -33,11 +33,11 @@ class BullBearV2(TradeApp):
             nifty_live = self.getLiveData('NSE:NIFTY 50')
             banknifty_live = self.getLiveData('NSE:NIFTY BANK')
 
-            nifty_buy_quantity = nifty_live['buy_quantity']
-            nifty_sell_quantity = nifty_live['sell_quantity']
+            # nifty_total_buy_quantity = nifty_live['total_buy_quantity']
+            # nifty_total_sell_quantity = nifty_live['total_sell_quantity']
 
-            banknifty_buy_quantity = banknifty_live['buy_quantity']
-            banknifty_sell_quantity = banknifty_live['sell_quantity']
+            # banknifty_total_buy_quantity = banknifty_live['total_buy_quantity']
+            # banknifty_total_sell_quantity = banknifty_live['total_sell_quantity']
 
             nifty_latest_5min = nifty_historical.loc[len(nifty_historical)-1,:]
             banknifty_latest_5min = banknifty_historical.loc[len(banknifty_historical)-1,:]
@@ -57,11 +57,11 @@ class BullBearV2(TradeApp):
             ):
                 ticker = ce_ticker_nifty
                 ticker_live = self.getLiveData(ticker)
+                
+                total_buy_quantity = ticker_live['total_buy_quantity']
+                total_sell_quantity = ticker_live['total_sell_quantity']
 
-                buy_quantity = ticker_live['buy_quantity']
-                sell_quantity = ticker_live['sell_quantity']
-
-                if buy_quantity > sell_quantity:
+                if total_buy_quantity > total_sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
                         ce_ticker_nifty, 50, "ENTRY"
                     )
@@ -76,11 +76,12 @@ class BullBearV2(TradeApp):
 
                 ticker = ce_ticker_banknifty
                 ticker_live = self.getLiveData(ticker)
+                
 
-                buy_quantity = ticker_live['buy_quantity']
-                sell_quantity = ticker_live['sell_quantity']
+                total_buy_quantity = ticker_live['total_buy_quantity']
+                total_sell_quantity = ticker_live['total_sell_quantity']
 
-                if buy_quantity > sell_quantity:
+                if total_buy_quantity > total_sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
                         ce_ticker_banknifty, 50, "ENTRY"
                     )
@@ -96,11 +97,12 @@ class BullBearV2(TradeApp):
 
                 ticker = pe_ticker_nifty
                 ticker_live = self.getLiveData(ticker)
+                
 
-                buy_quantity = ticker_live['buy_quantity']
-                sell_quantity = ticker_live['sell_quantity']
+                total_buy_quantity = ticker_live['total_buy_quantity']
+                total_sell_quantity = ticker_live['total_sell_quantity']
 
-                if buy_quantity > sell_quantity:
+                if total_buy_quantity > total_sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
                         pe_ticker_nifty, 50, "ENTRY"
                     )
@@ -115,11 +117,11 @@ class BullBearV2(TradeApp):
                 
                 ticker = pe_ticker_banknifty
                 ticker_live = self.getLiveData(ticker)
+                
+                total_buy_quantity = ticker_live['total_buy_quantity']
+                total_sell_quantity = ticker_live['total_sell_quantity']
 
-                buy_quantity = ticker_live['buy_quantity']
-                sell_quantity = ticker_live['sell_quantity']
-
-                if buy_quantity > sell_quantity:
+                if total_buy_quantity > total_sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
                         pe_ticker_banknifty, 50, "ENTRY"
                     )
@@ -132,6 +134,14 @@ class BullBearV2(TradeApp):
 
     def exitStrategy(self):
         while True:
+
+            if (
+                datetime.datetime.now().time() < datetime.time(9, 30, 3)
+                
+               
+            ):
+                continue
+            
             orders = self.getAllOrders()
 
             nifty_historical = self.getHistoricalData('NSE:NIFTY 50', self.today, self.today, '5minute')

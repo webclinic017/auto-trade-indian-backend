@@ -2,7 +2,7 @@ from interfaces.tradeapp import TradeApp
 import math
 import random
 import time
-
+import datetime
 from interfaces.constants import TRADE_ENV
 
 '''
@@ -65,6 +65,14 @@ class BuyersSellers(TradeApp):
 
     def entryStrategy(self):
         while True:
+
+            if (
+                datetime.datetime.now().time() < datetime.time(9, 33, 3)
+                or datetime.datetime.now().time() > datetime.time(15, 10)
+               
+            ):
+                continue
+
             diff_ce, diff_pe, ce_tickers, pe_tickers = self.getBuySellDiff()
 
             if diff_ce > diff_pe:
