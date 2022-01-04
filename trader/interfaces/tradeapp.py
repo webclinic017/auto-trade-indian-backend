@@ -67,14 +67,14 @@ class TradeApp:
 
         self.tickers = self.data["tickers"]
 
-        self.ws = websocket.WebSocket()
-        self.ws.connect(PUBLISHER)
+        self.publisher_uri = PUBLISHER
 
     # publish the notification to the end users
     def sendNotification(self, trade):
         trade.pop("uri")
 
-        self.ws.send(json.dumps(trade))
+        ws = websocket.create_connection(self.publisher_uri)
+        ws.send(json.dumps(trade))
         return
 
     # get the live data for the particular ticker
