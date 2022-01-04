@@ -41,7 +41,7 @@ def on_error(ws, code, reason):
 
 def appendTickers(ticks):
     for tick in ticks:
-        print(tick)
+        # print(tick)
 
         ticker = ticker_map[tick["instrument_token"]]["tradingsymbol"]
         rdb.set(ticker, json.dumps(tick, default=str))
