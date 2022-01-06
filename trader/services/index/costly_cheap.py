@@ -72,10 +72,10 @@ class CostlyCheap(TradeApp):
             print("COSTLY", costly)
             print("CHEAP", cheap)
 
-            trade = self.generateMarketOrderBuyIndexOption(cheap, 1, "ENTRY")
+            trade = self.generateMarketOrderBuyIndexOption(cheap, 50, "ENTRY")
             self.sendTrade(trade)
 
-            time.sleep(900)
+            time.sleep(300)
 
     def exitStrategy(self):
         while True:

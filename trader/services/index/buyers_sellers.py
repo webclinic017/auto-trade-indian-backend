@@ -44,8 +44,11 @@ class BuyersSellers(TradeApp):
             if TRADE_ENV == 'prod':
                 ticker_live = self.getLiveData(ticker)
 
-                diff_buy_sell = ticker_live['buy_quantity'] - ticker_live['sell_quantity']
+                diff_buy_sell = ticker_live['total_buy_quantity'] - ticker_live['total_sell_quantity']
+                print(ticker, diff_buy_sell)
                 diff_buy_sell_ce.append(diff_buy_sell)
+                print('total', diff_buy_sell_ce)
+
             else:
                 diff_buy_sell_ce.append(random.randint(80, 100))
 
@@ -53,13 +56,16 @@ class BuyersSellers(TradeApp):
             if TRADE_ENV == 'prod':
                 ticker_live = self.getLiveData(ticker)
 
-                diff_buy_sell = ticker_live['buy_quantity'] - ticker_live['sell_quantity']
+                diff_buy_sell = ticker_live['total_buy_quantity'] - ticker_live['total_sell_quantity']
                 diff_buy_sell_pe.append(diff_buy_sell)
             else:
                 diff_buy_sell_pe.append(random.randint(80, 100))
 
         diff_ce = sum(diff_buy_sell_ce)
         diff_pe = sum(diff_buy_sell_pe)
+        print('totalce',diff_ce,)
+        print('totalpe',diff_pe)
+
 
         return diff_ce, diff_pe, ce_tickers, pe_tickers
 
@@ -75,21 +81,21 @@ class BuyersSellers(TradeApp):
 
             diff_ce, diff_pe, ce_tickers, pe_tickers = self.getBuySellDiff()
 
-            if diff_ce > diff_pe:
+            if diff_ce>0 and diff_ce > diff_pe:
                 for ticker in ce_tickers:
                     print('BUY:', ticker)
 
                     trade = self.generateMarketOrderBuyIndexOption(
                         ticker,
-                        1,
+                        50,
                         'ENTRY'
                     )
                     self.sendTrade(trade)
-            else:
+            elif diff_pe>0 and diff_pe>diff_ce:
                 for ticker in pe_tickers:
                     trade = self.generateMarketOrderBuyIndexOption(
                         ticker,
-                        1,
+                        50,
                         'ENTRY'
                     )
                     self.sendTrade(trade)
