@@ -18,6 +18,7 @@ class BullBearV2(TradeApp):
                 9, 30, 3
             ) or datetime.datetime.now().time() > datetime.time(15, 10):
                 continue
+
             nifty_historical = self.getHistoricalData(
                 "NSE:NIFTY 50", self.today, self.today, "5minute"
             )
@@ -131,6 +132,9 @@ class BullBearV2(TradeApp):
 
     def exitStrategy(self):
         while True:
+            if datetime.datetime.now().time() < datetime.time(9, 30):
+                continue
+
             orders = self.getAllOrders()
 
             nifty_historical = self.getHistoricalData(
@@ -140,9 +144,9 @@ class BullBearV2(TradeApp):
                 "NSE:NIFTY BANK", self.today, self.today, "5minute"
             )
 
-            nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 2, :]
+            nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 1, :]
             banknifty_latest_5min = banknifty_historical.loc[
-                len(banknifty_historical) - 2, :
+                len(banknifty_historical) - 1, :
             ]
 
             for order in orders:
