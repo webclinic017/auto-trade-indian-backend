@@ -3,7 +3,7 @@ from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.trade import Trade, TradeTag, TradeType
 from constants.index import PUBLISHER
-from trader.entities.zerodha import HistoricalDataInterval
+from entities.zerodha import HistoricalDataInterval
 import time
 
 
