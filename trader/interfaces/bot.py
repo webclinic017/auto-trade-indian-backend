@@ -34,18 +34,6 @@ class TradeBot(OrderExecutor):
     def exit_strategy(self, order: Order):
         raise NotImplementedError
 
-    def _entry_strategy(self, interval=300):
-        while True:
-            # time_now = datetime.datetime.now().time()
-            # if time_now < self.entry_time_start:
-            #     continue
-
-            # if time_now > self.entry_time_end:
-            #     return
-
-            self.entry_strategy()
-            time.sleep(interval)
-
     def _exit_strategy(self, interval=10):
         while True:
             tickers = set(self.entries.keys()).copy()
@@ -57,7 +45,7 @@ class TradeBot(OrderExecutor):
             time.sleep(interval)
 
     def start(self):
-        entry_thread = threading.Thread(target=self._entry_strategy)
+        entry_thread = threading.Thread(target=self.entry_strategy)
         exit_thread = threading.Thread(target=self._exit_strategy)
 
         entry_thread.start()

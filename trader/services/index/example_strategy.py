@@ -3,56 +3,66 @@ from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.trade import Trade, TradeTag, TradeType
 from constants.index import PUBLISHER
+from trader.entities.zerodha import HistoricalDataInterval
+import time
 
 
 class ExampleStrategyV2(TradeBot):
     NIFTY_50 = "NIFTY 50"
 
     def entry_strategy(self):
-        nifty_live = self.zerodha.live_data(self.NIFTY_50)
+        while True:
+            nifty_live = self.zerodha.live_data(self.NIFTY_50)
+            nifty_historical = self.zerodha.historical_data_today(
+                self.NIFTY_50, HistoricalDataInterval.INTERVAL_5_MINUTE
+            )
 
-        ce_price = math.floor(nifty_live.last_price)
-        pe_price = math.floor(nifty_live.last_price)
+            print(nifty_historical)
 
-        while ce_price % 50 != 0:
-            ce_price -= 1
+            ce_price = math.floor(nifty_live.last_price)
+            pe_price = math.floor(nifty_live.last_price)
 
-        while pe_price % 50 != 0:
-            pe_price += 1
+            while ce_price % 50 != 0:
+                ce_price -= 1
 
-        ce_ticker = "NIFTY22106" + str(ce_price) + "CE"
-        ce_ticker_live = self.zerodha.live_data(ce_ticker)
+            while pe_price % 50 != 0:
+                pe_price += 1
 
-        pe_ticker = "NIFTY22106" + str(pe_price) + "PE"
-        pe_ticker_live = self.zerodha.live_data(pe_ticker)
+            ce_ticker = "NIFTY22106" + str(ce_price) + "CE"
+            ce_ticker_live = self.zerodha.live_data(ce_ticker)
 
-        trade = Trade(
-            "",
-            ce_ticker,
-            "NSE",
-            1,
-            TradeTag.ENTRY,
-            PUBLISHER,
-            ce_ticker_live.last_price,
-            ce_ticker_live.depth.sell[1].price,
-            ce_ticker_live.last_price,
-            TradeType.INDEXOPT,
-        )
-        self.enter_trade(trade)
+            pe_ticker = "NIFTY22106" + str(pe_price) + "PE"
+            pe_ticker_live = self.zerodha.live_data(pe_ticker)
 
-        trade = Trade(
-            "",
-            pe_ticker,
-            "NSE",
-            1,
-            TradeTag.ENTRY,
-            PUBLISHER,
-            pe_ticker_live.last_price,
-            pe_ticker_live.depth.buy[1].price,
-            pe_ticker_live.last_price,
-            TradeType.INDEXOPT,
-        )
-        self.enter_trade(trade)
+            trade = Trade(
+                "",
+                ce_ticker,
+                "NSE",
+                1,
+                TradeTag.ENTRY,
+                PUBLISHER,
+                ce_ticker_live.last_price,
+                ce_ticker_live.depth.sell[1].price,
+                ce_ticker_live.last_price,
+                TradeType.INDEXOPT,
+            )
+            self.enter_trade(trade)
+
+            trade = Trade(
+                "",
+                pe_ticker,
+                "NSE",
+                1,
+                TradeTag.ENTRY,
+                PUBLISHER,
+                pe_ticker_live.last_price,
+                pe_ticker_live.depth.buy[1].price,
+                pe_ticker_live.last_price,
+                TradeType.INDEXOPT,
+            )
+            self.enter_trade(trade)
+
+            time.sleep(300)
 
     def exit_strategy(self, order: Order):
         profit_price = order.average_entry_price * (110 / 100)
