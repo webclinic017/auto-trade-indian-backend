@@ -1,5 +1,6 @@
 from typing import List
 import random
+import urllib3
 import redis, json, threading, datetime, requests, os
 from pymongo import MongoClient
 import pandas as pd
@@ -68,14 +69,15 @@ class TradeApp:
 
         self.tickers = self.data["tickers"]
 
-        self.ws = websocket.WebSocket()
-        self.ws.connect(PUBLISHER)
+        self.publisher_uri = PUBLISHER
+        self.historical_cache = {}
 
     # publish the notification to the end users
     def sendNotification(self, trade):
         trade.pop("uri")
 
-        self.ws.send(json.dumps(trade))
+        ws = websocket.create_connection(self.publisher_uri)
+        ws.send(json.dumps(trade))
         return
 
     # get the live data for the particular ticker
@@ -171,7 +173,13 @@ class TradeApp:
         ticker = ticker.split(":")[1]
         token = self.token_map[ticker]["instrument_token"]
 
-        data = self.kite.historical_data(token, fdate, tdate, interval)
+        try:
+            data = self.kite.historical_data(token, fdate, tdate, interval)
+            self.historical_cache[ticker] = data
+        except urllib3.exceptions.ReadTimeoutError:
+            print('getting historical data from cache due to ReadTimeoutError')
+            data = self.historical_cache[ticker]
+
         df = pd.DataFrame(data)
         df["date"] = pd.to_datetime(df["date"])
 
