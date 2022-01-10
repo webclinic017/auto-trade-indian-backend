@@ -26,19 +26,11 @@ class BullBearV2(TradeApp):
                 "NSE:NIFTY BANK", self.today, self.today, "5minute"
             )
 
-            # nifty_first_5min['open'] or ['low'] or ['high'] or ['close']
             nifty_first_5min = nifty_historical.loc[0, :]
-            # banknifty_first_5min['open'] or ['low'] or ['high'] or ['close']
             banknifty_first_5min = banknifty_historical.loc[0, :]
 
             nifty_live = self.getLiveData("NSE:NIFTY 50")
             banknifty_live = self.getLiveData("NSE:NIFTY BANK")
-
-            # nifty_buy_quantity = nifty_live["total_buy_quantity"]
-            # nifty_sell_quantity = nifty_live["total_sell_quantity"]
-
-            # banknifty_buy_quantity = banknifty_live["total_buy_quantity"]
-            # banknifty_sell_quantity = banknifty_live["total_sell_quantity"]
 
             nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 1, :]
             banknifty_latest_5min = banknifty_historical.loc[
