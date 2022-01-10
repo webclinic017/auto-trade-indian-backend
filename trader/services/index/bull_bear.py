@@ -189,6 +189,7 @@ class BullBearV2(TradeApp):
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
                         self.banknifty_losscount += 1
+                        time.sleep(10)
                         continue
 
                 if ticker_type == "NIFTY" and "CE" in ticker:
@@ -224,6 +225,7 @@ class BullBearV2(TradeApp):
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
                         self.nifty_losscount += 1
+                        time.sleep(10)
                         continue
 
                 if ticker_type == "BANKNIFTY" and "PE" in ticker:
@@ -260,6 +262,7 @@ class BullBearV2(TradeApp):
                         self.deleteOrder(ticker)
 
                         self.banknifty_losscount += 1
+                        time.sleep(10)
                         continue
 
                 if ticker_type == "NIFTY" and "PE" in ticker:
@@ -292,6 +295,7 @@ class BullBearV2(TradeApp):
                         self.deleteOrder(ticker)
 
                         self.nifty_losscount += 1
+                        time.sleep(10)
                         continue
 
                 if (
@@ -309,9 +313,10 @@ class BullBearV2(TradeApp):
                     else:
                         self.banknifty_profitcount += 1
 
+                    time.sleep(10)
                     continue
 
-            time.sleep(10)
+            time.sleep(20)
 
 
 def main():

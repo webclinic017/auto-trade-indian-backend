@@ -104,7 +104,12 @@ class BuyersSellers(TradeApp):
             ) or datetime.datetime.now().time() > datetime.time(15, 10):
                 continue
 
-            diff_ce, diff_pe, ce_tickers, pe_tickers = self.getBuySellDiff()
+            try:
+                diff_ce, diff_pe, ce_tickers, pe_tickers = self.getBuySellDiff()
+            except Exception as e:
+                print(e)
+                time.sleep(60)
+                continue
 
             if diff_ce > 0 and diff_ce > diff_pe:
                 for ticker in ce_tickers:
