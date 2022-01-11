@@ -1,7 +1,7 @@
-import math
+import datetime
 from interfaces.bot import TradeBot
 from entities.orders import Order
-from entities.trade import Trade, TradeTag, TradeType
+from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
 from constants.index import PUBLISHER
 from entities.zerodha import HistoricalDataInterval
 import time
@@ -9,55 +9,31 @@ import time
 
 class ExampleStrategyV2(TradeBot):
     NIFTY_50 = "NIFTY 50"
+    date = datetime.date.today() - datetime.timedelta(days=1)
 
     def entry_strategy(self):
         while True:
             nifty_live = self.zerodha.live_data(self.NIFTY_50)
-            nifty_historical = self.zerodha.historical_data_today(
-                self.NIFTY_50, HistoricalDataInterval.INTERVAL_5_MINUTE
-            )
+            index_historical = self.zerodha.historical_data_index()
 
-            print(nifty_historical)
+            print(index_historical.nifty)
+            print(index_historical.bank_nifty)
 
-            ce_price = math.floor(nifty_live.last_price)
-            pe_price = math.floor(nifty_live.last_price)
+            print(nifty_live)
 
-            while ce_price % 50 != 0:
-                ce_price -= 1
-
-            while pe_price % 50 != 0:
-                pe_price += 1
-
-            ce_ticker = "NIFTY22106" + str(ce_price) + "CE"
-            ce_ticker_live = self.zerodha.live_data(ce_ticker)
-
-            pe_ticker = "NIFTY22106" + str(pe_price) + "PE"
-            pe_ticker_live = self.zerodha.live_data(pe_ticker)
+            ticker = "NIFTY2211318000CE"
+            ticker_live = self.zerodha.live_data(ticker)
 
             trade = Trade(
-                "",
-                ce_ticker,
-                "NSE",
+                TradeEndpoint.MARKET_ORDER_BUY,
+                ticker,
+                "NFO",
                 1,
                 TradeTag.ENTRY,
                 PUBLISHER,
-                ce_ticker_live.last_price,
-                ce_ticker_live.depth.sell[1].price,
-                ce_ticker_live.last_price,
-                TradeType.INDEXOPT,
-            )
-            self.enter_trade(trade)
-
-            trade = Trade(
-                "",
-                pe_ticker,
-                "NSE",
-                1,
-                TradeTag.ENTRY,
-                PUBLISHER,
-                pe_ticker_live.last_price,
-                pe_ticker_live.depth.buy[1].price,
-                pe_ticker_live.last_price,
+                ticker_live.last_price,
+                ticker_live.depth.sell[1].price,
+                ticker_live.last_price,
                 TradeType.INDEXOPT,
             )
             self.enter_trade(trade)
@@ -68,7 +44,7 @@ class ExampleStrategyV2(TradeBot):
         profit_price = order.average_entry_price * (110 / 100)
 
         trade = Trade(
-            "",
+            TradeEndpoint.MARKET__ORDER_SELL,
             order.trading_symbol,
             order.exchange,
             order.total_quantity,

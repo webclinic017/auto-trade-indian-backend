@@ -1,4 +1,4 @@
-from typing import DefaultDict, List, Union
+from typing import DefaultDict, Dict, List, Union
 import datetime
 from enum import Enum
 from constants.index import LIVE_DATA, REDIS
@@ -76,6 +76,12 @@ class HistoricalOHLC(OHLC):
         self.time: datetime.datetime = ohlc.get("time")
 
 
+class IndexHistorical:
+    def __init__(self, nifty: List[HistoricalOHLC], bank_nifty: List[HistoricalOHLC]):
+        self.nifty = nifty
+        self.bank_nifty = bank_nifty
+
+
 from collections import defaultdict
 
 
@@ -117,8 +123,23 @@ class ZerodhaKite:
 
         return data
 
+    def historical_data_index(self) -> IndexHistorical:
+        data_nifty = json.loads(self.redis.get("NIFTY-historical"))
+        data_bank_nifty = json.loads(self.redis.get("BANK-NIFTY-historical"))
+
+        nifty: List[HistoricalOHLC] = []
+        bank_nifty: List[HistoricalOHLC] = []
+
+        for ohlc in data_nifty:
+            nifty.append(HistoricalOHLC(ohlc))
+
+        for ohlc in data_bank_nifty:
+            bank_nifty.append(HistoricalOHLC(ohlc))
+
+        return IndexHistorical(nifty, bank_nifty)
+
     def historical_data_today(self, tradingsymbol, interval: HistoricalDataInterval):
-        if self.historical_data_cache == []:
+        if tradingsymbol not in self.historical_data_cache:
             self.historical_data_cache[tradingsymbol] = self.historical_data(
                 tradingsymbol, datetime.date.today(), datetime.date.today(), interval
             )

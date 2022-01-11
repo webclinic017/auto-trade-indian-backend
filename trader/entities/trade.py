@@ -15,10 +15,17 @@ class TradeTag(Enum):
     EXIT = "EXIT"
 
 
+class TradeEndpoint(Enum):
+    MARKET_ORDER_BUY = "/place/market_order/buy"
+    MARKET__ORDER_SELL = "/place/market_order/sell"
+    LIMIT_ORDER_BUY = "/place/limit_order/buy"
+    LIMIT_ORDER_SELL = "/place/limit_order/sell"
+
+
 class Trade:
     def __init__(
         self,
-        endpoint: str,
+        endpoint: TradeEndpoint,
         trading_symbol: str,
         exchange: str,
         quantity: int,
@@ -29,7 +36,7 @@ class Trade:
         ltp: int,
         type: TradeType,
     ):
-        self.endpoint: str = endpoint
+        self.endpoint: TradeEndpoint = endpoint
         self.trading_symbol: str = trading_symbol
         self.exchange: str = exchange
         self.quantity: int = quantity
@@ -43,7 +50,7 @@ class Trade:
     def json(self):
         return json.dumps(
             {
-                "endpoint": self.endpoint,
+                "endpoint": self.endpoint.value,
                 "trading_symbol": self.trading_symbol,
                 "exchange": self.exchange,
                 "quantity": self.quantity,
