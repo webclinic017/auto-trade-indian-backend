@@ -35,6 +35,7 @@ class Trade:
         price: int,
         ltp: int,
         type: TradeType,
+        max_quantity: float = float("inf"),
     ):
         self.endpoint: TradeEndpoint = endpoint
         self.trading_symbol: str = trading_symbol
@@ -46,6 +47,7 @@ class Trade:
         self.price: int = price
         self.ltp: int = ltp
         self.type: TradeType = type
+        self.max_quantity = max_quantity
 
     def json(self):
         return json.dumps(
@@ -60,6 +62,7 @@ class Trade:
                 "price": self.price,
                 "ltp": self.ltp,
                 "type": self.type.value,
+                "max_quantity": self.max_quantity,
             },
             indent=1,
         )

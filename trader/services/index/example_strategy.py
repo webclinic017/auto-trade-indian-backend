@@ -3,7 +3,6 @@ from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
 from constants.index import PUBLISHER
-from entities.zerodha import HistoricalDataInterval
 import time
 
 
@@ -21,20 +20,21 @@ class ExampleStrategyV2(TradeBot):
 
             print(nifty_live)
 
-            ticker = "NIFTY2211318000CE"
+            ticker = "NIFTY2211318150CE"
             ticker_live = self.zerodha.live_data(ticker)
 
             trade = Trade(
                 TradeEndpoint.MARKET_ORDER_BUY,
                 ticker,
                 "NFO",
-                1,
+                50,
                 TradeTag.ENTRY,
                 PUBLISHER,
                 ticker_live.last_price,
                 ticker_live.depth.sell[1].price,
                 ticker_live.last_price,
                 TradeType.INDEXOPT,
+                1800,
             )
             self.enter_trade(trade)
 
@@ -54,6 +54,7 @@ class ExampleStrategyV2(TradeBot):
             profit_price,
             profit_price,
             TradeType.INDEXOPT,
+            1800,
         )
 
         self.exit_trade(trade)
