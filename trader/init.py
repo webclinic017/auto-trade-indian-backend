@@ -69,7 +69,13 @@ while True:
 
 # for the index trading
 services_index = [
-    {"name": "test", "script": ExampleStrategyV2(name="test").start, "args": []}
+    {"name": "bull_bear", "script": main_bull_bear, "args": []},
+    # {
+    #     "name": "buyers_sellers",
+    #     "script": main_buyers_sellers,
+    #     "args": ["22", "1", "13"],
+    # },
+    # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
 ]
 
 # for stock trading
