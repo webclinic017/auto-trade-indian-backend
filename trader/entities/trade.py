@@ -17,7 +17,7 @@ class TradeTag(Enum):
 
 class TradeEndpoint(Enum):
     MARKET_ORDER_BUY = "/place/market_order/buy"
-    MARKET__ORDER_SELL = "/place/market_order/sell"
+    MARKET_ORDER_SELL = "/place/market_order/sell"
     LIMIT_ORDER_BUY = "/place/limit_order/buy"
     LIMIT_ORDER_SELL = "/place/limit_order/sell"
 

@@ -1,6 +1,7 @@
 import datetime
 import time
 from interfaces.tradeapp import TradeApp
+import threading
 
 
 class BullBearV2(TradeApp):
@@ -11,12 +12,19 @@ class BullBearV2(TradeApp):
     nifty_profitcount = 0
     banknifty_profitcount = 0
 
+    nifty_historical = []
+    banknifty_historical = []
+
+    data_count = 0
+
+    start_time = None
+
     def entryStrategy(self):
         while True:
-
-            if datetime.datetime.now().time() < datetime.time(
-                9, 30, 3
-            ) or datetime.datetime.now().time() > datetime.time(15, 10):
+            if (
+                datetime.datetime.now().time() < self.start_time
+                or datetime.datetime.now().time() > datetime.time(15, 10)
+            ):
                 continue
 
             nifty_historical = self.getHistoricalData(
@@ -32,16 +40,28 @@ class BullBearV2(TradeApp):
             nifty_live = self.getLiveData("NSE:NIFTY 50")
             banknifty_live = self.getLiveData("NSE:NIFTY BANK")
 
-            nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 1, :]
+            nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 2, :]
             banknifty_latest_5min = banknifty_historical.loc[
-                len(banknifty_historical) - 1, :
+                len(banknifty_historical) - 2, :
             ]
 
+            print("nifty_live", nifty_live)
+            print("banknifty_live", banknifty_live)
+            print("nifty_first_5min", nifty_first_5min)
+            print("banknifty_first_5min", banknifty_first_5min)
+
+            print("nifty_latest_5min", nifty_latest_5min)
+            print("banknifty_latest_5min", banknifty_latest_5min)
             ce_ticker_nifty = self.data["index"]["NSE:NIFTY 50"]["ce_ticker"]
             ce_ticker_banknifty = self.data["index"]["NSE:NIFTY BANK"]["ce_ticker"]
 
             pe_ticker_nifty = self.data["index"]["NSE:NIFTY 50"]["pe_ticker"]
             pe_ticker_banknifty = self.data["index"]["NSE:NIFTY BANK"]["pe_ticker"]
+
+            print("ce_ticker of nifty is", ce_ticker_nifty)
+            print("pe_ticker of nifty is", pe_ticker_nifty)
+            print("ce_ticker of banknifty is", ce_ticker_banknifty)
+            print("pe_ticker of Banknifty", pe_ticker_banknifty)
 
             # CE TICKER
             if (
@@ -55,6 +75,9 @@ class BullBearV2(TradeApp):
 
                 buy_quantity = ticker_live["total_buy_quantity"]
                 sell_quantity = ticker_live["total_sell_quantity"]
+
+                print("buy_quantity of Nifty CE", buy_quantity)
+                print("sell_quantity of Nifty CE", sell_quantity)
 
                 if buy_quantity > sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
@@ -74,6 +97,8 @@ class BullBearV2(TradeApp):
 
                 buy_quantity = ticker_live["total_buy_quantity"]
                 sell_quantity = ticker_live["total_sell_quantity"]
+                print("buy_quantity of BankNifty CE", buy_quantity)
+                print("sell_quantity of bankNifty CE", sell_quantity)
 
                 if buy_quantity > sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
@@ -95,6 +120,8 @@ class BullBearV2(TradeApp):
                 buy_quantity = ticker_live["total_buy_quantity"]
                 sell_quantity = ticker_live["total_sell_quantity"]
 
+                print("buy_quantity of Nifty PE", buy_quantity)
+                print("sell_quantity of Nifty PE", sell_quantity)
                 if buy_quantity > sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
                         pe_ticker_nifty, 50, "ENTRY"
@@ -114,6 +141,9 @@ class BullBearV2(TradeApp):
                 buy_quantity = ticker_live["total_buy_quantity"]
                 sell_quantity = ticker_live["total_sell_quantity"]
 
+                print("buy_quantity of BankNifty PE", buy_quantity)
+                print("sell_quantity of bankNifty PE", sell_quantity)
+
                 if buy_quantity > sell_quantity:
                     trade = self.generateMarketOrderBuyIndexOption(
                         pe_ticker_banknifty, 50, "ENTRY"
@@ -124,21 +154,33 @@ class BullBearV2(TradeApp):
 
     def exitStrategy(self):
         while True:
-            if datetime.datetime.now().time() < datetime.time(9, 30):
+            if datetime.datetime.now().time() < self.start_time:
+                continue
+
+            try:
+                if self.data_count % 30 == 0:
+                    self.nifty_historical = self.getHistoricalData(
+                        "NSE:NIFTY 50", self.today, self.today, "5minute"
+                    )
+                    self.banknifty_historical = self.getHistoricalData(
+                        "NSE:NIFTY BANK", self.today, self.today, "5minute"
+                    )
+            except:
+                time.sleep(10)
                 continue
 
             orders = self.getAllOrders()
+            self.data_count += 1
 
-            nifty_historical = self.getHistoricalData(
-                "NSE:NIFTY 50", self.today, self.today, "5minute"
-            )
-            banknifty_historical = self.getHistoricalData(
-                "NSE:NIFTY BANK", self.today, self.today, "5minute"
-            )
+            nifty_historical = self.nifty_historical
+            banknifty_historical = self.banknifty_historical
 
-            nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 1, :]
+            print(nifty_historical)
+            print(banknifty_historical)
+
+            nifty_latest_5min = nifty_historical.loc[len(nifty_historical) - 2, :]
             banknifty_latest_5min = banknifty_historical.loc[
-                len(banknifty_historical) - 1, :
+                len(banknifty_historical) - 2, :
             ]
 
             for order in orders:
@@ -189,7 +231,7 @@ class BullBearV2(TradeApp):
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
                         self.banknifty_losscount += 1
-                        time.sleep(10)
+                        time.sleep(10.5)
                         continue
 
                 if ticker_type == "NIFTY" and "CE" in ticker:
@@ -225,7 +267,7 @@ class BullBearV2(TradeApp):
                         self.sendTrade(trade)
                         self.deleteOrder(ticker)
                         self.nifty_losscount += 1
-                        time.sleep(10)
+                        time.sleep(10.5)
                         continue
 
                 if ticker_type == "BANKNIFTY" and "PE" in ticker:
@@ -262,7 +304,7 @@ class BullBearV2(TradeApp):
                         self.deleteOrder(ticker)
 
                         self.banknifty_losscount += 1
-                        time.sleep(10)
+                        time.sleep(10.5)
                         continue
 
                 if ticker_type == "NIFTY" and "PE" in ticker:
@@ -295,7 +337,7 @@ class BullBearV2(TradeApp):
                         self.deleteOrder(ticker)
 
                         self.nifty_losscount += 1
-                        time.sleep(10)
+                        time.sleep(10.5)
                         continue
 
                 if (
@@ -313,10 +355,27 @@ class BullBearV2(TradeApp):
                     else:
                         self.banknifty_profitcount += 1
 
-                    time.sleep(10)
+                    time.sleep(10.5)
                     continue
 
-            time.sleep(20)
+            time.sleep(10.5)
+
+    def start(self):
+        current_time = datetime.datetime.now()
+        current_minute = current_time.time().minute
+        current_hour = current_time.time().hour
+
+        if current_hour == 9 and current_minute < 30:
+            current_minute = 30
+        else:
+            while current_minute % 5 != 0:
+                current_minute += 1
+
+        self.start_time = datetime.time(current_hour, current_minute, 3)
+
+        print("strategy will wait till : ", self.start_time)
+
+        super().start()
 
 
 def main():
