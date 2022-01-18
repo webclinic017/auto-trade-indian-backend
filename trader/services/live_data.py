@@ -1,8 +1,11 @@
+import datetime
 from kiteconnect import KiteTicker, KiteConnect
 import os, json, redis
 from threading import Thread
 from interfaces.constants import REDIS
-
+from entities.zerodha import HistoricalDataInterval
+import time
+import urllib3
 
 # get the api_key and access_token
 api_key, access_token = os.environ["API_KEY"], os.environ["ACCESS_TOKEN"]
@@ -57,10 +60,42 @@ kws.on_close = on_close
 kws.on_error = on_error
 
 
+def get_index_historical():
+    NIFTY_50 = 256265
+    BANK_NIFTY = 260105
+
+    date = datetime.date.today()
+
+    while True:
+        try:
+            nifty_historical = kite.historical_data(
+                NIFTY_50,
+                date,
+                date,
+                HistoricalDataInterval.INTERVAL_5_MINUTE.value,
+            )
+            bank_historical = kite.historical_data(
+                BANK_NIFTY,
+                date,
+                date,
+                HistoricalDataInterval.INTERVAL_5_MINUTE.value,
+            )
+        except urllib3.exceptions.ReadTimeoutError:
+            time.sleep(300)
+            continue
+
+        rdb.set("NIFTY-historical", json.dumps(nifty_historical, default=str))
+        rdb.set("BANK-NIFTY-historical", json.dumps(bank_historical, default=str))
+
+        time.sleep(300)
+
+
 def main():
     subscribed_tokens = set()
 
     kws.connect(threaded=True)
+
+    Thread(target=get_index_historical).start()
 
     from flask import Flask
     import logging

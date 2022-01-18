@@ -1,5 +1,5 @@
-import pika, redis, time, os, requests, time
-from interfaces.constants import LIVE_DATA, RABBIT_MQ, REDIS
+import redis, time, os, requests, time
+from interfaces.constants import LIVE_DATA, REDIS
 
 from utils.auth import get_key_token
 
@@ -17,9 +17,7 @@ os.environ["ACCESS_TOKEN"] = access_token
 def wait_for_service():
     while True:
         try:
-            p = pika.BlockingConnection(pika.ConnectionParameters(host=RABBIT_MQ))
             r = redis.StrictRedis(host=REDIS, port=6379, decode_responses=True)
-            p.close()
             r.close()
             break
         except:
@@ -39,12 +37,7 @@ from threading import (
 from services.live_data import main as live_data_main
 
 # for the index
-from services.index.oi_index import main as main_oi_index
-from services.index.five_min import main as main_five_min
-from services.index.fifteen_min import main as main_fifteen_min
-from services.index.bull_bear import main as main_bull_bear
-from services.index.buyers_sellers import main as main_buyers_sellers
-from services.index.costly_cheap import main as main_costly_cheap
+from services.index.example_strategy import ExampleStrategyV2
 
 # orders service start
 orders_process = {}

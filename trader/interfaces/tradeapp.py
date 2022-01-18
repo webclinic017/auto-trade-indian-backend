@@ -1,3 +1,4 @@
+from typing import List
 import random
 import urllib3
 import redis, json, threading, datetime, requests, os
@@ -8,7 +9,6 @@ import talib as tb  # type: ignore
 import numpy as np
 import math
 import websocket
-
 from interfaces.constants import (
     AUTH_TOKEN,
     LIMIT_ORDER_BUY,
@@ -24,6 +24,7 @@ from interfaces.constants import (
     getOrderUrl,
     LIVE_DATA,
 )
+from entities.zerodha import HistoricalDataInterval, HistoricalOHLC, LiveTicker
 import time
 
 
@@ -80,7 +81,7 @@ class TradeApp:
         return
 
     # get the live data for the particular ticker
-    def getLiveData(self, ticker):
+    def getLiveData(self, ticker) -> LiveTicker:
         ticker = ticker.split(":")[1]
 
         data = self.redis.get(ticker)
@@ -95,7 +96,7 @@ class TradeApp:
             time.sleep(3)
             data = self.redis.get(ticker)
 
-        return json.loads(data)
+        return LiveTicker(json.loads(data))
 
     # get the quote for a ticker
     def getQuote(self, exchange, ticker):
@@ -184,11 +185,23 @@ class TradeApp:
 
         return df
 
-    def getHistoricalDataDict(self, ticker, fdate, tdate, interval):
+    def getHistoricalDataDict(
+        self,
+        ticker: str,
+        fdate: datetime.datetime,
+        tdate: datetime.datetime,
+        interval: HistoricalDataInterval,
+    ) -> List[HistoricalOHLC]:
         ticker = ticker.split(":")[1]
         token = self.token_map[ticker]["instrument_token"]
 
-        data = self.kite.historical_data(token, fdate, tdate, interval)
+        data: List[HistoricalOHLC] = []
+
+        for historical_data in self.kite.historical_data(
+            token, fdate, tdate, interval.value
+        ):
+            data.append(historical_data)
+
         return data
 
     # market order buy for index option
@@ -392,7 +405,7 @@ class TradeApp:
     def getPnl(self, entry_price, live_price):
         try:
             pnl = ((live_price - entry_price) / entry_price) * 100
-        except:
+        except ZeroDivisionError:
             pnl = 0
         return pnl
 

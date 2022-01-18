@@ -1,7 +1,6 @@
 version: "3.3"
 
 services:
-  # database for storing important information
   db:
     image: mongo
     ports:
@@ -12,34 +11,11 @@ services:
     logging:
       driver: none
 
-  # message queue for IPC
-  rabbit_mq:
-    image: rabbitmq:3-management
-    logging:
-      driver: none
-
-  # redis pub sub broker and in memory cache
   redis_server:
     image: redis:alpine
     logging:
       driver: none
 
-  # web service for zerodha api
-  # zerodha_worker:
-  #   build: ./zerodha_worker
-  #   volumes:
-  #     - ./zerodha_worker:/app
-  #   command: ["sh", "./wait-for.sh", "rabbit_mq:5672", "--", "python", "app.py"]
-  #   env_file:
-  #     - .env
-  #     - auth.env
-  #   restart: always
-  #   depends_on:
-  #     - rabbit_mq
-  #     - db
-  #     - redis_server
-
-  # trader operating system
   trader:
     build: ./trader
     volumes:
@@ -49,5 +25,3 @@ services:
       - .env
       - auth.env
     restart: always
-    # depends_on:
-    #   - zerodha_worker
