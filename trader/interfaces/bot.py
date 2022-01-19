@@ -12,8 +12,6 @@ class TradeBot(OrderExecutor):
     def __init__(
         self,
         name: str,
-        entry_time_start: datetime.datetime = datetime.time(9, 30),
-        entry_time_end: datetime.datetime = datetime.time(15, 10),
         publisher_uri: str = PUBLISHER,
         mode: OrderExecutorType = OrderExecutorType.MULTIPLE,
     ):
@@ -24,9 +22,6 @@ class TradeBot(OrderExecutor):
             api_key=os.environ["API_KEY"], access_token=os.environ["ACCESS_TOKEN"]
         )
         self.zerodha = ZerodhaKite(self.kite)
-
-        self.entry_time_start = entry_time_start
-        self.entry_time_end = entry_time_end
 
     def entry_strategy(self):
         raise NotImplementedError

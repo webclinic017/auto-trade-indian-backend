@@ -37,7 +37,8 @@ from threading import (
 from services.live_data import main as live_data_main
 
 # for the index
-from services.index.example_strategy import ExampleStrategyV2
+from services.index.bull_bear import BullBear
+from services.index.buyers_sellers import BuyersSellers
 
 # orders service start
 orders_process = {}
@@ -69,12 +70,12 @@ while True:
 
 # for the index trading
 services_index = [
-    {"name": "bull_bear", "script": main_bull_bear, "args": []},
-    # {
-    #     "name": "buyers_sellers",
-    #     "script": main_buyers_sellers,
-    #     "args": ["22", "1", "13"],
-    # },
+    # {"name": "bull_bear", "script": BullBear(name="bull_bear").start, "args": []},
+    {
+        "name": "buyers_sellers",
+        "script": BuyersSellers("buyers_sellers", "22", "1", "13").start,
+        "args": [],
+    },
     # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
 ]
 
@@ -88,6 +89,7 @@ processes = {}
 # start each process from init.d as children
 for service in services:
     processes[service["name"]] = Process(target=service["script"], args=service["args"])
+
 print("starting services ...")
 
 # start all processes

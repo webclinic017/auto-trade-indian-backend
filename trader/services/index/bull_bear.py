@@ -4,7 +4,7 @@ from interfaces.tradeapp import TradeApp
 import threading
 
 
-class BullBearV2(TradeApp):
+class BullBear(TradeApp):
     today = datetime.date.today()
 
     nifty_losscount = 0
@@ -376,8 +376,3 @@ class BullBearV2(TradeApp):
         print("strategy will wait till : ", self.start_time)
 
         super().start()
-
-
-def main():
-    app = BullBearV2(name="bull_bear2")
-    app.start()

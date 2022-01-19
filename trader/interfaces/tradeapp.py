@@ -81,7 +81,7 @@ class TradeApp:
         return
 
     # get the live data for the particular ticker
-    def getLiveData(self, ticker) -> LiveTicker:
+    def getLiveData(self, ticker):
         ticker = ticker.split(":")[1]
 
         data = self.redis.get(ticker)
@@ -96,7 +96,7 @@ class TradeApp:
             time.sleep(3)
             data = self.redis.get(ticker)
 
-        return LiveTicker(json.loads(data))
+        return json.loads(data)
 
     # get the quote for a ticker
     def getQuote(self, exchange, ticker):
@@ -177,7 +177,7 @@ class TradeApp:
             data = self.kite.historical_data(token, fdate, tdate, interval)
             self.historical_cache[ticker] = data
         except urllib3.exceptions.ReadTimeoutError:
-            print('getting historical data from cache due to ReadTimeoutError')
+            print("getting historical data from cache due to ReadTimeoutError")
             data = self.historical_cache[ticker]
 
         df = pd.DataFrame(data)

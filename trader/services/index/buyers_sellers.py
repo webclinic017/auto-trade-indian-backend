@@ -11,7 +11,7 @@ class BuyersSellers(TradeBot):
     BANK_NIFTY = "NIFTY BANK"
 
     def __init__(self, name: str, year: str, month: str, week: str):
-        super(TradeBot, self).__init__(name)
+        super().__init__(name)
         self.year = year
         self.month = month
         self.week = week
@@ -164,3 +164,9 @@ class BuyersSellers(TradeBot):
         if ticker_live.last_price >= profit_price:
             self.exit_trade(trade)
             return
+
+    def start(self):
+        while datetime.datetime.now().time() < datetime.time(13, 30):
+            time.sleep(60)
+
+        super().start()
