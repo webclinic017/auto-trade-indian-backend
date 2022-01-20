@@ -84,7 +84,7 @@ class BuyersSellers(TradeBot):
             try:
                 diff_ce, diff_pe, ce_tickers, pe_tickers = self.get_buy_sell_diff()
             except Exception as e:
-                print(e)
+                print("Exception", e)
                 time.sleep(60)
                 continue
 
@@ -111,7 +111,7 @@ class BuyersSellers(TradeBot):
                     ticker_live = self.zerodha.live_data(ticker)
 
                     trade = Trade(
-                        endpoint=TradeEndpoint.MARKET_ORDER_SELL,
+                        endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                         trading_symbol=ticker,
                         exchange="NFO",
                         quantity=50,

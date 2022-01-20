@@ -73,7 +73,7 @@ services_index = [
     # {"name": "bull_bear", "script": BullBear(name="bull_bear").start, "args": []},
     {
         "name": "buyers_sellers",
-        "script": BuyersSellers("buyers_sellers", "22", "1", "13").start,
+        "script": BuyersSellers("buyers_sellers", "22", "2", "03").start,
         "args": [],
     },
     # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
