@@ -138,22 +138,14 @@ class ZerodhaKite:
 
         return IndexHistorical(nifty, bank_nifty)
 
-    def historical_data_today(self, tradingsymbol, interval: HistoricalDataInterval):
-        if tradingsymbol not in self.historical_data_cache:
-            self.historical_data_cache[tradingsymbol] = self.historical_data(
-                tradingsymbol, datetime.date.today(), datetime.date.today(), interval
-            )
-            return self.historical_data_cache
+    def historical_data_today(
+        self, tradingsymbol, interval: HistoricalDataInterval
+    ) -> List[HistoricalOHLC]:
+        data = self.historical_data(
+            tradingsymbol, datetime.date.today(), datetime.date.today(), interval
+        )
 
-        start_time = self.historical_data_cache[tradingsymbol][-1].time
-        end_time = datetime.datetime.now()
-
-        data = self.historical_data(tradingsymbol, start_time, end_time, interval)
-
-        self.historical_data_cache[tradingsymbol].pop()
-        self.historical_data_cache[tradingsymbol].extend(data)
-
-        return self.historical_data_cache[tradingsymbol]
+        return data
 
     def live_data(self, tradingsymbol) -> LiveTicker:
         data = self.redis.get(tradingsymbol)

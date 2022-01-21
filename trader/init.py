@@ -39,6 +39,7 @@ from services.live_data import main as live_data_main
 # for the index
 from services.index.bull_bear import BullBear
 from services.index.buyers_sellers import BuyersSellers
+from services.stocks.first_5min import First5Min
 
 # orders service start
 orders_process = {}
@@ -71,16 +72,22 @@ while True:
 # for the index trading
 services_index = [
     # {"name": "bull_bear", "script": BullBear(name="bull_bear").start, "args": []},
-    {
-        "name": "buyers_sellers",
-        "script": BuyersSellers("buyers_sellers", "22", "2", "03").start,
-        "args": [],
-    },
+    # {
+    #     "name": "buyers_sellers",
+    #     "script": BuyersSellers("buyers_sellers", "22", "2", "03").start,
+    #     "args": [],
+    # },
     # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
 ]
 
 # for stock trading
-services_stocks = []
+services_stocks = [
+    {
+        "name": "first_5min",
+        "script": First5Min(name="first_5min_stock").start,
+        "args": [],
+    }
+]
 
 services = services_index + services_stocks
 
