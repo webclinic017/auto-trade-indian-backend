@@ -1,5 +1,5 @@
 from entities.trade import Trade
-import websocket
+import requests, json, os
 
 
 class Publisher:
@@ -10,6 +10,9 @@ class Publisher:
         payload = trade.json()
         print(payload)
 
-        ws = websocket.create_connection(self.publisher_uri)
-        ws.send(payload)
-        ws.close()
+        AUTH_TOKEN = os.environ["AUTH_TOKEN"]
+        requests.post(
+            self.publisher_uri,
+            json=json.loads(payload),
+            headers={"Authorization": f"Token {AUTH_TOKEN}"},
+        )
