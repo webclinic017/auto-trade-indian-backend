@@ -40,6 +40,7 @@ from services.live_data import main as live_data_main
 from services.index.bull_bear import BullBear
 from services.index.buyers_sellers import BuyersSellers
 from services.stocks.first_5min import First5Min
+from services.stocks.print_stocks import PrintTickers
 
 # orders service start
 orders_process = {}
@@ -82,9 +83,14 @@ services_index = [
 
 # for stock trading
 services_stocks = [
+    # {
+    #     "name": "first_5min",
+    #     "script": First5Min(name="first_5min_stock").start,
+    #     "args": [],
+    # },
     {
-        "name": "first_5min",
-        "script": First5Min(name="first_5min_stock").start,
+        "name": "print_tickers",
+        "script": PrintTickers(name="print_tickers").start,
         "args": [],
     }
 ]
