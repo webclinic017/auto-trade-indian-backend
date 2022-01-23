@@ -33,47 +33,43 @@ class TickerGenerator:
     def tickers(self):
         factors = json.loads(open("/app/data/factors.json", "r").read())
 
-        while True:
-            for tradingsymbol in factors:
-                try:
-                    live_data = self.zerodha.live_data(tradingsymbol)
-                except:
-                    continue
+        for tradingsymbol in factors:
+            try:
+                live_data = self.zerodha.live_data(tradingsymbol)
+            except:
+                continue
 
-                atm_price = (
-                    math.ceil(live_data.last_price) // factors[tradingsymbol]
-                ) * factors[tradingsymbol]
+            atm_price = (
+                math.ceil(live_data.last_price) // factors[tradingsymbol]
+            ) * factors[tradingsymbol]
 
-                ce_ticker = (
-                    tradingsymbol
-                    + self.year
-                    + self.month
-                    + str(atm_price + factors[tradingsymbol])
-                    + "CE"
-                )
-                pe_ticker = (
-                    tradingsymbol
-                    + self.year
-                    + self.month
-                    + str(atm_price - factors[tradingsymbol])
-                    + "PE"
-                )
+            ce_ticker = (
+                tradingsymbol
+                + self.year
+                + self.month
+                + str(atm_price + factors[tradingsymbol])
+                + "CE"
+            )
+            pe_ticker = (
+                tradingsymbol
+                + self.year
+                + self.month
+                + str(atm_price - factors[tradingsymbol])
+                + "PE"
+            )
 
-                if (
-                    ce_ticker not in self.instruments
-                    or pe_ticker not in self.instruments
-                ):
-                    continue
+            if ce_ticker not in self.instruments or pe_ticker not in self.instruments:
+                continue
 
-                ce = Ticker(
-                    ce_ticker,
-                    self.instruments[ce_ticker]["lot_size"],
-                    self.instruments[ce_ticker]["instrument_token"],
-                )
-                pe = Ticker(
-                    pe_ticker,
-                    self.instruments[pe_ticker]["lot_size"],
-                    self.instruments[pe_ticker]["instrument_token"],
-                )
+            ce = Ticker(
+                ce_ticker,
+                self.instruments[ce_ticker]["lot_size"],
+                self.instruments[ce_ticker]["instrument_token"],
+            )
+            pe = Ticker(
+                pe_ticker,
+                self.instruments[pe_ticker]["lot_size"],
+                self.instruments[pe_ticker]["instrument_token"],
+            )
 
-                yield StockTicker(ce, pe)
+            yield StockTicker(ce, pe)
