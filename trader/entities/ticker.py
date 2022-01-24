@@ -13,9 +13,10 @@ class Ticker:
 
 
 class StockTicker:
-    def __init__(self, ce_ticker: Ticker, pe_ticker: Ticker):
+    def __init__(self, ce_ticker: Ticker, pe_ticker: Ticker, ticker: Ticker):
         self.ce_ticker = ce_ticker
         self.pe_ticker = pe_ticker
+        self.ticker = ticker
 
 
 class IndexTicker:
@@ -96,7 +97,7 @@ class TickerGenerator:
                 + "PE"
             )
 
-            if ce_ticker not in self.instruments or pe_ticker not in self.instruments:
+            if (ce_ticker not in self.instruments) or (pe_ticker not in self.instruments) or (tradingsymbol not in self.instruments):
                 continue
 
             ce = Ticker(
@@ -110,4 +111,10 @@ class TickerGenerator:
                 self.instruments[pe_ticker]["instrument_token"],
             )
 
-            yield StockTicker(ce, pe)
+            ticker = Ticker(
+                tradingsymbol,
+                self.instruments[tradingsymbol]["lot_size"],
+                self.instruments[tradingsymbol]["instrument_token"]
+            )
+
+            yield StockTicker(ce, pe, ticker)
