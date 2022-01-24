@@ -4,22 +4,20 @@ from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
 from entities.orders import Order
 import datetime
 import time
+from entities.ticker import TickerGenerator
 
 
 class First5Min(TradeBot):
-    stocks_list = {
-        "ACC": {"ce_ticker": "ACC22JAN2260CE", "pe_ticker": "ACC22JAN2240PE"},
-    }
-
     def entry_strategy(self):
         while True:
             if datetime.datetime.now().time() < datetime.time(9, 30):
                 continue
 
-            for ticker in self.stocks_list:
-                live_data = self.zerodha.live_data(ticker)
+            
+            for tick in self.ticker_generator.tickers():
+                live_data = self.zerodha.live_data(tick.ticker.tradingsymbol)
                 historical_data = self.zerodha.historical_data_today(
-                    ticker, HistoricalDataInterval.INTERVAL_5_MINUTE
+                    tick.ticker.tradingsymbol, HistoricalDataInterval.INTERVAL_5_MINUTE
                 )
 
                 first_5min_ohlc = historical_data[0]
@@ -30,14 +28,13 @@ class First5Min(TradeBot):
                     live_data.last_price
                     < first_5min_ohlc.high
                 ):
-                    tradingsymbol = self.stocks_list[ticker]["ce_ticker"]
-                    live_data_der = self.zerodha.live_data(tradingsymbol)
+                    live_data_der = self.zerodha.live_data(tick.ce_ticker.tradingsymbol)
 
                     trade = Trade(
                         endpoint=TradeEndpoint.LIMIT_ORDER_BUY,
-                        trading_symbol=tradingsymbol,
+                        trading_symbol=tick.ce_ticker.tradingsymbol,
                         exchange="NFO",
-                        quantity=1,
+                        quantity=tick.ce_ticker.lot_size,
                         tag=TradeTag.ENTRY,
                         publisher="",
                         entry_price=live_data_der.last_price,
@@ -86,3 +83,8 @@ class First5Min(TradeBot):
         if live_data.last_price >= profit:
             self.exit_trade(trade)
             return
+
+    def start(self):
+        self.ticker_generator = TickerGenerator("22", "JAN")
+
+        super().start()
