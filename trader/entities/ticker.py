@@ -18,6 +18,11 @@ class StockTicker:
         self.pe_ticker = pe_ticker
 
 
+class IndexTicker:
+    def __init__(self, ce_ticker: Ticker, pe_ticker: Ticker):
+        self.ce_ticker = ce_ticker
+        self.pe_ticker = pe_ticker
+
 class TickerGenerator:
     def __init__(self, year: str, month: str):
         self.zerodha = ZerodhaKite(
@@ -30,7 +35,40 @@ class TickerGenerator:
 
         self.instruments = self.zerodha.token_map
 
-    def tickers(self):
+    def index(self):
+        nifty_live = self.zerodha.live_data(self.NIFTY_50)
+        bank_nifty_live = self.zerodha.live_data(self.BANK_NIFTY)
+
+        nifty_atm = (math.ceil(nifty_live.last_price) // 50) * 50
+
+        for i in range(1, 5):
+            ce_ticker = (
+                "NIFTY"
+                + self.year
+                + self.month
+                + self.week
+                + str(i * 50 + nifty_atm)
+                + "CE"
+            )
+
+            pe_ticker = (
+                "NIFTY"
+                + self.year
+                + self.month
+                + self.week
+                + str(nifty_atm - i * 50)
+                + "PE"
+            )
+            
+            if (ce_ticker not in self.instruments) or (pe_ticker not in self.instruments):
+                continue
+            
+            ce = Ticker(ce_ticker, self.instruments[ce_ticker]['lot_size'], self.instruments[ce_ticker]['instrument_token'])
+            pe = Ticker(pe_ticker, self.instruments[pe_ticker]['lot_size'], self.instruments[pe_ticker]['instrument_token'])
+            
+            return IndexTicker(ce, pe)
+
+    def stocks(self):
         factors = json.loads(open("/app/data/factors.json", "r").read())
 
         for tradingsymbol in factors:
