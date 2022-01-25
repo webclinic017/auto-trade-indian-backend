@@ -14,7 +14,7 @@ class First5Min(TradeBot):
                 continue
 
             
-            for tick in self.ticker_generator.tickers():
+            for tick in self.ticker_generator.stocks():
                 live_data = self.zerodha.live_data(tick.ticker.tradingsymbol)
                 historical_data = self.zerodha.historical_data_today(
                     tick.ticker.tradingsymbol, HistoricalDataInterval.INTERVAL_5_MINUTE

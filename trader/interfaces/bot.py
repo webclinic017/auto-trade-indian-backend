@@ -41,7 +41,9 @@ class TradeBot(OrderExecutor):
 
     def start(self):
         entry_thread = threading.Thread(target=self.entry_strategy)
+
         exit_thread = threading.Thread(target=self._exit_strategy)
 
         entry_thread.start()
+        # time.sleep(60)
         exit_thread.start()

@@ -41,6 +41,7 @@ from services.index.bull_bear import BullBear
 from services.index.buyers_sellers import BuyersSellers
 from services.stocks.first_5min import First5Min
 from services.stocks.print_stocks import PrintTickers
+from services.index.bull_bear_class import BullBear as Bull_Bear
 
 # orders service start
 orders_process = {}
@@ -70,7 +71,8 @@ while True:
         continue
 
 
-# for the index trading
+# for the index trading first name is for the display and second name is for mongodb. Script is imported class name
+
 services_index = [
     # {"name": "bull_bear", "script": BullBear(name="bull_bear").start, "args": []},
     # {
@@ -79,6 +81,11 @@ services_index = [
     #     "args": [],
     # },
     # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
+    # {"name": "Bull_Bear", "script": Bull_Bear(name="Bull_Bear").start,"args":[]}
+
+    
+
+
 ]
 
 # for stock trading
@@ -88,11 +95,11 @@ services_stocks = [
     #     "script": First5Min(name="first_5min_stock").start,
     #     "args": [],
     # },
-    {
-        "name": "print_tickers",
-        "script": PrintTickers(name="print_tickers").start,
-        "args": [],
-    }
+    # {
+    #     "name": "print_tickers",
+    #     "script": PrintTickers(name="print_tickers").start,
+    #     "args": [],
+    # }
 ]
 
 services = services_index + services_stocks
