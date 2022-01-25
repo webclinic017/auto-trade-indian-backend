@@ -77,7 +77,7 @@ class BuyersSellers(TradeBot):
     def entry_strategy(self):
         while True:
             if datetime.datetime.now().time() < datetime.time(
-                9, 33
+                13, 1
             ) or datetime.datetime.now().time() > datetime.time(15, 10):
                 continue
 
