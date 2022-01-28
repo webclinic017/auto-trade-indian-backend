@@ -18,7 +18,6 @@ class BuyersSellers(TradeBot):
 
     def get_buy_sell_diff(self):
         nifty_live = self.zerodha.live_data(self.NIFTY_50)
-        bank_nifty_live = self.zerodha.live_data(self.BANK_NIFTY)
 
         nifty_atm = (math.ceil(nifty_live.last_price) // 50) * 50
 

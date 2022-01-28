@@ -15,9 +15,9 @@ class OHLC:
         self.high = ohlc.get("high")
         self.low = ohlc.get("low")
         self.close = ohlc.get("close")
-    
+
     def __repr__(self) -> str:
-        return f'<open: {self.open}, high: {self.high}, low: {self.low}, close: {self.close}>'
+        return f"<open: {self.open}, high: {self.high}, low: {self.low}, close: {self.close}>"
 
 
 class Depth:
@@ -77,11 +77,9 @@ class HistoricalOHLC(OHLC):
     def __init__(self, ohlc: dict):
         super().__init__(ohlc)
         self.time: datetime.datetime = ohlc.get("date")
-    
+
     def __repr__(self) -> str:
-        return f'{self.time} <open: {self.open}, high: {self.high}, low: {self.low}, close: {self.close}>'
-    
-    
+        return f"{self.time} <open: {self.open}, high: {self.high}, low: {self.low}, close: {self.close}>"
 
 
 class IndexHistorical:
@@ -130,21 +128,6 @@ class ZerodhaKite:
             data.append(HistoricalOHLC(ohlc))
 
         return data
-
-    def historical_data_index(self) -> IndexHistorical:
-        data_nifty = json.loads(self.redis.get("NIFTY-historical"))
-        data_bank_nifty = json.loads(self.redis.get("BANK-NIFTY-historical"))
-
-        nifty: List[HistoricalOHLC] = []
-        bank_nifty: List[HistoricalOHLC] = []
-
-        for ohlc in data_nifty:
-            nifty.append(HistoricalOHLC(ohlc))
-
-        for ohlc in data_bank_nifty:
-            bank_nifty.append(HistoricalOHLC(ohlc))
-
-        return IndexHistorical(nifty, bank_nifty)
 
     def historical_data_today(
         self, tradingsymbol, interval: HistoricalDataInterval
