@@ -15,6 +15,9 @@ class OHLC:
         self.high = ohlc.get("high")
         self.low = ohlc.get("low")
         self.close = ohlc.get("close")
+    
+    def __repr__(self) -> str:
+        return f'<open: {self.open}, high: {self.high}, low: {self.low}, close: {self.close}>'
 
 
 class Depth:
@@ -73,7 +76,12 @@ class HistoricalDataInterval(Enum):
 class HistoricalOHLC(OHLC):
     def __init__(self, ohlc: dict):
         super().__init__(ohlc)
-        self.time: datetime.datetime = ohlc.get("time")
+        self.time: datetime.datetime = ohlc.get("date")
+    
+    def __repr__(self) -> str:
+        return f'{self.time} <open: {self.open}, high: {self.high}, low: {self.low}, close: {self.close}>'
+    
+    
 
 
 class IndexHistorical:

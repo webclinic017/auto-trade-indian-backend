@@ -75,6 +75,7 @@ class TickerGenerator:
                 + "PE"
             )
 
+            
             if (ce_ticker not in self.instruments) or (
                 pe_ticker not in self.instruments
             ):
@@ -84,50 +85,18 @@ class TickerGenerator:
                 ce_ticker,
                 self.instruments[ce_ticker]["lot_size"],
                 self.instruments[ce_ticker]["instrument_token"],
-                "NIFTY",
+               
             )
             pe = Ticker(
                 pe_ticker,
                 self.instruments[pe_ticker]["lot_size"],
                 self.instruments[pe_ticker]["instrument_token"],
-                "NIFTY",
+               
             )
 
-            yield IndexTicker(ce, pe)
+            yield IndexTicker(ce, pe, "NIFTY")
 
-        bank_nifty_live = self.zerodha.live_data(self.BANK_NIFTY)
-        banknifty_atm = math.ceil(bank_nifty_live.last_price / 100) * 100
-
-        for i in range(1, 5):
-            ce_ticker = (
-                "BANKNIFTY"
-                + self.index_year
-                + self.index_month
-                + self.index_week
-                + str(i * 100 + banknifty_atm)
-                + "CE"
-            )
-
-            pe_ticker = (
-                "BANKNIFTY"
-                + self.index_year
-                + self.index_month
-                + self.index_week
-                + str(banknifty_atm - i * 100)
-                + "PE"
-            )
-
-            if (ce_ticker not in self.instruments) or (
-                pe_ticker not in self.instruments
-            ):
-                continue
-            
-            ce = Ticker(ce_ticker, self.instruments[ce_ticker]['lot_size'], self.instruments[ce_ticker]['instrument_token'])
-            pe = Ticker(pe_ticker, self.instruments[pe_ticker]['lot_size'], self.instruments[pe_ticker]['instrument_token'])
-            
-            yield IndexTicker(ce, pe, 'NIFTY')
         
-
         bank_nifty_live = self.zerodha.live_data(self.BANK_NIFTY)
         banknifty_atm = (math.ceil(bank_nifty_live.last_price)//100) * 100
 

@@ -35,7 +35,7 @@ class Trade:
         price: int,
         ltp: int,
         type: TradeType,
-        max_quantity: float = float("inf"),
+        max_quantity: int = -1,
     ):
         self.endpoint: TradeEndpoint = endpoint
         self.trading_symbol: str = trading_symbol

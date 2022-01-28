@@ -1,4 +1,5 @@
 import redis, time, os, requests, time
+from entities.orders import OrderExecutorType
 from interfaces.constants import LIVE_DATA, REDIS
 
 from utils.auth import get_key_token
@@ -42,6 +43,7 @@ from services.index.buyers_sellers import BuyersSellers
 from services.stocks.first_5min import First5Min
 from services.stocks.print_stocks import PrintTickers
 from services.index.bull_bear_class import BullBear as Bull_Bear
+from services.stocks.bull_bear import BullBearStock
 
 # orders service start
 orders_process = {}
@@ -81,7 +83,7 @@ services_index = [
     #     "args": [],
     # },
     # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
-    # {"name": "Bull_Bear", "script": Bull_Bear(name="Bull_Bear").start,"args":[]}
+    {"name": "Bull_Bear", "script": Bull_Bear(name="Bull_Bear").start,"args":[]}
 
     
 
@@ -99,6 +101,12 @@ services_stocks = [
     #     "name": "print_tickers",
     #     "script": PrintTickers(name="print_tickers").start,
     #     "args": [],
+    # }
+    
+    # {
+        # "name": "bull_bear_stocks",
+        # "script": BullBearStock("bull_bear_stock", mode=OrderExecutorType.SINGLE),
+        # "args": []
     # }
 ]
 
