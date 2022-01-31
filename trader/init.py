@@ -1,6 +1,6 @@
 import redis, time, os, requests, time
-from entities.orders import OrderExecutorType
 from interfaces.constants import LIVE_DATA, REDIS
+from entities.orders import OrderExecutorType
 
 from utils.auth import get_key_token
 
@@ -22,7 +22,7 @@ def wait_for_service():
             r.close()
             break
         except:
-            time.sleep(2)
+            time.sleep(1)
             continue
 
 
@@ -34,16 +34,9 @@ print("services are up running ...")
 # import the object with aliase name Process
 from threading import (
     Thread as Process,
-)  # <-- change the type of process here to threading.Thread or multiprocess.Process
+)
 from services.live_data import main as live_data_main
 
-# for the index
-from services.index.bull_bear import BullBear
-from services.index.buyers_sellers import BuyersSellers
-from services.stocks.first_5min import First5Min
-from services.stocks.print_stocks import PrintTickers
-from services.index.bull_bear_class import BullBear as Bull_Bear
-from services.stocks.bull_bear import BullBearStock
 
 # orders service start
 orders_process = {}
@@ -73,41 +66,32 @@ while True:
         continue
 
 
-# for the index trading first name is for the display and second name is for mongodb. Script is imported class name
+from services.index.bullbear.bullbear import BullBear
+
+# from services.index.buyerseller.buyerseller import BuyerSellers
+# from services.index.costlycheap.costlycheap import CostlyCheap
+from services.stocks.bullbear.bullbear import BullBear
+
 
 services_index = [
-    # {"name": "bull_bear", "script": BullBear(name="bull_bear").start, "args": []},
+    {"name": "bullbear", "script": BullBear(name="bullbear").start, "args": []},
     # {
-    #     "name": "buyers_sellers",
-    #     "script": BuyersSellers("buyers_sellers", "22", "2", "03").start,
+    #     "name": "buyerseller",
+    #     "script": BuyerSellers(name="buyerseller").start,
     #     "args": [],
     # },
-    # {"name": "costly_cheap", "script": main_costly_cheap, "args": ["22", "1", "13"]},
-    {"name": "Bull_Bear", "script": Bull_Bear(name="Bull_Bear").start,"args":[]}
-
-    
-
-
+    # {
+    #     "name": "costlycheap",
+    #     "script": CostlyCheap(name="costlycheap").start,
+    #     "args": [],
+    # },
 ]
-
-# for stock trading
 services_stocks = [
-    # {
-    #     "name": "first_5min",
-    #     "script": First5Min(name="first_5min_stock").start,
-    #     "args": [],
-    # },
-    # {
-    #     "name": "print_tickers",
-    #     "script": PrintTickers(name="print_tickers").start,
-    #     "args": [],
-    # }
-    
-    # {
-        # "name": "bull_bear_stocks",
-        # "script": BullBearStock("bull_bear_stock", mode=OrderExecutorType.SINGLE),
-        # "args": []
-    # }
+    {
+        "name": "bullbear",
+        "script": BullBear(name="bullbear", mode=OrderExecutorType.STRICT).start,
+        "args": [],
+    }
 ]
 
 services = services_index + services_stocks
