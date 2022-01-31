@@ -67,6 +67,7 @@ while True:
 
 
 from services.index.bullbear.bullbear import BullBear
+
 # from services.index.buyerseller.buyerseller import BuyerSellers
 # from services.index.costlycheap.costlycheap import CostlyCheap
 from services.stocks.bullbear.bullbear import BullBear
@@ -88,8 +89,8 @@ services_index = [
 services_stocks = [
     {
         "name": "bullbear",
-        "script": BullBear(name="bullbear", mode=OrderExecutorType.SINGLE).start,
-        "args":[]
+        "script": BullBear(name="bullbear", mode=OrderExecutorType.STRICT).start,
+        "args": [],
     }
 ]
 

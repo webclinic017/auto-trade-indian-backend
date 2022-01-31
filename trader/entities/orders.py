@@ -1,4 +1,6 @@
 from typing import Dict, Iterator
+
+from sympy import true
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
@@ -8,6 +10,7 @@ from enum import Enum
 class OrderExecutorType(Enum):
     SINGLE = "single"
     MULTIPLE = "multiple"
+    STRICT = "strict"
 
 
 class Order:
@@ -34,20 +37,34 @@ class OrderExecutor:
         self.publisher: Publisher = Publisher(publisher_uri)
         self.mode: OrderExecutorType = mode
 
+        self.entered_tickers = set()
+
     def enter_order(self, trade: Trade):
         if trade.trading_symbol not in self.entries:
-            self.entries[trade.trading_symbol] = Order(
-                trade.trading_symbol,
-                trade.exchange,
-                trade.quantity,
-                trade.entry_price,
-            )
+            if self.mode == OrderExecutorType.STRICT:
+                if trade.trading_symbol not in self.entered_tickers:
+                    flag = True
+                else:
+                    flag = False
+            else:
+                flag = True
+
+            if flag:
+                self.entries[trade.trading_symbol] = Order(
+                    trade.trading_symbol,
+                    trade.exchange,
+                    trade.quantity,
+                    trade.entry_price,
+                )
         else:
             if self.mode == OrderExecutorType.MULTIPLE:
                 self.entries[trade.trading_symbol].add_trade(trade)
 
     def clean_order(self, trading_symbol: str):
         del self.entries[trading_symbol]
+
+        if self.mode == OrderExecutorType.STRICT:
+            self.entered_tickers.add(trading_symbol)
 
     def get_orders(self) -> Iterator[Order]:
         for trading_symbol in self.entries:
