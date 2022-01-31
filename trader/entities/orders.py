@@ -1,6 +1,4 @@
 from typing import Dict, Iterator
-
-from sympy import true
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
