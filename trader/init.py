@@ -67,9 +67,6 @@ while True:
 
 
 from services.index.bullbear.bullbear import BullBear as BullBearIndex
-
-# from services.index.buyerseller.buyerseller import BuyerSellers
-# from services.index.costlycheap.costlycheap import CostlyCheap
 from services.stocks.bullbear.bullbear import BullBear as BullBearStocks
 
 
