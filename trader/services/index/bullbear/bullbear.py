@@ -52,9 +52,11 @@ class BullBear(TradeBot):
 
                         if len(historical_data) == 0:
                             raise Exception("empty historical data")
-                    except Exception:
+                    except Exception as e:
                         # if there is error in fetching the historical data from api
                         # if the historical data fetched is null
+                        print(e)
+
                         continue
 
                     candle_length = self.get_candle_length(historical_data[-1])
@@ -86,7 +88,7 @@ class BullBear(TradeBot):
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=25,
+                            quantity=tick.ce_ticker.lot_size,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -114,7 +116,7 @@ class BullBear(TradeBot):
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=25,
+                            quantity=tick.pe_ticker.lot_size,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
@@ -166,7 +168,7 @@ class BullBear(TradeBot):
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=25,
+                            quantity=tick.ce_ticker.lot_size,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -181,11 +183,18 @@ class BullBear(TradeBot):
                         quote.last_price < historical_data[0].low
                         and latest_view == "bear"
                     ):
+                        try:
+                            pe_quote = self.zerodha.live_data(
+                                tick.pe_ticker.tradingsymbol
+                            )
+                        except Exception:
+                            continue
+
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=25,
+                            quantity=tick.pe_ticker.lot_size,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
@@ -288,6 +297,7 @@ class BullBear(TradeBot):
             current_minute %= 60
 
         self.start_time = datetime.time(current_hour, current_minute, 10)
+        print(f"[**] strategy starts at {self.start_time}")
 
         self.ticker_generator = TickerGenerator("22", "JAN", "22", "2", "03")
 

@@ -33,11 +33,6 @@ def on_connect(ws, response):
     print("connection opened to websocket")
 
 
-def on_close(ws, code, reason):
-    print(reason)
-    ws.stop()
-
-
 def on_error(ws, code, reason):
     print(code, reason)
 
@@ -45,57 +40,24 @@ def on_error(ws, code, reason):
 def appendTickers(ticks):
     for tick in ticks:
         ticker = ticker_map[tick["instrument_token"]]["tradingsymbol"]
-        # print(tick)
 
         rdb.set(ticker, json.dumps(tick, default=str))
 
 
 def on_ticks(ws, ticks):
+    # print(ticks)
     Thread(target=appendTickers, args=[ticks]).start()
 
 
 kws.on_connect = on_connect
 kws.on_ticks = on_ticks
-kws.on_close = on_close
 kws.on_error = on_error
-
-
-def get_index_historical():
-    NIFTY_50 = 256265
-    BANK_NIFTY = 260105
-
-    date = datetime.date.today()
-
-    while True:
-        try:
-            nifty_historical = kite.historical_data(
-                NIFTY_50,
-                date,
-                date,
-                HistoricalDataInterval.INTERVAL_5_MINUTE.value,
-            )
-            bank_historical = kite.historical_data(
-                BANK_NIFTY,
-                date,
-                date,
-                HistoricalDataInterval.INTERVAL_5_MINUTE.value,
-            )
-        except urllib3.exceptions.ReadTimeoutError:
-            time.sleep(300)
-            continue
-
-        rdb.set("NIFTY-historical", json.dumps(nifty_historical, default=str))
-        rdb.set("BANK-NIFTY-historical", json.dumps(bank_historical, default=str))
-
-        time.sleep(300)
 
 
 def main():
     subscribed_tokens = set()
 
     kws.connect(threaded=True)
-
-    Thread(target=get_index_historical).start()
 
     from flask import Flask
     import logging
