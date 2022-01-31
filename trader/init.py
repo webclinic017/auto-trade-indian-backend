@@ -1,5 +1,6 @@
 import redis, time, os, requests, time
 from interfaces.constants import LIVE_DATA, REDIS
+from entities.orders import OrderExecutorType
 
 from utils.auth import get_key_token
 
@@ -66,24 +67,31 @@ while True:
 
 
 from services.index.bullbear.bullbear import BullBear
-from services.index.buyerseller.buyerseller import BuyerSellers
-from services.index.costlycheap.costlycheap import CostlyCheap
+# from services.index.buyerseller.buyerseller import BuyerSellers
+# from services.index.costlycheap.costlycheap import CostlyCheap
+from services.stocks.bullbear.bullbear import BullBear
 
 
 services_index = [
     {"name": "bullbear", "script": BullBear(name="bullbear").start, "args": []},
-    {
-        "name": "buyerseller",
-        "script": BuyerSellers(name="buyerseller").start,
-        "args": [],
-    },
-    {
-        "name": "costlycheap",
-        "script": CostlyCheap(name="costlycheap").start,
-        "args": [],
-    },
+    # {
+    #     "name": "buyerseller",
+    #     "script": BuyerSellers(name="buyerseller").start,
+    #     "args": [],
+    # },
+    # {
+    #     "name": "costlycheap",
+    #     "script": CostlyCheap(name="costlycheap").start,
+    #     "args": [],
+    # },
 ]
-services_stocks = []
+services_stocks = [
+    {
+        "name": "bullbear",
+        "script": BullBear(name="bullbear", mode=OrderExecutorType.SINGLE).start,
+        "args":[]
+    }
+]
 
 services = services_index + services_stocks
 
