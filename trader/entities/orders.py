@@ -42,6 +42,8 @@ class OrderExecutor:
             if self.mode == OrderExecutorType.STRICT:
                 if trade.trading_symbol not in self.entered_tickers:
                     flag = True
+
+                    self.entered_tickers.add(trade.trading_symbol)
                 else:
                     flag = False
             else:
@@ -60,9 +62,6 @@ class OrderExecutor:
 
     def clean_order(self, trading_symbol: str):
         del self.entries[trading_symbol]
-
-        if self.mode == OrderExecutorType.STRICT:
-            self.entered_tickers.add(trading_symbol)
 
     def get_orders(self) -> Iterator[Order]:
         for trading_symbol in self.entries:
