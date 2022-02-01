@@ -58,6 +58,7 @@ class BullBear(TradeBot):
         while True:
             if datetime.datetime.now().time() < datetime.time(9, 30, 5):
                 continue
+
             for ticks in TickerGenerator("22", "FEB", "", "", "").stocks():
                 if ticks.ticker.tradingsymbol in self.invalid_tickers:
                     continue
@@ -74,8 +75,9 @@ class BullBear(TradeBot):
                 except Exception as e:
                     # if historical data is failed due to network error then we continue to next ticker
                     # if the historical data is empty then also we get error
+                    self.invalid_tickers.add(ticks.ticker.tradingsymbol)
+                    
                     print(e)
-
                     continue
 
                 try:
@@ -107,7 +109,6 @@ class BullBear(TradeBot):
                     except Exception as e:
                         # if there is error in fetching the live quote for a ticker then continue for the next one
                         print(e)
-
                         continue
 
                     if quote.last_price > historical_data[0].high:
@@ -125,6 +126,7 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
+                        continue
 
                 if (
                     (historical_data[0].open == historical_data[0].high)
@@ -135,7 +137,6 @@ class BullBear(TradeBot):
                     except Exception as e:
                         # if there is error in fetching the live quote for a ticker then continue for the next one
                         print(e)
-
                         continue
 
                     if quote.last_price < historical_data[0].low:
@@ -153,6 +154,7 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
+                        continue
 
             time.sleep(10)
 

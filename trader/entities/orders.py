@@ -39,25 +39,32 @@ class OrderExecutor:
 
     def enter_order(self, trade: Trade):
         if trade.trading_symbol not in self.entries:
-                if self.mode == OrderExecutorType.STRICT and (trade.trading_symbol not in self.entered_tickers):
+            if self.mode == OrderExecutorType.STRICT:
+                if trade.trading_symbol not in self.entered_tickers:
                     self.entered_tickers.add(trade.trading_symbol)
-                    
+
                     flag = True
-                elif self.mode == OrderExecutorType.STRICT and (trade.trading_symbol in self.entered_tickers):
+                else:
                     flag = False
-                elif self.mode != OrderExecutorType.STRICT:
-                    flag = True
-                
-                if flag:
-                    self.entries[trade.trading_symbol] = Order(
-                        trade.trading_symbol,
-                        trade.exchange,
-                        trade.quantity,
-                        trade.entry_price,
-                    )
+            else:
+                flag = True
+
+            if flag:
+                self.entries[trade.trading_symbol] = Order(
+                    trade.trading_symbol,
+                    trade.exchange,
+                    trade.quantity,
+                    trade.entry_price,
+                )
+
+                return True
         else:
             if self.mode == OrderExecutorType.MULTIPLE:
                 self.entries[trade.trading_symbol].add_trade(trade)
+
+                return True
+
+        return False
 
     def clean_order(self, trading_symbol: str):
         del self.entries[trading_symbol]
@@ -67,10 +74,9 @@ class OrderExecutor:
             yield self.entries[trading_symbol]
 
     def enter_trade(self, trade: Trade):
-        self.enter_order(trade)
-
-        # publish the trade to the publisher
-        self.publisher.publish_trade(trade)
+        if self.enter_order(trade):
+            # publish the trade to the publisher
+            self.publisher.publish_trade(trade)
 
     def exit_trade(self, trade: Trade):
         self.clean_order(trade.trading_symbol)
