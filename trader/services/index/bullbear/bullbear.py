@@ -59,8 +59,8 @@ class BullBear(TradeBot):
 
                         continue
 
-                    candle_length = self.get_candle_length(historical_data[-1])
-                    body_length = self.get_body_length(historical_data[-1])
+                    candle_length = self.get_candle_length(historical_data[-2])
+                    body_length = self.get_body_length(historical_data[-2])
                     direction = self.get_direction(body_length)
 
                     latest_view = None
@@ -70,7 +70,7 @@ class BullBear(TradeBot):
                         latest_view = "bear"
 
                     quote = self.zerodha.live_data("NIFTY 50")
-
+                    print("i am running nifty")
                     # condition for buying CE ticker of NIFTY
                     if (
                         quote.last_price > historical_data[0].high
@@ -141,8 +141,8 @@ class BullBear(TradeBot):
                         # if there is an network in fetching historical data or empty historical data
                         continue
 
-                    candle_length = self.get_candle_length(historical_data[-1])
-                    body_length = self.get_body_length(historical_data[-1])
+                    candle_length = self.get_candle_length(historical_data[-2])
+                    body_length = self.get_body_length(historical_data[-2])
                     direction = self.get_direction(body_length)
 
                     latest_view = None

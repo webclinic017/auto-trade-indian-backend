@@ -22,7 +22,7 @@ class TradeBot(OrderExecutor):
             api_key=os.environ["API_KEY"], access_token=os.environ["ACCESS_TOKEN"]
         )
         self.zerodha = ZerodhaKite(self.kite)
-
+        
     def entry_strategy(self):
         raise NotImplementedError
 

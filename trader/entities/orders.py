@@ -39,23 +39,22 @@ class OrderExecutor:
 
     def enter_order(self, trade: Trade):
         if trade.trading_symbol not in self.entries:
-            if self.mode == OrderExecutorType.STRICT:
-                if trade.trading_symbol not in self.entered_tickers:
-                    flag = True
-
+                if self.mode == OrderExecutorType.STRICT and (trade.trading_symbol not in self.entered_tickers):
                     self.entered_tickers.add(trade.trading_symbol)
-                else:
+                    
+                    flag = True
+                elif self.mode == OrderExecutorType.STRICT and (trade.trading_symbol in self.entered_tickers):
                     flag = False
-            else:
-                flag = True
-
-            if flag:
-                self.entries[trade.trading_symbol] = Order(
-                    trade.trading_symbol,
-                    trade.exchange,
-                    trade.quantity,
-                    trade.entry_price,
-                )
+                elif self.mode != OrderExecutorType.STRICT:
+                    flag = True
+                
+                if flag:
+                    self.entries[trade.trading_symbol] = Order(
+                        trade.trading_symbol,
+                        trade.exchange,
+                        trade.quantity,
+                        trade.entry_price,
+                    )
         else:
             if self.mode == OrderExecutorType.MULTIPLE:
                 self.entries[trade.trading_symbol].add_trade(trade)
