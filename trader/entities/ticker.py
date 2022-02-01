@@ -203,4 +203,4 @@ class TickerGenerator:
 
             df = self.zerodha.get_ohlc_data_frame(historical_data)
 
-            print(tb.EMA(df["open"]))
+            print(tb.EMA(df["close"]))
