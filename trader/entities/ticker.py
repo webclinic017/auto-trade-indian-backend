@@ -1,8 +1,11 @@
-from entities.zerodha import ZerodhaKite
+from datetime import datetime
+from entities.zerodha import HistoricalDataInterval, ZerodhaKite
 from kiteconnect import KiteConnect
 import json
 import os
 import math
+import datetime
+import talib as tb
 
 
 class Ticker:
@@ -56,7 +59,7 @@ class TickerGenerator:
         nifty_live = self.zerodha.live_data(self.NIFTY_50)
         nifty_atm = (math.ceil(nifty_live.last_price) // 50) * 50
 
-        for i in range(1, n+1):
+        for i in range(1, n + 1):
             ce_ticker = (
                 "NIFTY"
                 + self.index_year
@@ -75,7 +78,6 @@ class TickerGenerator:
                 + "PE"
             )
 
-            
             if (ce_ticker not in self.instruments) or (
                 pe_ticker not in self.instruments
             ):
@@ -85,22 +87,19 @@ class TickerGenerator:
                 ce_ticker,
                 self.instruments[ce_ticker]["lot_size"],
                 self.instruments[ce_ticker]["instrument_token"],
-               
             )
             pe = Ticker(
                 pe_ticker,
                 self.instruments[pe_ticker]["lot_size"],
                 self.instruments[pe_ticker]["instrument_token"],
-               
             )
 
             yield IndexTicker(ce, pe, "NIFTY")
 
-        
         bank_nifty_live = self.zerodha.live_data(self.BANK_NIFTY)
-        banknifty_atm = (math.ceil(bank_nifty_live.last_price)//100) * 100
+        banknifty_atm = (math.ceil(bank_nifty_live.last_price) // 100) * 100
 
-        for i in range(1, n+1):
+        for i in range(1, n + 1):
             ce_ticker = (
                 "BANKNIFTY"
                 + self.index_year
@@ -118,14 +117,24 @@ class TickerGenerator:
                 + str(banknifty_atm - i * 100)
                 + "PE"
             )
-            
-            if (ce_ticker not in self.instruments) or (pe_ticker not in self.instruments):
+
+            if (ce_ticker not in self.instruments) or (
+                pe_ticker not in self.instruments
+            ):
                 continue
-            
-            ce = Ticker(ce_ticker, self.instruments[ce_ticker]['lot_size'], self.instruments[ce_ticker]['instrument_token'])
-            pe = Ticker(pe_ticker, self.instruments[pe_ticker]['lot_size'], self.instruments[pe_ticker]['instrument_token'])
-            
-            yield IndexTicker(ce, pe, 'BANKNIFTY')
+
+            ce = Ticker(
+                ce_ticker,
+                self.instruments[ce_ticker]["lot_size"],
+                self.instruments[ce_ticker]["instrument_token"],
+            )
+            pe = Ticker(
+                pe_ticker,
+                self.instruments[pe_ticker]["lot_size"],
+                self.instruments[pe_ticker]["instrument_token"],
+            )
+
+            yield IndexTicker(ce, pe, "BANKNIFTY")
 
     def stocks(self):
         factors = json.loads(open("/app/data/factors.json", "r").read())
@@ -180,3 +189,18 @@ class TickerGenerator:
             )
 
             yield StockTicker(ce, pe, ticker)
+
+    def stocks_historical_prices(self):
+        factors = json.loads(open("/app/data/factors.json", "r").read())
+
+        for ticker in factors:
+            historical_data = self.zerodha.historical_data(
+                ticker,
+                datetime.date.today() - datetime.timedelta(days=365),
+                datetime.date.today() - datetime.timedelta(days=1),
+                HistoricalDataInterval.INTERVAL_1_DAY,
+            )
+
+            df = self.zerodha.get_ohlc_data_frame(historical_data)
+
+            print(tb.EMA(df["open"]))

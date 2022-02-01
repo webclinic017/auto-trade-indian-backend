@@ -1,4 +1,4 @@
-from typing import DefaultDict, Dict, List, Union
+from typing import DefaultDict, List, Union
 import datetime
 from enum import Enum
 from constants.index import LIVE_DATA, REDIS
@@ -7,6 +7,7 @@ import redis
 import requests
 import time
 import json
+import pandas as pd
 
 
 class OHLC:
@@ -70,7 +71,7 @@ class HistoricalDataInterval(Enum):
     INTERVAL_5_MINUTE = "5minute"
     INTERVAL_10_MINUTE = "10minute"
     INTERVAL_15_MINUTE = "15minute"
-    INTERVAL_1_DAY = "1day"
+    INTERVAL_1_DAY = "day"
 
 
 class HistoricalOHLC(OHLC):
@@ -108,6 +109,22 @@ class ZerodhaKite:
 
     def _get_live(self, endpoint):
         return requests.get(LIVE_DATA + endpoint)
+
+    def get_ohlc_data_frame(self, historical_data: List[HistoricalOHLC]):
+        data = []
+
+        for ohlc in historical_data:
+            data.append(
+                {
+                    "open": ohlc.open,
+                    "high": ohlc.high,
+                    "low": ohlc.low,
+                    "close": ohlc.close,
+                    "timestamp": ohlc.time,
+                }
+            )
+
+        return pd.DataFrame(data)
 
     def historical_data(
         self,
