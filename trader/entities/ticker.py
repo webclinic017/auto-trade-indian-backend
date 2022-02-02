@@ -1,8 +1,12 @@
-from entities.zerodha import ZerodhaKite
+from datetime import datetime
+from entities.zerodha import HistoricalDataInterval, ZerodhaKite
 from kiteconnect import KiteConnect
 import json
 import os
 import math
+import datetime
+import talib as tb
+import numpy as np
 
 
 class Ticker:
@@ -56,7 +60,7 @@ class TickerGenerator:
         nifty_live = self.zerodha.live_data(self.NIFTY_50)
         nifty_atm = (math.ceil(nifty_live.last_price) // 50) * 50
 
-        for i in range(1, n+1):
+        for i in range(1, n + 1):
             ce_ticker = (
                 "NIFTY"
                 + self.index_year
@@ -75,7 +79,6 @@ class TickerGenerator:
                 + "PE"
             )
 
-            
             if (ce_ticker not in self.instruments) or (
                 pe_ticker not in self.instruments
             ):
@@ -85,22 +88,19 @@ class TickerGenerator:
                 ce_ticker,
                 self.instruments[ce_ticker]["lot_size"],
                 self.instruments[ce_ticker]["instrument_token"],
-               
             )
             pe = Ticker(
                 pe_ticker,
                 self.instruments[pe_ticker]["lot_size"],
                 self.instruments[pe_ticker]["instrument_token"],
-               
             )
 
             yield IndexTicker(ce, pe, "NIFTY")
 
-        
         bank_nifty_live = self.zerodha.live_data(self.BANK_NIFTY)
-        banknifty_atm = (math.ceil(bank_nifty_live.last_price)//100) * 100
+        banknifty_atm = (math.ceil(bank_nifty_live.last_price) // 100) * 100
 
-        for i in range(1, n+1):
+        for i in range(1, n + 1):
             ce_ticker = (
                 "BANKNIFTY"
                 + self.index_year
@@ -118,14 +118,24 @@ class TickerGenerator:
                 + str(banknifty_atm - i * 100)
                 + "PE"
             )
-            
-            if (ce_ticker not in self.instruments) or (pe_ticker not in self.instruments):
+
+            if (ce_ticker not in self.instruments) or (
+                pe_ticker not in self.instruments
+            ):
                 continue
-            
-            ce = Ticker(ce_ticker, self.instruments[ce_ticker]['lot_size'], self.instruments[ce_ticker]['instrument_token'])
-            pe = Ticker(pe_ticker, self.instruments[pe_ticker]['lot_size'], self.instruments[pe_ticker]['instrument_token'])
-            
-            yield IndexTicker(ce, pe, 'BANKNIFTY')
+
+            ce = Ticker(
+                ce_ticker,
+                self.instruments[ce_ticker]["lot_size"],
+                self.instruments[ce_ticker]["instrument_token"],
+            )
+            pe = Ticker(
+                pe_ticker,
+                self.instruments[pe_ticker]["lot_size"],
+                self.instruments[pe_ticker]["instrument_token"],
+            )
+
+            yield IndexTicker(ce, pe, "BANKNIFTY")
 
     def stocks(self):
         factors = json.loads(open("/app/data/factors.json", "r").read())
@@ -180,3 +190,80 @@ class TickerGenerator:
             )
 
             yield StockTicker(ce, pe, ticker)
+
+    def stocks_historical_prices(self):
+        factors = json.loads(open("/app/data/factors.json", "r").read())
+        historical_tickers = {}
+
+        for ticker in factors:
+            historical_data = self.zerodha.historical_data(
+                ticker,
+                datetime.date.today() - datetime.timedelta(days=365),
+                datetime.date.today() - datetime.timedelta(days=1),
+                HistoricalDataInterval.INTERVAL_1_DAY,
+            )
+                       
+            prev_day_open=historical_data[-1].open
+            prev_day_high=historical_data[-1].high
+            prev_day_low=historical_data[-1].low
+            prev_day_close=historical_data[-1].close
+            df = self.zerodha.get_ohlc_data_frame(historical_data)  
+            df['4weekhigh'] = df['high'].rolling(20).max()
+            df['4weeklow']=df['low'].rolling(20).min()
+            df['high3'] = df['high'].rolling(3).max()
+            df['low3']=df['low'].rolling(3).min()
+                 
+                                                  
+            cpr = (prev_day_high+prev_day_low+prev_day_close)/3
+            bc = (prev_day_high+prev_day_low)/2        
+            tc = (cpr-bc)  + cpr  
+            cpr_range= "narrow" if ((tc-bc)/prev_day_close) < 0.002 else "broad"            
+            gann22=((prev_day_close)**0.5+0.125)**2
+            gann45=((prev_day_close)**0.5+0.25)**2
+            gann90=((prev_day_close)**0.5+0.5)**2
+            gann135=((prev_day_close)**0.5+0.75)**2
+            gann180=((prev_day_close)**0.5+1)**2
+            gann225=((prev_day_close)**0.5+1.25)**2
+            gann270=((prev_day_close)**0.5+1.5)**2
+            gann315=((prev_day_close)**0.5+1.75)**2
+            gann360=((prev_day_close)**0.5+2)**2            
+        
+            gannminus22=((prev_day_close)**0.5-0.125)**2
+            gannminu45=((prev_day_close)**0.5-0.25)**2
+            gannminu90=((prev_day_close)**0.5-0.5)**2
+            gannminus135=((prev_day_close)**0.5-0.75)**2
+            gannminus180=((prev_day_close)**0.5-1)**2
+            gannminus225=((prev_day_close)**0.5-1.25)**2
+            gannminus270=((prev_day_close)**0.5-1.5)**2
+            gannminus315=((prev_day_close)**0.5-1.75)**2
+            gannminus360=((prev_day_close)**0.5-2)**2
+            
+            four_week_high=df['4weekhigh'].iloc[-1]
+            four_week_low=df['4weeklow'].iloc[-1]
+            three_day_high=df['high3'].iloc[-1]
+            three_day_low=df['low3'].iloc[-1]
+            
+            historical_cal={
+                "ticker":ticker,
+                "prev_high":prev_day_high,
+                "prev_low":prev_day_low,
+                "4weekhigh":four_week_high,
+                "4weeklow":four_week_low,
+                "cpr":cpr,
+                "bc":bc,
+                "tc":tc,
+                "cpr_range":cpr_range,
+                "gann22":gann22,
+                
+            }
+            
+            historical_tickers[ticker] = historical_cal
+            
+        
+        return historical_tickers
+    
+    def get_stock_historical_tickers(self):
+        with open("/tmp/stock_tickers.json", "r") as f:
+            data = json.loads(f.read())
+        
+        return data
