@@ -69,7 +69,13 @@ while True:
 from services.index.bullbear.bullbear import BullBear as BullBearIndex
 from services.stocks.bullbear.bullbear import BullBear as BullBearStocks
 from services.stocks.historical_stocks.historical_stocks import HistoricalStocks
+from entities.ticker import TickerGenerator
+import json
 
+stock_tickers = TickerGenerator("", "", "", "", "").stocks_historical_prices()
+
+with open("/tmp/stock_tickers.json", "w") as f:
+    f.write(json.dumps(stock_tickers))
 
 services_index = [
     # {
