@@ -94,11 +94,7 @@ from collections import defaultdict
 class ZerodhaKite:
     def __init__(self, kite: KiteConnect):
         self.kite = kite
-        self.instruments = self.kite.instruments()
-
-        self.token_map = {}
-        for instrument in self.instruments:
-            self.token_map[instrument["tradingsymbol"]] = instrument
+        self.token_map = json.loads(open("/tmp/instrument_tokens.json", "r").read())
 
         self.redis = redis.StrictRedis(host=REDIS)
 

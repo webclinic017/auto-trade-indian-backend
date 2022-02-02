@@ -14,6 +14,23 @@ api_key, access_token = get_key_token(os.environ["AUTH_TOKEN"])
 os.environ["API_KEY"] = api_key
 os.environ["ACCESS_TOKEN"] = access_token
 
+from kiteconnect import KiteConnect
+
+kite = KiteConnect(api_key, access_token)
+instruments = kite.instruments()
+token_map = {}
+for instrument in instruments:
+    token_map[instrument["tradingsymbol"]] = instrument
+
+import json
+
+with open("/tmp/instrument_tokens.json", "w") as f:
+    f.write(json.dumps(token_map, default=str))
+
+with open("/tmp/instruments.json", "w") as f:
+    f.write(json.dumps(instruments, default=str))
+
+
 # wait for all services
 def wait_for_service():
     while True:
@@ -69,7 +86,6 @@ while True:
 from services.index.bullbear.bullbear import BullBear as BullBearIndex
 from services.stocks.bullbear.bullbear import BullBear as BullBearStocks
 
-
 services_index = [
     {
         "name": "bullbear_index",
@@ -95,6 +111,11 @@ services_stocks = [
         ).start,
         "args": [],
     }
+    # {
+    #     "name": "historical_stocks",
+    #     "script": HistoricalStocks(name="historical_stocks").start,
+    #     "args": [],
+    # }
 ]
 
 services = services_index + services_stocks

@@ -40,6 +40,8 @@ class BullBear(TradeBot):
             if datetime.datetime.now().time() < self.start_time:
                 continue
 
+            print(f"[**] time stamp: {datetime.datetime.now()}\n\n")
+
             for tick in self.ticker_generator.index(1):
                 if tick.ticker_type == "NIFTY":
                     try:
@@ -55,13 +57,17 @@ class BullBear(TradeBot):
                     except Exception as e:
                         # if there is error in fetching the historical data from api
                         # if the historical data fetched is null
-                        print(e)
-
+                        print(f"\n[**] exception in nifty historical data: {e}\n")
                         continue
 
                     candle_length = self.get_candle_length(historical_data[-2])
                     body_length = self.get_body_length(historical_data[-2])
                     direction = self.get_direction(body_length)
+
+                    print("")
+                    print(f"[*] candle length for NIFTY  : {candle_length}")
+                    print(f"[*] body length for NIFTY    : {body_length}")
+                    print(f"[*] direction for NIFTY      : {direction}")
 
                     latest_view = None
                     if direction == 100 and abs(body_length) > 0.8 * candle_length:
@@ -69,8 +75,11 @@ class BullBear(TradeBot):
                     elif direction == -100 and abs(body_length) > 0.8 * candle_length:
                         latest_view = "bear"
 
+                    print(f"[*] latest view for NIFTY    : {latest_view}")
+                    print("")
+
                     quote = self.zerodha.live_data("NIFTY 50")
-                    print("i am running nifty")
+
                     # condition for buying CE ticker of NIFTY
                     if (
                         quote.last_price > historical_data[0].high
@@ -139,11 +148,17 @@ class BullBear(TradeBot):
                             raise Exception("empty historical data")
                     except Exception:
                         # if there is an network in fetching historical data or empty historical data
+                        print(f"\n[**] exception in historical data bank nifty: {e}\n")
                         continue
 
                     candle_length = self.get_candle_length(historical_data[-2])
                     body_length = self.get_body_length(historical_data[-2])
                     direction = self.get_direction(body_length)
+
+                    print("")
+                    print(f"[*] candle length for BANKNIFTY  : {candle_length}")
+                    print(f"[*] body length for BANKNIFTY    : {body_length}")
+                    print(f"[*] direction for BANKNIFTY      : {direction}")
 
                     latest_view = None
                     if direction == 100 and abs(body_length) > (0.8 * candle_length):
@@ -152,6 +167,9 @@ class BullBear(TradeBot):
                         latest_view = "bear"
 
                     quote = self.zerodha.live_data("NIFTY BANK")
+
+                    print(f"[*] latest view for BANKNIFTY    : {latest_view}")
+                    print("")
 
                     if (
                         quote.last_price > historical_data[0].high

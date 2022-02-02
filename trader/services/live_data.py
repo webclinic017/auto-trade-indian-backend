@@ -1,22 +1,18 @@
 import datetime
-from kiteconnect import KiteTicker, KiteConnect
+from kiteconnect import KiteTicker
 import os, json, redis
 from threading import Thread
 from interfaces.constants import REDIS
-from entities.zerodha import HistoricalDataInterval
-import time
-import urllib3
 
 # get the api_key and access_token
 api_key, access_token = os.environ["API_KEY"], os.environ["ACCESS_TOKEN"]
 
 # kiteticker
 kws = KiteTicker(api_key=api_key, access_token=access_token)
-# kite connect
-kite = KiteConnect(api_key=api_key, access_token=access_token)
+
 
 # first make the mapping of ticker --> token and token --> ticker
-instruments = kite.instruments()
+instruments = json.loads(open("/tmp/instruments.json", "r").read())
 token_map = {}
 ticker_map = {}
 
