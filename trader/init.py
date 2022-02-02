@@ -90,7 +90,7 @@ import json
 
 stock_tickers = TickerGenerator("", "", "", "", "").stocks_historical_prices()
 
-with open("/tmp/stock_tickers.json", "w") as f:
+with open("/app/data/stock_tickers.json", "w") as f:
     f.write(json.dumps(stock_tickers))
 
 services_index = [

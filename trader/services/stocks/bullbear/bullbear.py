@@ -58,6 +58,8 @@ class BullBear(TradeBot):
         while True:
             if datetime.datetime.now().time() < datetime.time(9, 30, 5):
                 continue
+            
+            # historical_tickers = TickerGenerator("22", "FEB", "", "", "").get_stock_historical_tickers()
 
             for ticks in TickerGenerator("22", "FEB", "", "", "").stocks():
                 if ticks.ticker.tradingsymbol in self.invalid_tickers:
@@ -99,6 +101,23 @@ class BullBear(TradeBot):
                 candle_length = self.candle_length(historical_data[0])
                 ohlcview = self.ohlcview(direction, candle_length, body_length)
                 view = self.view(direction, candle_length, body_length)
+                
+                # if historical_tickers[ticks.ticker.tradingsymbol]["tc"] >  historical_tickers[ticks.ticker.tradingsymbol]["bc"]:
+                #    trade = Trade(
+                #         TradeEndpoint.LIMIT_ORDER_BUY,
+                #         ticks.ce_ticker.tradingsymbol,
+                #         "NFO",
+                #         ticks.ce_ticker.lot_size,
+                #         TradeTag.ENTRY,
+                #         "",
+                #         ce_quote.depth.sell[1].price,
+                #         ce_quote.depth.sell[1].price,
+                #         ce_quote.last_price,
+                #         TradeType.STOCKOPT,
+                #     )
+                   
+                #    self.enter_trade(trade)
+                #    continue
 
                 if (
                     (historical_data[0].open == historical_data[0].low)
