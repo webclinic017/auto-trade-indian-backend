@@ -85,7 +85,6 @@ while True:
 
 from services.index.bullbear.bullbear import BullBear as BullBearIndex
 from services.stocks.bullbear.bullbear import BullBear as BullBearStocks
-from services.stocks.historical_stocks.historical_stocks import HistoricalStocks
 from entities.ticker import TickerGenerator
 import json
 
