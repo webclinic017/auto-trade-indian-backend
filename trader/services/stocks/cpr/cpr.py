@@ -11,7 +11,7 @@ class Cpr(TradeBot):
             for ticks in TickerGenerator("22", "FEB", "", "", "").stocks():
                 his_calc = historical_tickers[ticks.ticker.tradingsymbol]
                 
-                if his_calc["tc"] < his_calc["bc"]:
+                if his_calc["tc"] >= his_calc["bc"]:
                     try:
                         ce_quote = self.zerodha.live_data(ticks.ce_ticker.tradingsymbol)
                     except:
