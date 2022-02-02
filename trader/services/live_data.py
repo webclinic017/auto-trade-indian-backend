@@ -33,16 +33,16 @@ def on_error(ws, code, reason):
     print(code, reason)
 
 
-def appendTickers(ticks):
+def on_ticks(ws, ticks):
+    # print(ticks)
     for tick in ticks:
         ticker = ticker_map[tick["instrument_token"]]["tradingsymbol"]
 
-        rdb.set(ticker, json.dumps(tick, default=str))
-
-
-def on_ticks(ws, ticks):
-    # print(ticks)
-    Thread(target=appendTickers, args=[ticks]).start()
+        try:
+            rdb.set(ticker, json.dumps(tick, default=str))
+        except Exception as e:
+            print(f"[**] live data exception {e}")
+            continue
 
 
 kws.on_connect = on_connect
