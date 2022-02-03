@@ -5,8 +5,6 @@ import json
 import os
 import math
 import datetime
-import talib as tb
-import numpy as np
 
 
 class Ticker:
@@ -202,68 +200,65 @@ class TickerGenerator:
                 datetime.date.today() - datetime.timedelta(days=1),
                 HistoricalDataInterval.INTERVAL_1_DAY,
             )
-                       
-            prev_day_open=historical_data[-1].open
-            prev_day_high=historical_data[-1].high
-            prev_day_low=historical_data[-1].low
-            prev_day_close=historical_data[-1].close
-            df = self.zerodha.get_ohlc_data_frame(historical_data)  
-            df['4weekhigh'] = df['high'].rolling(20).max()
-            df['4weeklow']=df['low'].rolling(20).min()
-            df['high3'] = df['high'].rolling(3).max()
-            df['low3']=df['low'].rolling(3).min()
-                 
-                                                  
-            cpr = (prev_day_high+prev_day_low+prev_day_close)/3
-            bc = (prev_day_high+prev_day_low)/2        
-            tc = (cpr-bc)  + cpr  
-            cpr_range= "narrow" if ((tc-bc)/prev_day_close) < 0.002 else "broad"            
-            gann22=((prev_day_close)**0.5+0.125)**2
-            gann45=((prev_day_close)**0.5+0.25)**2
-            gann90=((prev_day_close)**0.5+0.5)**2
-            gann135=((prev_day_close)**0.5+0.75)**2
-            gann180=((prev_day_close)**0.5+1)**2
-            gann225=((prev_day_close)**0.5+1.25)**2
-            gann270=((prev_day_close)**0.5+1.5)**2
-            gann315=((prev_day_close)**0.5+1.75)**2
-            gann360=((prev_day_close)**0.5+2)**2            
-        
-            gannminus22=((prev_day_close)**0.5-0.125)**2
-            gannminu45=((prev_day_close)**0.5-0.25)**2
-            gannminu90=((prev_day_close)**0.5-0.5)**2
-            gannminus135=((prev_day_close)**0.5-0.75)**2
-            gannminus180=((prev_day_close)**0.5-1)**2
-            gannminus225=((prev_day_close)**0.5-1.25)**2
-            gannminus270=((prev_day_close)**0.5-1.5)**2
-            gannminus315=((prev_day_close)**0.5-1.75)**2
-            gannminus360=((prev_day_close)**0.5-2)**2
-            
-            four_week_high=df['4weekhigh'].iloc[-1]
-            four_week_low=df['4weeklow'].iloc[-1]
-            three_day_high=df['high3'].iloc[-1]
-            three_day_low=df['low3'].iloc[-1]
-            
-            historical_cal={
-                "ticker":ticker,
-                "prev_high":prev_day_high,
-                "prev_low":prev_day_low,
-                "4weekhigh":four_week_high,
-                "4weeklow":four_week_low,
-                "cpr":cpr,
-                "bc":bc,
-                "tc":tc,
-                "cpr_range":cpr_range,
-                "gann22":gann22,
-                
+
+            prev_day_open = historical_data[-1].open
+            prev_day_high = historical_data[-1].high
+            prev_day_low = historical_data[-1].low
+            prev_day_close = historical_data[-1].close
+            df = self.zerodha.get_ohlc_data_frame(historical_data)
+            df["4weekhigh"] = df["high"].rolling(20).max()
+            df["4weeklow"] = df["low"].rolling(20).min()
+            df["high3"] = df["high"].rolling(3).max()
+            df["low3"] = df["low"].rolling(3).min()
+
+            cpr = (prev_day_high + prev_day_low + prev_day_close) / 3
+            bc = (prev_day_high + prev_day_low) / 2
+            tc = (cpr - bc) + cpr
+            cpr_range = "narrow" if ((tc - bc) / prev_day_close) < 0.002 else "broad"
+            gann22 = ((prev_day_close) ** 0.5 + 0.125) ** 2
+            gann45 = ((prev_day_close) ** 0.5 + 0.25) ** 2
+            gann90 = ((prev_day_close) ** 0.5 + 0.5) ** 2
+            gann135 = ((prev_day_close) ** 0.5 + 0.75) ** 2
+            gann180 = ((prev_day_close) ** 0.5 + 1) ** 2
+            gann225 = ((prev_day_close) ** 0.5 + 1.25) ** 2
+            gann270 = ((prev_day_close) ** 0.5 + 1.5) ** 2
+            gann315 = ((prev_day_close) ** 0.5 + 1.75) ** 2
+            gann360 = ((prev_day_close) ** 0.5 + 2) ** 2
+
+            gannminus22 = ((prev_day_close) ** 0.5 - 0.125) ** 2
+            gannminu45 = ((prev_day_close) ** 0.5 - 0.25) ** 2
+            gannminu90 = ((prev_day_close) ** 0.5 - 0.5) ** 2
+            gannminus135 = ((prev_day_close) ** 0.5 - 0.75) ** 2
+            gannminus180 = ((prev_day_close) ** 0.5 - 1) ** 2
+            gannminus225 = ((prev_day_close) ** 0.5 - 1.25) ** 2
+            gannminus270 = ((prev_day_close) ** 0.5 - 1.5) ** 2
+            gannminus315 = ((prev_day_close) ** 0.5 - 1.75) ** 2
+            gannminus360 = ((prev_day_close) ** 0.5 - 2) ** 2
+
+            four_week_high = df["4weekhigh"].iloc[-1]
+            four_week_low = df["4weeklow"].iloc[-1]
+            three_day_high = df["high3"].iloc[-1]
+            three_day_low = df["low3"].iloc[-1]
+
+            historical_cal = {
+                "ticker": ticker,
+                "prev_high": prev_day_high,
+                "prev_low": prev_day_low,
+                "4weekhigh": four_week_high,
+                "4weeklow": four_week_low,
+                "cpr": cpr,
+                "bc": bc,
+                "tc": tc,
+                "cpr_range": cpr_range,
+                "gann22": gann22,
             }
-            
+
             historical_tickers[ticker] = historical_cal
-            
-        
+
         return historical_tickers
-    
+
     def get_stock_historical_tickers(self):
         with open("/tmp/stock_tickers.json", "r") as f:
             data = json.loads(f.read())
-        
+
         return data

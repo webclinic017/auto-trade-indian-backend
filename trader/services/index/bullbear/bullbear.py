@@ -12,7 +12,7 @@ class BullBear(TradeBot):
         return ohlc.high - ohlc.low
 
     def get_body_length(self, ohlc: HistoricalOHLC):
-        return ohlc.open - ohlc.close
+        return ohlc.close - ohlc.open
 
     def get_direction(self, body_length: float):
         return 100 if body_length > 0 else -100
@@ -129,6 +129,7 @@ class BullBear(TradeBot):
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
+                            ltp=pe_quote.last_price,
                             price=pe_quote.depth.sell[1].price,
                             type=TradeType.INDEXOPT,
                         )

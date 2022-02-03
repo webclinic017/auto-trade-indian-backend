@@ -1,13 +1,13 @@
 from typing import DefaultDict, List, Union
 import datetime
 from enum import Enum
-from constants.index import LIVE_DATA, REDIS
 from kiteconnect.connect import KiteConnect
 import redis
 import requests
 import time
 import json
 import pandas as pd
+from collections import defaultdict
 
 
 class OHLC:
@@ -66,7 +66,7 @@ class LiveTicker:
 
 
 class HistoricalDataInterval(Enum):
-    INTERVAL_1_MINUTE = "1minuite"
+    INTERVAL_1_MINUTE = "1minute"
     INTERVAL_3_MINUTE = "3minute"
     INTERVAL_5_MINUTE = "5minute"
     INTERVAL_10_MINUTE = "10minute"
@@ -89,22 +89,19 @@ class IndexHistorical:
         self.bank_nifty = bank_nifty
 
 
-from collections import defaultdict
-
-
 class ZerodhaKite:
     def __init__(self, kite: KiteConnect):
         self.kite = kite
         self.token_map = json.loads(open("/tmp/instrument_tokens.json", "r").read())
 
-        self.redis = redis.StrictRedis(host=REDIS)
+        self.redis = redis.StrictRedis(host="redis_server")
 
         self.historical_data_cache: DefaultDict[
             str, List[HistoricalOHLC]
         ] = defaultdict(list)
 
     def _get_live(self, endpoint):
-        return requests.get(LIVE_DATA + endpoint)
+        return requests.get("http://live_data/" + endpoint)
 
     def get_ohlc_data_frame(self, historical_data: List[HistoricalOHLC]):
         data = []

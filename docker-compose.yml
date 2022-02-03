@@ -16,6 +16,17 @@ services:
     logging:
       driver: none
 
+  live_data:
+    build: ./live
+    volumes:
+      - ./live:/app
+    command: ["python", "app.py"]
+    env_file:
+      - auth.env
+    depends_on:
+      - redis_server
+    restart: always
+
   trader:
     build: ./trader
     volumes:
@@ -25,3 +36,6 @@ services:
       - .env
       - auth.env
     restart: always
+    depends_on:
+      - live_data
+      - redis_server

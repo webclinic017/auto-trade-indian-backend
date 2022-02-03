@@ -1,10 +1,9 @@
-import datetime
 from kiteconnect.connect import KiteConnect
 import os
 import time
 from entities.orders import Order, OrderExecutor, OrderExecutorType
 from entities.zerodha import ZerodhaKite
-from interfaces.constants import PUBLISHER
+from constants.index import PUBLISHER
 import threading
 
 
@@ -22,7 +21,7 @@ class TradeBot(OrderExecutor):
             api_key=os.environ["API_KEY"], access_token=os.environ["ACCESS_TOKEN"]
         )
         self.zerodha = ZerodhaKite(self.kite)
-        
+
     def entry_strategy(self):
         raise NotImplementedError
 
