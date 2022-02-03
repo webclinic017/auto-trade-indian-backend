@@ -258,7 +258,7 @@ class TickerGenerator:
         return historical_tickers
 
     def get_stock_historical_tickers(self):
-        with open("/tmp/stock_tickers.json", "r") as f:
+        with open("/app/data/stock_tickers.json", "r") as f:
             data = json.loads(f.read())
 
         return data
