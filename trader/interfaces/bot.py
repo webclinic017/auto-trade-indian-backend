@@ -5,6 +5,8 @@ from entities.orders import Order, OrderExecutor, OrderExecutorType
 from entities.zerodha import ZerodhaKite
 from constants.index import PUBLISHER
 import threading
+import glob
+import json
 
 
 class TradeBot(OrderExecutor):
@@ -21,6 +23,12 @@ class TradeBot(OrderExecutor):
             api_key=os.environ["API_KEY"], access_token=os.environ["ACCESS_TOKEN"]
         )
         self.zerodha = ZerodhaKite(self.kite)
+
+        self.data = {}
+        for file in glob.glob("/app/data/*.json"):
+            filename = file.split("/")[-1].split(".")[0]
+
+            self.data[filename] = json.loads(open(file, "r").read())
 
     def entry_strategy(self):
         raise NotImplementedError
