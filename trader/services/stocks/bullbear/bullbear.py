@@ -16,11 +16,9 @@ class BullBear(TradeBot):
     def candle_length(self, ohlc: HistoricalOHLC):
         return ohlc.high - ohlc.low
 
-    def direction(self, body_length):
-        if abs(body_length) > 0:
-            return 100
-
-        return -100
+    def direction(self, body_length: float):
+        return 100 if body_length > 0 else -100
+   
 
     def ohlcview(self, direction, candle_length, body_length):
         if direction == 100 and abs(body_length) > 0.6 * candle_length:
@@ -145,12 +143,13 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
-                        continue
+                        # continue
 
                 if (
                     (historical_data[0].open == historical_data[0].high)
                     and ohlcview == "bear"
                 ) or (view == "bear"):
+                    print(ticks)
                     try:
                         pe_quote = self.zerodha.live_data(ticks.pe_ticker.tradingsymbol)
                     except Exception as e:
@@ -173,7 +172,7 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
-                        continue
+                        # continue
 
             time.sleep(10)
 

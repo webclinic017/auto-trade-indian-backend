@@ -147,7 +147,7 @@ class BullBear(TradeBot):
 
                         if len(historical_data) == 0:
                             raise Exception("empty historical data")
-                    except Exception:
+                    except Exception as e:
                         # if there is an network in fetching historical data or empty historical data
                         print(f"\n[**] exception in historical data bank nifty: {e}\n")
                         continue
@@ -277,14 +277,14 @@ class BullBear(TradeBot):
 
         if (
             self.get_option_type(order.trading_symbol) == "CE"
-            and quote.last_price < historical_data[-1].low
+            and quote.last_price < historical_data[-2].low
         ):
             self.exit_trade(trade)
             return
 
         if (
             self.get_option_type(order.trading_symbol) == "PE"
-            and quote.last_price > historical_data[-1].high
+            and quote.last_price > historical_data[-2].high
         ):
             self.exit_trade(trade)
             return
@@ -318,6 +318,6 @@ class BullBear(TradeBot):
         self.start_time = datetime.time(current_hour, current_minute, 10)
         print(f"[**] strategy starts at {self.start_time}")
 
-        self.ticker_generator = TickerGenerator("22", "JAN", "22", "2", "03")
+        self.ticker_generator = TickerGenerator("22", "JAN", "22", "2", "10")
 
         super().start()

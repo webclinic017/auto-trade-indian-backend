@@ -35,11 +35,11 @@ with open("/tmp/instruments.json", "w") as f:
 
 
 services = [
-    # {
-    #     "name": "bullbear_index",
-    #     "script": BullBearIndex(name="bullbear_index").start,
-    #     "args": [],
-    # },
+    {
+        "name": "bullbear_index",
+        "script": BullBearIndex(name="bullbear_index").start,
+        "args": [],
+    },
     # {
     #     "name": "buyerseller",
     #     "script": BuyerSellers(name="buyerseller").start,
