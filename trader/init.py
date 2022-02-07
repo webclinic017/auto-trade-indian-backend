@@ -8,6 +8,7 @@ from kiteconnect import KiteConnect
 import json
 from services.index.bullbear.bullbear import BullBear as BullBearIndex
 from services.stocks.bullbear.bullbear import BullBear as BullBearStocks
+from services.stocks.bullbear.stockoption_buy import StockOptionBuying as StockOptionBuy
 
 os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()
@@ -53,6 +54,13 @@ services = [
         "name": "bullbear_stock",
         "script": BullBearStocks(
             name="bullbear_stock").start,
+        "args": [],
+    },
+    
+    {
+        "name": "stockoption_buying",
+        "script": StockOptionBuy(
+            name="stockoption_buying").start,
         "args": [],
     },
 ]
