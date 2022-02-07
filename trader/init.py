@@ -40,21 +40,19 @@ services = [
         "script": BullBearIndex(name="bullbear_index").start,
         "args": [],
     },
+    
     # {
-    #     "name": "buyerseller",
-    #     "script": BuyerSellers(name="buyerseller").start,
+    #     "name": "bullbear_stock",
+    #     "script": BullBearStocks(
+    #         name="bullbear_stock", mode=OrderExecutorType.STRICT
+    #     ).start,
     #     "args": [],
     # },
-    # {
-    #     "name": "costlycheap",
-    #     "script": CostlyCheap(name="costlycheap").start,
-    #     "args": [],
-    # },
+    
     {
         "name": "bullbear_stock",
         "script": BullBearStocks(
-            name="bullbear_stock", mode=OrderExecutorType.STRICT
-        ).start,
+            name="bullbear_stock").start,
         "args": [],
     },
 ]

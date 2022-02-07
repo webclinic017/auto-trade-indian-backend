@@ -9,6 +9,7 @@ import datetime
 
 class BullBear(TradeBot):
     invalid_tickers = set()
+    fivemin_tickers=set()
 
     def body_length(self, ohlc: HistoricalOHLC):
         return ohlc.close - ohlc.open
