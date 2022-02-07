@@ -50,12 +50,12 @@ services = [
     #     "args": [],
     # },
     
-    {
-        "name": "bullbear_stock",
-        "script": BullBearStocks(
-            name="bullbear_stock").start,
-        "args": [],
-    },
+    # {
+    #     "name": "bullbear_stock",
+    #     "script": BullBearStocks(
+    #         name="bullbear_stock").start,
+    #     "args": [],
+    # },
     
     {
         "name": "stockoption_buying",
