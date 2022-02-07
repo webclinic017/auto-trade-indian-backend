@@ -84,13 +84,13 @@ class StockOptionBuying(TradeBot):
                 
                 # first five min data of each ticker
                 first_body_length = self.body_length(intraday_data[0])
-                first_direction = self.direction(intraday_data[0])
-                first_candle_length=self.direction(intraday_data[0])
+                first_direction = self.direction(first_body_length)
+                first_candle_length=self.candle_length(intraday_data[0])
                 first_view = self.view(first_direction,first_candle_length,first_body_length)
                 
                 second_body_length = self.body_length(intraday_data[1])
-                second_direction = self.direction(intraday_data[1])
-                second_candle_length=self.direction(intraday_data[1])
+                second_direction = self.direction(second_body_length)
+                second_candle_length=self.candle_length(intraday_data[1])
                 second_view = self.ohlc_view(second_direction,second_candle_length,second_body_length)
                 
                 ohlc_view=self.ohlc_view(first_direction,first_candle_length,first_body_length)
@@ -214,7 +214,7 @@ class StockOptionBuying(TradeBot):
             self.exit_trade(trade)
             return
         
-        if quote_derivative.last_price >= print:
+        if quote_derivative.last_price >= profit:
             self.exit_trade(trade)
             return
         
