@@ -218,7 +218,7 @@ class StockOptionBuying(TradeBot):
             self.exit_trade(trade)
             return
         
-        if datetime.datetime.now().time > datetime.time(15,10,1):
+        if datetime.datetime.now().time() > datetime.time(15,10,1):
             self.exit_trade(trade)
             return
         
