@@ -1,6 +1,3 @@
-from email.quoprimime import body_length
-
-# from matplotlib import ticker
 from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.ticker import TickerGenerator
@@ -101,8 +98,10 @@ class StockOptionBuying(TradeBot):
                     print(e)
                     self.invalid_tickers.add(ticks.ticker.tradingsymbol)
                     continue
-                #historical technical data
-                bolllinger_band=self.data["stock_tickers"][ticks.ticker.tradingsymbol]["bollinger_band"]
+                # historical technical data
+                bolllinger_band = self.data["stock_tickers"][
+                    ticks.ticker.tradingsymbol
+                ]["bollinger_band"]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
                 # first five min data of each ticker
                 first_body_length = self.body_length(intraday_data[0])
@@ -161,23 +160,14 @@ class StockOptionBuying(TradeBot):
                     pe_quote.last_price,
                     TradeType.STOCKOPT,
                 )
-                
-                if (
-                    (trade > 0) 
-                    and (quote.last_price > intraday_data[0].high)
-                ):
+
+                if (trade > 0) and (quote.last_price > intraday_data[0].high):
 
                     print("buy CE for the", ticks.ce_ticker.tradingsymbol)
 
-                if (
-                    (trade < 0) 
-                    and (quote.last_price < intraday_data[0].low)
-                ):
+                if (trade < 0) and (quote.last_price < intraday_data[0].low):
 
                     print("buy PE for the", ticks.pe_ticker.tradingsymbol)
-
-
-
 
                 if (
                     (intraday_data[0].open == intraday_data[0].low)
