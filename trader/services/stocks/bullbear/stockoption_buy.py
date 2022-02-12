@@ -1,6 +1,3 @@
-from email.quoprimime import body_length
-
-# from matplotlib import ticker
 from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.ticker import TickerGenerator
@@ -103,8 +100,10 @@ class StockOptionBuying(TradeBot):
                     print(e)
                     self.invalid_tickers.add(ticks.ticker.tradingsymbol)
                     continue
-                #historical technical data
-                bolllinger_band=self.data["stock_tickers"][ticks.ticker.tradingsymbol]["bollinger_band"]
+                # historical technical data
+                bolllinger_band = self.data["stock_tickers"][
+                    ticks.ticker.tradingsymbol
+                ]["bollinger_band"]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
                 # first five min data of each ticker
                 first_body_length = self.body_length(intraday_data[0])
@@ -163,21 +162,13 @@ class StockOptionBuying(TradeBot):
                     pe_quote.last_price,
                     TradeType.STOCKOPT,
                 )
-                
-                if (
-                    (trade > 0) 
-                    and (quote.last_price > intraday_data[0].high)
-                    and (ticks.ticker.tradingsymbol not in self.trade_tickers)
-                ):
+
+                if (trade > 0) and (quote.last_price > intraday_data[0].high):
 
                     self.enter_trade(ce_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
-                if (
-                    (trade < 0) 
-                    and (quote.last_price < intraday_data[0].low)
-                    and (ticks.ticker.tradingsymbol not in self.trade_tickers)
-                ):
+                if (trade < 0) and (quote.last_price < intraday_data[0].low):
 
                     self.enter_trade(pe_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
@@ -189,17 +180,6 @@ class StockOptionBuying(TradeBot):
                 # ):
                 #     self.enter_trade(ce_trade)
                 #     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
-
-                # if (
-                #     (bollinger_band=="first_wide")
-                #     and (quote.last_price < intraday_data[0].low)
-                #     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
-                # ):
-                #     self.enter_trade(pe_trade)
-                #     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
-                    
-
-
 
                 if (
                     (intraday_data[0].open == intraday_data[0].low)
