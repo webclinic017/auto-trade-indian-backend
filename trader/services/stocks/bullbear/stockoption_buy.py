@@ -14,6 +14,8 @@ class StockOptionBuying(TradeBot):
     invalid_tickers = set()
     fivemin_tickers = set()
     tenmin_tickers = set()
+    trade_tickers = set()
+    bollband_tickers = set()
 
     original_tickers = {}
 
@@ -165,17 +167,37 @@ class StockOptionBuying(TradeBot):
                 if (
                     (trade > 0) 
                     and (quote.last_price > intraday_data[0].high)
+                    and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
 
-                    print("buy CE for the", ticks.ce_ticker.tradingsymbol)
+                    self.enter_trade(ce_trade)
+                    self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
                     (trade < 0) 
                     and (quote.last_price < intraday_data[0].low)
+                    and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
 
-                    print("buy PE for the", ticks.pe_ticker.tradingsymbol)
+                    self.enter_trade(pe_trade)
+                    self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
+                # if (
+                #     (bollinger_band=="first_wide")
+                #     and (quote.last_price > intraday_data[0].high)
+                #     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
+                # ):
+                #     self.enter_trade(ce_trade)
+                #     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
+
+                # if (
+                #     (bollinger_band=="first_wide")
+                #     and (quote.last_price < intraday_data[0].low)
+                #     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
+                # ):
+                #     self.enter_trade(pe_trade)
+                #     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
+                    
 
 
 
@@ -221,7 +243,9 @@ class StockOptionBuying(TradeBot):
 
     def exit_strategy(self, order: Order):
 
-        profit = 110 / 100 * order.average_entry_price
+        profit = 115 / 100 * order.average_entry_price
+
+        loss = 95 / 100 * order.average_entry_price
 
         try:
             intraday_data = self.zerodha.historical_data_today(
@@ -269,6 +293,10 @@ class StockOptionBuying(TradeBot):
         if quote_derivative.last_price >= profit:
             self.exit_trade(trade)
             return
+
+        # if quote_derivative.last_price < loss:
+        #     self.exit_trade(trade)
+        #     return
 
         if datetime.datetime.now().time() > datetime.time(15, 10, 1):
             self.exit_trade(trade)
