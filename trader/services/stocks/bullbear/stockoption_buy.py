@@ -101,7 +101,7 @@ class StockOptionBuying(TradeBot):
                     self.invalid_tickers.add(ticks.ticker.tradingsymbol)
                     continue
                 # historical technical data
-                bolllinger_band = self.data["stock_tickers"][
+                bollinger_band = self.data["stock_tickers"][
                     ticks.ticker.tradingsymbol
                 ]["bollinger_band"]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
@@ -173,13 +173,13 @@ class StockOptionBuying(TradeBot):
                     self.enter_trade(pe_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
-                # if (
-                #     (bollinger_band=="first_wide")
-                #     and (quote.last_price > intraday_data[0].high)
-                #     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
-                # ):
-                #     self.enter_trade(ce_trade)
-                #     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
+                if (
+                    (bollinger_band=="first_wide")
+                    and (quote.last_price > intraday_data[0].high)
+                    and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
+                ):
+                    self.enter_trade(ce_trade)
+                    self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
                     (intraday_data[0].open == intraday_data[0].low)
