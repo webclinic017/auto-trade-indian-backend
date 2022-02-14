@@ -29,6 +29,9 @@ rdb = redis.Redis(host="redis_server")
 def on_connect(ws, response):
     print("connection opened to websocket")
 
+    ws.subscribe([256265, 260105])
+    ws.set_mode(ws.MODE_FULL, [256265, 260105])
+
 
 def on_close(ws, code, reason):
     print(reason)
