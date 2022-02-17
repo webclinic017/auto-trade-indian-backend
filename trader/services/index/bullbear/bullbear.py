@@ -8,6 +8,9 @@ import time
 
 
 class BullBear(TradeBot):
+
+    sl_ce={}
+    sl_pe = {}
     def get_candle_length(self, ohlc: HistoricalOHLC):
         return ohlc.high - ohlc.low
 
@@ -81,10 +84,11 @@ class BullBear(TradeBot):
                     quote = self.zerodha.live_data("NIFTY 50")
 
                     # condition for buying CE ticker of NIFTY
-                    if (
-                        quote.last_price > historical_data[0].high
-                        and latest_view == "bull"
-                    ):
+                    # if (
+                    #     quote.last_price > historical_data[0].high
+                    #     and latest_view == "bull"
+                    # ):
+                    if latest_view == "bull":
                         try:
                             ce_quote = self.zerodha.live_data(
                                 tick.ce_ticker.tradingsymbol
@@ -106,13 +110,18 @@ class BullBear(TradeBot):
                             type=TradeType.INDEXOPT,
                         )
 
-                        self.enter_trade(trade)
+                        self.enter_trade(trade)                            
+                        self.sl_ce["nifty"] = historical_data[-2].low               
+                        
+
 
                     # condition for buying PE ticker of NIFTY
-                    if (
-                        quote.last_price < historical_data[0].low
-                        and latest_view == "bear"
-                    ):
+                    # if (
+                    #     quote.last_price < historical_data[0].low
+                    #     and latest_view == "bear"
+                    # ):
+
+                    if latest_view == "bear":
                         try:
                             pe_quote = self.zerodha.live_data(
                                 tick.pe_ticker.tradingsymbol
@@ -134,8 +143,9 @@ class BullBear(TradeBot):
                             type=TradeType.INDEXOPT,
                         )
 
-                        self.enter_trade(trade)
-
+                        self.enter_trade(trade)  
+                        self.sl_pe["nifty"] = historical_data[-2].high                                            
+                        
                 if tick.ticker_type == "BANKNIFTY":
                     try:
                         historical_data = self.zerodha.historical_data(
@@ -172,10 +182,11 @@ class BullBear(TradeBot):
                     print(f"[*] latest view for BANKNIFTY    : {latest_view}")
                     print("")
 
-                    if (
-                        quote.last_price > historical_data[0].high
-                        and latest_view == "bull"
-                    ):
+                    # if (
+                    #     quote.last_price > historical_data[0].high
+                    #     and latest_view == "bull"
+                    # ):
+                    if latest_view == "bull":
                         try:
                             ce_quote = self.zerodha.live_data(
                                 tick.ce_ticker.tradingsymbol
@@ -197,11 +208,14 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
-
-                    if (
-                        quote.last_price < historical_data[0].low
-                        and latest_view == "bear"
-                    ):
+                        self.sl_ce["banknifty"]=historical_data[-2].low
+                        # self.sl_ce[ticks.tradingsymbol] = historical_data[-2].low
+                      
+                    # if (
+                    #     quote.last_price < historical_data[0].low
+                    #     and latest_view == "bear"
+                    # ):
+                    if latest_view == "bear":
                         try:
                             pe_quote = self.zerodha.live_data(
                                 tick.pe_ticker.tradingsymbol
@@ -223,12 +237,16 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
-
+                        self.sl_pe["banknifty"]=historical_data[-2].high
+                        # self.sl_pe[ticks.tradingsymbol] = historical_data[-2].high
+                       
             time.sleep(300)
 
     def exit_strategy(self, order: Order):
         if self.get_index_type(order.trading_symbol) == "BANKNIFTY":
             quote = self.zerodha.live_data("NIFTY BANK")
+            ce_sl=self.sl_ce.get('banknifty', -float('inf'))
+            pe_sl=self.sl_pe.get('banknifty', -float('inf'))
 
             try:
                 historical_data = self.zerodha.historical_data(
@@ -244,7 +262,9 @@ class BullBear(TradeBot):
                 return
         else:
             quote = self.zerodha.live_data("NIFTY 50")
-
+            
+            ce_sl = self.sl_ce.get('nifty', -float("inf"))
+            pe_sl = self.sl_pe.get('nifty', -float("inf"))
             try:
                 historical_data = self.zerodha.historical_data(
                     "NIFTY 50",
@@ -277,14 +297,14 @@ class BullBear(TradeBot):
 
         if (
             self.get_option_type(order.trading_symbol) == "CE"
-            and quote.last_price < historical_data[-2].low
+            and quote.last_price < ce_sl
         ):
             self.exit_trade(trade)
             return
 
         if (
             self.get_option_type(order.trading_symbol) == "PE"
-            and quote.last_price > historical_data[-2].high
+            and quote.last_price > pe_sl
         ):
             self.exit_trade(trade)
             return
@@ -317,7 +337,7 @@ class BullBear(TradeBot):
 
         self.start_time = datetime.time(current_hour, current_minute, 10)
         print(f"[**] strategy starts at {self.start_time}")
-
-        self.ticker_generator = TickerGenerator("22", "JAN", "22", "2", "10")
+        # First stock year, stock month, index year, index month, indexweek
+        self.ticker_generator = TickerGenerator("22", "JAN", "22", "2", "17")
 
         super().start()

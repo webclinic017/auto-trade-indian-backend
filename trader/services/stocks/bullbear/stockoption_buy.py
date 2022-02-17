@@ -1,3 +1,7 @@
+# Modify the strategy in such a way remove first fivemin high lo in the strategy and monitor two candles atleast in the same trend then enter the 
+# trade for CE. For PE
+
+
 from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.ticker import TickerGenerator
@@ -11,6 +15,9 @@ class StockOptionBuying(TradeBot):
     invalid_tickers = set()
     fivemin_tickers = set()
     tenmin_tickers = set()
+    trade_tickers = set()
+    bollband_tickers = set()
+    
 
     original_tickers = {}
 
@@ -67,7 +74,11 @@ class StockOptionBuying(TradeBot):
                     ticks.pe_ticker.tradingsymbol
                 ] = ticks.ticker.tradingsymbol
 
-                if ticks.ticker.tradingsymbol in self.invalid_tickers:
+                if (
+                    ticks.ticker.tradingsymbol in self.invalid_tickers 
+                    or 
+                    ticks.ticker.tradingsymbol not in self.data["stock_tickers"]
+                ):
                     continue
 
                 try:
@@ -99,7 +110,7 @@ class StockOptionBuying(TradeBot):
                     self.invalid_tickers.add(ticks.ticker.tradingsymbol)
                     continue
                 # historical technical data
-                bolllinger_band = self.data["stock_tickers"][
+                bollinger_band = self.data["stock_tickers"][
                     ticks.ticker.tradingsymbol
                 ]["bollinger_band"]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
@@ -136,38 +147,55 @@ class StockOptionBuying(TradeBot):
                     print(e)
                     continue
 
-                ce_trade = Trade(
-                    TradeEndpoint.LIMIT_ORDER_BUY,
-                    ticks.ce_ticker.tradingsymbol,
-                    "NFO",
-                    ticks.ce_ticker.lot_size,
-                    TradeTag.ENTRY,
-                    "",
-                    ce_quote.depth.sell[1].price,
-                    ce_quote.depth.sell[1].price,
-                    ce_quote.last_price,
-                    TradeType.STOCKOPT,
-                )
-                pe_trade = Trade(
-                    TradeEndpoint.LIMIT_ORDER_BUY,
-                    ticks.pe_ticker.tradingsymbol,
-                    "NFO",
-                    ticks.pe_ticker.lot_size,
-                    TradeTag.ENTRY,
-                    "",
-                    pe_quote.depth.sell[1].price,
-                    pe_quote.depth.sell[1].price,
-                    pe_quote.last_price,
-                    TradeType.STOCKOPT,
-                )
+                if len(ce_quote.depth.sell) >= 2:
+                    ce_trade = Trade(
+                        TradeEndpoint.LIMIT_ORDER_BUY,
+                        ticks.ce_ticker.tradingsymbol,
+                        "NFO",
+                        ticks.ce_ticker.lot_size,
+                        TradeTag.ENTRY,
+                        "",
+                        ce_quote.depth.sell[1].price,
+                        ce_quote.depth.sell[1].price,
+                        ce_quote.last_price,
+                        TradeType.STOCKOPT,
+                    )
+                else:
+                    continue
+
+                if len(pe_quote.depth.sell) >= 2: 
+                    pe_trade = Trade(
+                        TradeEndpoint.LIMIT_ORDER_BUY,
+                        ticks.pe_ticker.tradingsymbol,
+                        "NFO",
+                        ticks.pe_ticker.lot_size,
+                        TradeTag.ENTRY,
+                        "",
+                        pe_quote.depth.sell[1].price,
+                        pe_quote.depth.sell[1].price,
+                        pe_quote.last_price,
+                        TradeType.STOCKOPT,
+                    )
+                else:
+                    continue
 
                 if (trade > 0) and (quote.last_price > intraday_data[0].high):
 
-                    print("buy CE for the", ticks.ce_ticker.tradingsymbol)
+                    self.enter_trade(ce_trade)
+                    self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (trade < 0) and (quote.last_price < intraday_data[0].low):
 
-                    print("buy PE for the", ticks.pe_ticker.tradingsymbol)
+                    self.enter_trade(pe_trade)
+                    self.trade_tickers.add(ticks.ticker.tradingsymbol)
+
+                if (
+                    (bollinger_band=="first_wide")
+                    and (quote.last_price > intraday_data[0].high)
+                    and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
+                ):
+                    self.enter_trade(ce_trade)
+                    self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
                     (intraday_data[0].open == intraday_data[0].low)
@@ -211,7 +239,9 @@ class StockOptionBuying(TradeBot):
 
     def exit_strategy(self, order: Order):
 
-        profit = 110 / 100 * order.average_entry_price
+        profit = 115 / 100 * order.average_entry_price
+
+        loss = 95 / 100 * order.average_entry_price
 
         try:
             intraday_data = self.zerodha.historical_data_today(
@@ -229,18 +259,21 @@ class StockOptionBuying(TradeBot):
         quote = self.zerodha.live_data(self.get_original_ticker(order.trading_symbol))
         quote_derivative = self.zerodha.live_data(order.trading_symbol)
 
-        trade = Trade(
-            TradeEndpoint.LIMIT_ORDER_SELL,
-            order.trading_symbol,
-            "NFO",
-            order.total_quantity,
-            TradeTag.EXIT,
-            "",
-            order.average_entry_price,
-            quote_derivative.depth.buy[1].price,
-            quote_derivative.last_price,
-            TradeType.STOCKOPT,
-        )
+        if len(quote_derivative.depth.buy) >= 2:
+            trade = Trade(
+                TradeEndpoint.LIMIT_ORDER_SELL,
+                order.trading_symbol,
+                "NFO",
+                order.total_quantity,
+                TradeTag.EXIT,
+                "",
+                order.average_entry_price,
+                quote_derivative.depth.buy[1].price,
+                quote_derivative.last_price,
+                TradeType.STOCKOPT,
+            )
+        else:
+            return
 
         if (
             self.option_type(order.trading_symbol) == "CE"
@@ -259,6 +292,10 @@ class StockOptionBuying(TradeBot):
         if quote_derivative.last_price >= profit:
             self.exit_trade(trade)
             return
+
+        # if quote_derivative.last_price < loss:
+        #     self.exit_trade(trade)
+        #     return
 
         if datetime.datetime.now().time() > datetime.time(15, 10, 1):
             self.exit_trade(trade)

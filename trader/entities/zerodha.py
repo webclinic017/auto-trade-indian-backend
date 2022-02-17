@@ -142,8 +142,13 @@ class ZerodhaKite:
     def historical_data_today(
         self, tradingsymbol, interval: HistoricalDataInterval
     ) -> List[HistoricalOHLC]:
+        if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
+            date = datetime.date.today() - datetime.timedelta(days=datetime.datetime.today().weekday() % 7)
+        else:
+            date = datetime.date.today()
+
         data = self.historical_data(
-            tradingsymbol, datetime.date.today(), datetime.date.today(), interval
+            tradingsymbol, date, date, interval
         )
 
         return data
