@@ -1,7 +1,11 @@
 from typing import Dict, Iterator
+
+from matplotlib.collections import Collection
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
+from pymongo import MongoClient
+from pymongo.database import Database
 from enum import Enum
 
 
@@ -23,6 +27,14 @@ class Order:
         self.average_entry_price += trade.entry_price
 
         self.average_entry_price /= 2
+
+
+class OrderDatabase(MongoClient):
+    def __init__(self, name, *args, **kwargs):
+        super(MongoClient, self).__init__(*args, **kwargs)
+
+        self.db: Database = self["autotrade"]
+        self.collection: Collection = self.db[name]
 
 
 class OrderExecutor:
