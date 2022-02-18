@@ -7,8 +7,11 @@ from entities.orders import Order
 from entities.ticker import TickerGenerator
 from entities.zerodha import HistoricalDataInterval, HistoricalOHLC
 from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
+from entities.zerodha import ZerodhaKite
 import time
 import datetime
+import talib as tb
+import pandas as pd
 
 
 class StockOptionBuying(TradeBot):
@@ -62,7 +65,7 @@ class StockOptionBuying(TradeBot):
     def entry_strategy(self):
         while True:
             if datetime.datetime.now().time() < datetime.time(
-                9, 30, 5
+                9, 40, 5
             ) or datetime.datetime.now().time() > datetime.time(15, 1, 5):
                 continue
 
@@ -98,7 +101,10 @@ class StockOptionBuying(TradeBot):
 
                     print(e)
                     continue
-
+                df=self.zerodha.get_ohlc_data_frame(intraday_data)
+                df['slope']=(df['high']-df['high'].shift(1))/(df['low']-df['low'].shift(1))
+                slope= df['slope'].iloc[-1]
+                
                 try:
                     quote = self.zerodha.live_data(ticks.ticker.tradingsymbol)
 
@@ -179,61 +185,76 @@ class StockOptionBuying(TradeBot):
                 else:
                     continue
 
-                if (trade > 0) and (quote.last_price > intraday_data[0].high):
-
+                if (trade > 0) and (quote.last_price > intraday_data[0].high) and (slope > 1) and (ticks.ticker.tradingsymbol not in self.trade_tickers):
+                                                
                     self.enter_trade(ce_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
-                if (trade < 0) and (quote.last_price < intraday_data[0].low):
+                if (trade < 0) and (quote.last_price < intraday_data[0].low) and (slope < -1) and (ticks.ticker.tradingsymbol not in self.trade_tickers):
 
                     self.enter_trade(pe_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
-                    (bollinger_band=="first_wide")
+                    (bollinger_band=="first_wide")                    
                     and (quote.last_price > intraday_data[0].high)
+                    and (slope > 1)
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
                     self.enter_trade(ce_trade)
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
-                    (intraday_data[0].open == intraday_data[0].low)
-                    and (ohlc_view == "bull")
-                ) or (view == "bull"):
-                    if (quote.last_price > intraday_data[0].high) and (
-                        ticks.ticker.tradingsymbol not in self.fivemin_tickers
-                    ):
-                        self.enter_trade(ce_trade)
-                        self.fivemin_tickers.add(ticks.ticker.tradingsymbol)
-
-                if (
-                    (first_view == "bear")
-                    and (second_view == "bull")
-                    and (quote.last_price > intraday_data[1].high)
-                    and (ticks.ticker.tradingsymbol not in self.tenmin_tickers)
-                ):
-                    self.enter_trade(ce_trade)
-                    self.tenmin_tickers.add(ticks.ticker.tradingsymbol)
-
-                if (
-                    (intraday_data[0].open == intraday_data[0].high)
-                    and (ohlc_view == "bear")
-                ) or (view == "bear"):
-                    if (quote.last_price < intraday_data[0].low) and (
-                        ticks.ticker.tradingsymbol not in self.fivemin_tickers
-                    ):
-                        self.enter_trade(pe_trade)
-                        self.fivemin_tickers.add(ticks.ticker.tradingsymbol)
-
-                if (
-                    (first_view == "bull")
-                    and (second_view == "bear")
-                    and (quote.last_price < intraday_data[1].low)
-                    and (ticks.ticker.tradingsymbol not in self.tenmin_tickers)
+                    (bollinger_band=="first_wide")
+                    and (quote.last_price < intraday_data[0].low)
+                    and (slope < 1)
+                    and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
                     self.enter_trade(pe_trade)
-                    self.tenmin_tickers.add(ticks.ticker.tradingsymbol)
+                    self.bollband_tickers.add(ticks.ticker.tradingsymbol)
+
+
+                # if (
+                #     (intraday_data[0].open == intraday_data[0].low)
+                #     and (ohlc_view == "bull")
+                #     and (slope > 1)                    
+                # ) or (view == "bull"):
+                #     if (quote.last_price > intraday_data[0].high) and (
+                #         ticks.ticker.tradingsymbol not in self.fivemin_tickers
+                #     ):
+                #         self.enter_trade(ce_trade)
+                #         self.fivemin_tickers.add(ticks.ticker.tradingsymbol)
+
+                # if (
+                #     (first_view == "bear")
+                #     and (second_view == "bull")
+                #     and (quote.last_price > intraday_data[1].high)
+                #     and (slope > 1)
+                #     and (ticks.ticker.tradingsymbol not in self.tenmin_tickers)
+                # ):
+                #     self.enter_trade(ce_trade)
+                #     self.tenmin_tickers.add(ticks.ticker.tradingsymbol)
+
+                # if (
+                #     (intraday_data[0].open == intraday_data[0].high)
+                #     and (ohlc_view == "bear")
+                #     and (slope < -1)
+                # ) or (view == "bear"):
+                #     if (quote.last_price < intraday_data[0].low) and (
+                #         ticks.ticker.tradingsymbol not in self.fivemin_tickers
+                #     ):
+                #         self.enter_trade(pe_trade)
+                #         self.fivemin_tickers.add(ticks.ticker.tradingsymbol)
+
+                # if (
+                #     (first_view == "bull")
+                #     and (second_view == "bear")
+                #     and (quote.last_price < intraday_data[1].low)
+                #     and (slope < -1)
+                #     and (ticks.ticker.tradingsymbol not in self.tenmin_tickers)
+                # ):
+                #     self.enter_trade(pe_trade)
+                #     self.tenmin_tickers.add(ticks.ticker.tradingsymbol)
 
             time.sleep(10)
 
