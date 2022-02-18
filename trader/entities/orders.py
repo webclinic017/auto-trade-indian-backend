@@ -1,7 +1,10 @@
 from typing import Dict, Iterator
+
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
+from pymongo import MongoClient
+from pymongo.database import Database, Collection
 from enum import Enum
 
 
@@ -23,6 +26,38 @@ class Order:
         self.average_entry_price += trade.entry_price
 
         self.average_entry_price /= 2
+
+
+class OrderDatabase(MongoClient):
+    def __init__(self, name, *args, **kwargs):
+        super(MongoClient, self).__init__(*args, **kwargs)
+
+        self.db: Database = self["autotrade"]
+        self.collection: Collection = self.db[name]
+
+    def create_order(self, order: Order):
+        _filter = {"trading_symbol": order.trading_symbol}
+
+        _update = {
+            "$set": {
+                "trading_symbol": order.trading_symbol,
+                "average_entry_price": order.average_entry_price,
+                "exchange": order.exchange,
+                "total_quantity": order.total_quantity,
+            }
+        }
+
+        self.collection.update_one(_filter, _update, upsert=True)
+
+    def get_order(self, trading_symbol) -> Order:
+        order = self.collection.find_one({"trading_symbol": trading_symbol})
+
+        return Order(
+            order["trade"],
+            order["exchange"],
+            order["total_quantity"],
+            order["average_entry_price"],
+        )
 
 
 class OrderExecutor:
