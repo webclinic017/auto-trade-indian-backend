@@ -1,11 +1,10 @@
 from typing import Dict, Iterator
 
-from matplotlib.collections import Collection
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
 from pymongo import MongoClient
-from pymongo.database import Database
+from pymongo.database import Database, Collection
 from enum import Enum
 
 
@@ -35,6 +34,30 @@ class OrderDatabase(MongoClient):
 
         self.db: Database = self["autotrade"]
         self.collection: Collection = self.db[name]
+
+    def create_order(self, order: Order):
+        _filter = {"trading_symbol": order.trading_symbol}
+
+        _update = {
+            "$set": {
+                "trading_symbol": order.trading_symbol,
+                "average_entry_price": order.average_entry_price,
+                "exchange": order.exchange,
+                "total_quantity": order.total_quantity,
+            }
+        }
+
+        self.collection.update_one(_filter, _update, upsert=True)
+
+    def get_order(self, trading_symbol) -> Order:
+        order = self.collection.find_one({"trading_symbol": trading_symbol})
+
+        return Order(
+            order["trade"],
+            order["exchange"],
+            order["total_quantity"],
+            order["average_entry_price"],
+        )
 
 
 class OrderExecutor:
