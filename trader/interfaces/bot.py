@@ -16,8 +16,8 @@ class TradeBot(OrderExecutor):
         publisher_uri: str = PUBLISHER,
         mode: OrderExecutorType = OrderExecutorType.MULTIPLE,
     ):
-        super().__init__(publisher_uri=publisher_uri, mode=mode)
         self.name = name
+        super().__init__(publisher_uri=publisher_uri, mode=mode)
 
         self.kite = KiteConnect(
             api_key=os.environ["API_KEY"], access_token=os.environ["ACCESS_TOKEN"]
