@@ -63,14 +63,18 @@ class OrderDatabase(MongoClient):
     def delete_order(self, trading_symbol) -> None:
         self.collection.delete_one({"trading_symbol": trading_symbol})
 
-    def orders(self):
-        for order in self.collection.find({}):
-            yield Order(
-                order["trading_symbol"],
-                order["exchange"],
-                order["total_quantity"],
-                order["average_entry_price"],
-            )
+    def orders(self) -> Iterator[Order]:
+        if self.collection.count_documents({}) > 0:
+            for order in self.collection.find():
+                if order:
+                    yield Order(
+                        order["trading_symbol"],
+                        order["exchange"],
+                        order["total_quantity"],
+                        order["average_entry_price"],
+                    )
+        else:
+            return []
 
 
 class OrderExecutor:
@@ -126,8 +130,7 @@ class OrderExecutor:
     def get_orders(self) -> Iterator[Order]:
         # for trading_symbol in self.entries:
         #     yield self.entries[trading_symbol]
-        for order in self.__db.orders():
-            yield order
+        return self.__db.orders()
 
     def enter_trade(self, trade: Trade):
         if self.enter_order(trade):
