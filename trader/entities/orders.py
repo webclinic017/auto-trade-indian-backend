@@ -30,7 +30,8 @@ class Order:
 
 class OrderDatabase(MongoClient):
     def __init__(self, name, *args, **kwargs):
-        super(MongoClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.name = name
 
         self.db: Database = self["autotrade"]
         self.collection: Collection = self.db[name]
