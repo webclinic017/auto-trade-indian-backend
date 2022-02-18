@@ -1,16 +1,30 @@
 from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
 from entities.zerodha import HistoricalDataInterval, HistoricalOHLC
+from entities.zerodha import ZerodhaKite
 from entities.ticker import TickerGenerator
 from interfaces.bot import TradeBot
 from entities.orders import Order
 import datetime
 import time
+import talib as tb
+import pandas as pd
 
+# condition are as below:
+# 1. both the candles should be bullish or bearish
+# 2. If both the candles are bullish and slope = 3 and crossing the high of both the candles buy for a profit of 2%
+# 3. If both the candles are bullish and slope == 5 to 10 and crossing the high of both the candles buy for the profit of 5%
+# 4. If both the candles are bullish and slope == 10 or more and crossing the high of both the candles buy for the profit of 10%
+# 2. If both the candles are bearish and slope = -3 and crossing the low of both the candles buy for a profit of 2%
+# 3. If both the candles are bearish and slope == -5 to -10 and crossing the low of both the candles buy for the profit of 5%
+# 4. If both the candles are bearish and slope == -10 or less and crossing the low of both the candles buy for the profit of 10%
 
 class BullBear(TradeBot):
 
-    sl_ce={}
-    sl_pe = {}
+    # sl_ce={}
+    # sl_pe = {}
+    # profit = {}
+    nifty = {}
+    banknifty = {}
     def get_candle_length(self, ohlc: HistoricalOHLC):
         return ohlc.high - ohlc.low
 
@@ -38,9 +52,11 @@ class BullBear(TradeBot):
 
         raise Exception("invalid option ticker")
 
+    
+
     def entry_strategy(self):
         while True:
-            if datetime.datetime.now().time() < self.start_time:
+            if (datetime.datetime.now().time() < datetime.time(9,30,5)) or (datetime.datetime.now().time() > datetime.time(15, 1, 5)):
                 continue
 
             print(f"[**] time stamp: {datetime.datetime.now()}\n\n")
@@ -62,15 +78,25 @@ class BullBear(TradeBot):
                         # if the historical data fetched is null
                         print(f"\n[**] exception in nifty historical data: {e}\n")
                         continue
-
+                    # get_ohlc_data_frame(self, historical_data: List[HistoricalOHLC])
+                    df=self.zerodha.get_ohlc_data_frame(historical_data)
+                    
+                    df['slope']=(df['high']-df['high'].shift(1))/(df['low']-df['low'].shift(1))
+                    slope= df['slope'].iloc[-2]
+                    # print(df)
+                    # monitored_time = df['date'].iloc[-2]
+                    
                     candle_length = self.get_candle_length(historical_data[-2])
                     body_length = self.get_body_length(historical_data[-2])
                     direction = self.get_direction(body_length)
-
+                    
                     print("")
+                    print(f"[*] slope for NIFTY  : {slope}")
                     print(f"[*] candle length for NIFTY  : {candle_length}")
                     print(f"[*] body length for NIFTY    : {body_length}")
                     print(f"[*] direction for NIFTY      : {direction}")
+                    # print(f"[*] monitored time     : {current_time}")
+                    
 
                     latest_view = None
                     if direction == 100 and abs(body_length) > 0.8 * candle_length:
@@ -88,7 +114,9 @@ class BullBear(TradeBot):
                     #     quote.last_price > historical_data[0].high
                     #     and latest_view == "bull"
                     # ):
-                    if latest_view == "bull":
+                    # if (latest_view == "bull") and (slope > 3):
+                    if (slope > 3) and (direction == 100):
+                    
                         try:
                             ce_quote = self.zerodha.live_data(
                                 tick.ce_ticker.tradingsymbol
@@ -111,7 +139,10 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)                            
-                        self.sl_ce["nifty"] = historical_data[-2].low               
+                        # self.sl_ce["nifty"] = historical_data[-2].low      
+                        # self.profit["nifty_positive_slope"] = slope
+                        self.nifty["ce_stop_loss"]=   historical_data[-2].low  
+                        self.nifty["ce_profit"] = slope
                         
 
 
@@ -121,7 +152,8 @@ class BullBear(TradeBot):
                     #     and latest_view == "bear"
                     # ):
 
-                    if latest_view == "bear":
+                    # if (latest_view == "bear") and (slope < -3):
+                    if (slope < -3) amd (direction == -100):
                         try:
                             pe_quote = self.zerodha.live_data(
                                 tick.pe_ticker.tradingsymbol
@@ -144,7 +176,10 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)  
-                        self.sl_pe["nifty"] = historical_data[-2].high                                            
+                        # self.sl_pe["nifty"] = historical_data[-2].high  
+                        # self.profit["nifty_negative_slope"] = slope 
+                        self.nifty["pe_stop_loss"]=   historical_data[-2].high 
+                        self.nifty["pe_profit"] = slope                                         
                         
                 if tick.ticker_type == "BANKNIFTY":
                     try:
@@ -161,7 +196,10 @@ class BullBear(TradeBot):
                         # if there is an network in fetching historical data or empty historical data
                         print(f"\n[**] exception in historical data bank nifty: {e}\n")
                         continue
-
+                    
+                    df=self.zerodha.get_ohlc_data_frame(historical_data)                    
+                    df['slope']=tb.LINEARREG_SLOPE(df['close'],5)
+                    slope= df['slope'].iloc[-1]
                     candle_length = self.get_candle_length(historical_data[-2])
                     body_length = self.get_body_length(historical_data[-2])
                     direction = self.get_direction(body_length)
@@ -186,7 +224,8 @@ class BullBear(TradeBot):
                     #     quote.last_price > historical_data[0].high
                     #     and latest_view == "bull"
                     # ):
-                    if latest_view == "bull":
+                    # if (latest_view == "bull") and (slope > 4):
+                    if (slope > 4) and (direction == 100):
                         try:
                             ce_quote = self.zerodha.live_data(
                                 tick.ce_ticker.tradingsymbol
@@ -208,14 +247,18 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
-                        self.sl_ce["banknifty"]=historical_data[-2].low
+                        # self.sl_ce["banknifty"]=historical_data[-2].low
+                        # self.profit["banknifty_positive_slope"] = slope
+                        self.banknifty["ce_stop_loss"]=   historical_data[-2].low  
+                        self.banknifty["ce_profit"] = slope
                         # self.sl_ce[ticks.tradingsymbol] = historical_data[-2].low
                       
                     # if (
                     #     quote.last_price < historical_data[0].low
                     #     and latest_view == "bear"
                     # ):
-                    if latest_view == "bear":
+                    # if (latest_view == "bear") and (slope < -4):
+                    if (slope < -4) and (direction == -100):
                         try:
                             pe_quote = self.zerodha.live_data(
                                 tick.pe_ticker.tradingsymbol
@@ -237,7 +280,10 @@ class BullBear(TradeBot):
                         )
 
                         self.enter_trade(trade)
-                        self.sl_pe["banknifty"]=historical_data[-2].high
+                        # self.sl_pe["banknifty"]=historical_data[-2].high
+                        # self.profit["banknifty_negative_slope"] = slope
+                        self.banknifty["pe_stop_loss"]=   historical_data[-2].high 
+                        self.banknifty["pe_profit"] = slope    
                         # self.sl_pe[ticks.tradingsymbol] = historical_data[-2].high
                        
             time.sleep(300)
@@ -245,8 +291,13 @@ class BullBear(TradeBot):
     def exit_strategy(self, order: Order):
         if self.get_index_type(order.trading_symbol) == "BANKNIFTY":
             quote = self.zerodha.live_data("NIFTY BANK")
-            ce_sl=self.sl_ce.get('banknifty', -float('inf'))
-            pe_sl=self.sl_pe.get('banknifty', -float('inf'))
+            # ce_sl=self.sl_ce.get('banknifty', -float('inf'))
+            # pe_sl=self.sl_pe.get('banknifty', -float('inf'))
+            ce_sl=self.banknifty.get("ce_stop_loss", -float('inf'))
+            pe_sl = self.banknifty.get("pe_stop_loss", -flat('inf'))
+            ce_profit = self.banknifty.get("ce_profit", -float('inf'))
+            pe_profit = self.banknifty.get("pe_profit", -float('inf'))
+
 
             try:
                 historical_data = self.zerodha.historical_data(
@@ -263,8 +314,12 @@ class BullBear(TradeBot):
         else:
             quote = self.zerodha.live_data("NIFTY 50")
             
-            ce_sl = self.sl_ce.get('nifty', -float("inf"))
-            pe_sl = self.sl_pe.get('nifty', -float("inf"))
+            # ce_sl = self.sl_ce.get('nifty', -float("inf"))
+            # pe_sl = self.sl_pe.get('nifty', -float("inf"))
+            ce_sl=self.nifty.get("ce_stop_loss", -float('inf'))
+            pe_sl = self.nifty.get("pe_stop_loss", -flat('inf'))
+            ce_profit = self.nifty.get("ce_profit", -float('inf'))
+            pe_profit = self.nifty.get("pe_profit", -float('inf'))
             try:
                 historical_data = self.zerodha.historical_data(
                     "NIFTY 50",
@@ -277,9 +332,38 @@ class BullBear(TradeBot):
                     raise Exception("empty historical data")
             except Exception:
                 return
-
+        
         ticker_quote = self.zerodha.live_data(order.trading_symbol)
-        profit = (110 / 100) * order.average_entry_price
+        profit_breakeven = (101 / 100) * order.average_entry_price
+        profit_min = (102 / 100) * order.average_entry_price
+        profit_five = (105 / 100) * order.average_entry_price
+        profit_ten = (110 / 100) * order.average_entry_price
+        profit_fifteen = (115 / 100) * order.average_entry_price
+        if (ce_profit > 3) and (ce_profit <=5):
+            profit = profit_min
+
+        if (ce_profit > 5) and (ce_profit <=10):
+            profit = profit_five
+
+        if (ce_profit > 10) and (ce_profit <=15):
+            profit = profit_ten
+
+        if (ce_profit > 15):
+            profit = profit_fifteen
+
+        if (pe_profit < -3) and (pe_profit >=-5):
+            profit = profit_min
+
+        if (pe_profit < -5) and (pe_profit >= -10):
+            profit = profit_five
+
+        if (pe_profit < -10) and (ce_profit >= -15):
+            profit = profit_ten
+
+        if (pe_profit < -15):
+            profit = profit_fifteen
+
+
 
         trade = Trade(
             endpoint=TradeEndpoint.MARKET_ORDER_SELL,
@@ -329,7 +413,7 @@ class BullBear(TradeBot):
 
             current_minute += 1
 
-            if current_minute > 60:
+            if current_minute > 60: 
                 current_hour += 1
 
             current_hour %= 24
@@ -338,6 +422,7 @@ class BullBear(TradeBot):
         self.start_time = datetime.time(current_hour, current_minute, 10)
         print(f"[**] strategy starts at {self.start_time}")
         # First stock year, stock month, index year, index month, indexweek
-        self.ticker_generator = TickerGenerator("22", "JAN", "22", "2", "17")
+        self.ticker_generator = TickerGenerator("22", "JAN", "22", "FEB", "")
+        
 
         super().start()
