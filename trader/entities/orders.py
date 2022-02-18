@@ -35,7 +35,7 @@ class OrderDatabase(MongoClient):
         self.db: Database = self["autotrade"]
         self.collection: Collection = self.db[name]
 
-    def create_order(self, order: Order):
+    def create_order(self, order: Order) -> None:
         _filter = {"trading_symbol": order.trading_symbol}
 
         _update = {
@@ -59,6 +59,18 @@ class OrderDatabase(MongoClient):
             order["average_entry_price"],
         )
 
+    def delete_order(self, trading_symbol) -> None:
+        self.collection.delete_one({"trading_symbol": trading_symbol})
+
+    def orders(self):
+        for order in self.collection.find():
+            yield Order(
+                order["trading_symbol"],
+                order["exchange"],
+                order["total_quantity"],
+                order["average_entry_price"],
+            )
+
 
 class OrderExecutor:
     def __init__(
@@ -67,6 +79,8 @@ class OrderExecutor:
         mode: OrderExecutorType = OrderExecutorType.MULTIPLE,
     ):
         self.entries: Dict[str, Order] = dict()
+        self.__db = OrderDatabase(name=self.name, host="mongodb://db")
+
         self.publisher: Publisher = Publisher(publisher_uri)
         self.mode: OrderExecutorType = mode
 
@@ -85,28 +99,34 @@ class OrderExecutor:
                 flag = True
 
             if flag:
-                self.entries[trade.trading_symbol] = Order(
+                order = Order(
                     trade.trading_symbol,
                     trade.exchange,
                     trade.quantity,
                     trade.entry_price,
                 )
+                # self.entries[trade.trading_symbol]
+                self.__db.create_order(order)
 
                 return True
         else:
             if self.mode == OrderExecutorType.MULTIPLE:
-                self.entries[trade.trading_symbol].add_trade(trade)
-
+                order = self.__db.get_order(trade.trading_symbol).add_trade(trade)
+                self.__db.create_order(order)
+                # self.entries[trade.trading_symbol].add_trade(trade)
                 return True
 
         return False
 
     def clean_order(self, trading_symbol: str):
-        del self.entries[trading_symbol]
+        # del self.entries[trading_symbol]
+        self.__db.delete_order(trading_symbol)
 
     def get_orders(self) -> Iterator[Order]:
-        for trading_symbol in self.entries:
-            yield self.entries[trading_symbol]
+        # for trading_symbol in self.entries:
+        #     yield self.entries[trading_symbol]
+        for order in self.__db.orders():
+            return order
 
     def enter_trade(self, trade: Trade):
         if self.enter_order(trade):
