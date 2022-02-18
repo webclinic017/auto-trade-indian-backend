@@ -7,7 +7,6 @@ from constants.index import PUBLISHER
 import threading
 import glob
 import json
-import talib as tb
 
 
 class TradeBot(OrderExecutor):

@@ -1,4 +1,4 @@
-# Modify the strategy in such a way remove first fivemin high lo in the strategy and monitor two candles atleast in the same trend then enter the 
+# Modify the strategy in such a way remove first fivemin high lo in the strategy and monitor two candles atleast in the same trend then enter the
 # trade for CE. For PE
 
 
@@ -7,11 +7,8 @@ from entities.orders import Order
 from entities.ticker import TickerGenerator
 from entities.zerodha import HistoricalDataInterval, HistoricalOHLC
 from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
-from entities.zerodha import ZerodhaKite
 import time
 import datetime
-import talib as tb
-import pandas as pd
 
 
 class StockOptionBuying(TradeBot):
@@ -20,7 +17,6 @@ class StockOptionBuying(TradeBot):
     tenmin_tickers = set()
     trade_tickers = set()
     bollband_tickers = set()
-    
 
     original_tickers = {}
 
@@ -78,9 +74,8 @@ class StockOptionBuying(TradeBot):
                 ] = ticks.ticker.tradingsymbol
 
                 if (
-                    ticks.ticker.tradingsymbol in self.invalid_tickers 
-                    or 
-                    ticks.ticker.tradingsymbol not in self.data["stock_tickers"]
+                    ticks.ticker.tradingsymbol in self.invalid_tickers
+                    or ticks.ticker.tradingsymbol not in self.data["stock_tickers"]
                 ):
                     continue
 
@@ -101,10 +96,12 @@ class StockOptionBuying(TradeBot):
 
                     print(e)
                     continue
-                df=self.zerodha.get_ohlc_data_frame(intraday_data)
-                df['slope']=(df['high']-df['high'].shift(1))/(df['low']-df['low'].shift(1))
-                slope= df['slope'].iloc[-1]
-                
+                df = self.zerodha.get_ohlc_data_frame(intraday_data)
+                df["slope"] = (df["high"] - df["high"].shift(1)) / (
+                    df["low"] - df["low"].shift(1)
+                )
+                slope = df["slope"].iloc[-1]
+
                 try:
                     quote = self.zerodha.live_data(ticks.ticker.tradingsymbol)
 
@@ -116,9 +113,9 @@ class StockOptionBuying(TradeBot):
                     self.invalid_tickers.add(ticks.ticker.tradingsymbol)
                     continue
                 # historical technical data
-                bollinger_band = self.data["stock_tickers"][
-                    ticks.ticker.tradingsymbol
-                ]["bollinger_band"]
+                bollinger_band = self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                    "bollinger_band"
+                ]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
                 # first five min data of each ticker
                 first_body_length = self.body_length(intraday_data[0])
@@ -169,7 +166,7 @@ class StockOptionBuying(TradeBot):
                 else:
                     continue
 
-                if len(pe_quote.depth.sell) >= 2: 
+                if len(pe_quote.depth.sell) >= 2:
                     pe_trade = Trade(
                         TradeEndpoint.LIMIT_ORDER_BUY,
                         ticks.pe_ticker.tradingsymbol,
@@ -185,18 +182,28 @@ class StockOptionBuying(TradeBot):
                 else:
                     continue
 
-                if (trade > 0) and (quote.last_price > intraday_data[0].high) and (slope > 1) and (ticks.ticker.tradingsymbol not in self.trade_tickers):
-                                                
+                if (
+                    (trade > 0)
+                    and (quote.last_price > intraday_data[0].high)
+                    and (slope > 1)
+                    and (ticks.ticker.tradingsymbol not in self.trade_tickers)
+                ):
+
                     self.enter_trade(ce_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
-                if (trade < 0) and (quote.last_price < intraday_data[0].low) and (slope < -1) and (ticks.ticker.tradingsymbol not in self.trade_tickers):
+                if (
+                    (trade < 0)
+                    and (quote.last_price < intraday_data[0].low)
+                    and (slope < -1)
+                    and (ticks.ticker.tradingsymbol not in self.trade_tickers)
+                ):
 
                     self.enter_trade(pe_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
-                    (bollinger_band=="first_wide")                    
+                    (bollinger_band == "first_wide")
                     and (quote.last_price > intraday_data[0].high)
                     and (slope > 1)
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
@@ -205,7 +212,7 @@ class StockOptionBuying(TradeBot):
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
                 if (
-                    (bollinger_band=="first_wide")
+                    (bollinger_band == "first_wide")
                     and (quote.last_price < intraday_data[0].low)
                     and (slope < 1)
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
@@ -213,11 +220,10 @@ class StockOptionBuying(TradeBot):
                     self.enter_trade(pe_trade)
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
-
                 # if (
                 #     (intraday_data[0].open == intraday_data[0].low)
                 #     and (ohlc_view == "bull")
-                #     and (slope > 1)                    
+                #     and (slope > 1)
                 # ) or (view == "bull"):
                 #     if (quote.last_price > intraday_data[0].high) and (
                 #         ticks.ticker.tradingsymbol not in self.fivemin_tickers

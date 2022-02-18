@@ -1,6 +1,5 @@
 from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
 from entities.zerodha import HistoricalDataInterval, HistoricalOHLC
-from entities.zerodha import ZerodhaKite
 from entities.ticker import TickerGenerator
 from interfaces.bot import TradeBot
 from entities.orders import Order
