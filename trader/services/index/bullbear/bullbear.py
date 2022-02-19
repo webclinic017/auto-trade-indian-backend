@@ -7,6 +7,7 @@ import datetime
 import time
 import talib as tb
 import pandas as pd
+import math
 
 # condition are as below:
 # 1. both the candles should be bullish or bearish
@@ -126,12 +127,13 @@ class BullBear(TradeBot):
                         except Exception:
                             # when failed to fetch the quote for CE ticker then go for next ticker
                             continue
-
+                        nifty_ce_lots = math.ceil(10000/(50*ce_quote.depth.sell[1].price) )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=tick.ce_ticker.lot_size,
+                            # quantity=tick.ce_ticker.lot_size,
+                            quantity = nifty_ce_lots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -161,12 +163,13 @@ class BullBear(TradeBot):
                         except Exception:
                             # failed to fetch the quote for PE ticker then continue for next ticker
                             continue
-
+                        nifty_pe_lots = math.ceil(10000/(50*pe_quote.depth.sell[1].price) )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=tick.pe_ticker.lot_size,
+                            # quantity=tick.pe_ticker.lot_size,
+                            quantity = nifty_pe_lots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
@@ -232,12 +235,13 @@ class BullBear(TradeBot):
                             )
                         except Exception:
                             continue
-
+                        banknifty_celots= math.ceil(10000/(25*ce_quote.depth.sell[1].price))
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=tick.ce_ticker.lot_size,
+                            # quantity=tick.ce_ticker.lot_size,
+                            quantity = banknifty_celots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -265,12 +269,13 @@ class BullBear(TradeBot):
                             )
                         except Exception:
                             continue
-
+                        banknifty_pelots= math.ceil(10000/(25*pe_quote.depth.sell[1].price))
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
-                            quantity=tick.pe_ticker.lot_size,
+                            # quantity=tick.pe_ticker.lot_size,
+                            quantity = banknifty_pelots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
