@@ -1,3 +1,4 @@
+import datetime
 from kiteconnect.connect import KiteConnect
 import os
 import time
@@ -29,6 +30,21 @@ class TradeBot(OrderExecutor):
             filename = file.split("/")[-1].split(".")[0]
 
             self.data[filename] = json.loads(open(file, "r").read())
+
+    def create_cache(self, key: str, value: str, expiry: datetime.timedelta):
+        self.zerodha.redis.set(key, value, expiry)
+
+    def wait(self):
+        current_time = datetime.datetime.now()
+
+        while current_time.minute % 5 == 0:
+            # sleep for 1 second
+            time.sleep(1)
+            # update the current time
+            current_time = datetime.datetime.now()
+
+        # when time multiple of 5 is hit then sleep for 5 seconds
+        time.sleep(5)
 
     def entry_strategy(self):
         raise NotImplementedError

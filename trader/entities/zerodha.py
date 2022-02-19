@@ -8,6 +8,7 @@ import time
 import json
 import pandas as pd
 from collections import defaultdict
+import re
 
 
 class OHLC:
@@ -119,6 +120,13 @@ class ZerodhaKite:
 
         return pd.DataFrame(data)
 
+    def get_expiry(self, interval):
+        if interval == "day":
+            return datetime.timedelta(days=1)
+
+        minutes = int(re.search(r"\d+", interval).group())
+        return datetime.timedelta(minutes=minutes)
+
     def historical_data(
         self,
         tradingsymbol: str,
@@ -126,12 +134,26 @@ class ZerodhaKite:
         end_time: datetime.datetime,
         interval: HistoricalDataInterval,
     ) -> List[HistoricalOHLC]:
-        _data = self.kite.historical_data(
-            self.token_map[tradingsymbol]["instrument_token"],
-            start_time,
-            end_time,
-            interval.value,
-        )
+        # check for the data in cache
+        if self.redis.get(f"historical:{tradingsymbol}"):
+            # if there is a cache hit get the historical data from cache
+            _data = json.loads(
+                self.redis.get(f"historical:{interval.value}:{tradingsymbol}")
+            )
+        else:
+            _data = self.kite.historical_data(
+                self.token_map[tradingsymbol]["instrument_token"],
+                start_time,
+                end_time,
+                interval.value,
+            )
+
+            # add the historical data to cache
+            self.redis.set(
+                f"historical:{interval.value}:{tradingsymbol}",
+                json.dumps(_data, default=str),
+                self.get_expiry(interval.value),
+            )
 
         data: List[HistoricalOHLC] = []
         for ohlc in _data:
@@ -142,14 +164,17 @@ class ZerodhaKite:
     def historical_data_today(
         self, tradingsymbol, interval: HistoricalDataInterval
     ) -> List[HistoricalOHLC]:
-        if datetime.datetime.today().weekday() == 5 or datetime.datetime.today().weekday() == 6:
-            date = datetime.date.today() - datetime.timedelta(days=datetime.datetime.today().weekday() % 7)
+        if (
+            datetime.datetime.today().weekday() == 5
+            or datetime.datetime.today().weekday() == 6
+        ):
+            date = datetime.date.today() - datetime.timedelta(
+                days=datetime.datetime.today().weekday() % 6
+            )
         else:
             date = datetime.date.today()
 
-        data = self.historical_data(
-            tradingsymbol, date, date, interval
-        )
+        data = self.historical_data(tradingsymbol, date, date, interval)
 
         return data
 
