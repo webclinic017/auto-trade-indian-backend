@@ -31,13 +31,16 @@ class TradeBot(OrderExecutor):
 
             self.data[filename] = json.loads(open(file, "r").read())
 
-    def create_cache(self, key: str, value: str, expiry: datetime.timedelta):
-        self.zerodha.redis.set(key, value, expiry)
-
     def wait(self):
         current_time = datetime.datetime.now()
 
-        while current_time.minute % 5 == 0:
+        _start_time = current_time
+        while _start_time.minute % 5 != 0:
+            _start_time += datetime.timedelta(minutes=1)
+
+        print(f'[**] strategy starts at: {_start_time}')
+
+        while current_time.minute % 5 != 0:
             # sleep for 1 second
             time.sleep(1)
             # update the current time

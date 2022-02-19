@@ -6,7 +6,6 @@ from entities.orders import Order
 import datetime
 import time
 import talib as tb
-import pandas as pd
 import math
 
 # condition are as below:
@@ -53,6 +52,19 @@ class BullBear(TradeBot):
             return "PE"
 
         raise Exception("invalid option ticker")
+
+    def enter_trade(self, trade: Trade):
+        if self.is_ticker_expired(trade.trading_symbol):
+            super().enter_trade(trade)
+
+            self.zerodha.redis.set(
+                f"bullbear:index:{trade.trading_symbol}",
+                1,
+                datetime.timedelta(minutes=5),
+            )
+
+    def is_ticker_expired(self, tradingsymbol):
+        return self.zerodha.get(f"bullbear:index:{tradingsymbol}") != None
 
     def entry_strategy(self):
         while True:
@@ -127,13 +139,15 @@ class BullBear(TradeBot):
                         except Exception:
                             # when failed to fetch the quote for CE ticker then go for next ticker
                             continue
-                        nifty_ce_lots = math.ceil(10000/(50*ce_quote.depth.sell[1].price) )
+                        nifty_ce_lots = math.ceil(
+                            10000 / (50 * ce_quote.depth.sell[1].price)
+                        )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
                             # quantity=tick.ce_ticker.lot_size,
-                            quantity = nifty_ce_lots,
+                            quantity=nifty_ce_lots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -163,13 +177,15 @@ class BullBear(TradeBot):
                         except Exception:
                             # failed to fetch the quote for PE ticker then continue for next ticker
                             continue
-                        nifty_pe_lots = math.ceil(10000/(50*pe_quote.depth.sell[1].price) )
+                        nifty_pe_lots = math.ceil(
+                            10000 / (50 * pe_quote.depth.sell[1].price)
+                        )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
                             # quantity=tick.pe_ticker.lot_size,
-                            quantity = nifty_pe_lots,
+                            quantity=nifty_pe_lots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
@@ -235,13 +251,15 @@ class BullBear(TradeBot):
                             )
                         except Exception:
                             continue
-                        banknifty_celots= math.ceil(10000/(25*ce_quote.depth.sell[1].price))
+                        banknifty_celots = math.ceil(
+                            10000 / (25 * ce_quote.depth.sell[1].price)
+                        )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
                             # quantity=tick.ce_ticker.lot_size,
-                            quantity = banknifty_celots,
+                            quantity=banknifty_celots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -269,13 +287,15 @@ class BullBear(TradeBot):
                             )
                         except Exception:
                             continue
-                        banknifty_pelots= math.ceil(10000/(25*pe_quote.depth.sell[1].price))
+                        banknifty_pelots = math.ceil(
+                            10000 / (25 * pe_quote.depth.sell[1].price)
+                        )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
                             # quantity=tick.pe_ticker.lot_size,
-                            quantity = banknifty_pelots,
+                            quantity=banknifty_pelots,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
@@ -291,7 +311,7 @@ class BullBear(TradeBot):
                         self.banknifty["pe_profit"] = slope
                         # self.sl_pe[ticks.tradingsymbol] = historical_data[-2].high
 
-            time.sleep(300)
+            time.sleep(10)
 
     def exit_strategy(self, order: Order):
         if self.get_index_type(order.trading_symbol) == "BANKNIFTY":
@@ -404,26 +424,9 @@ class BullBear(TradeBot):
             return
 
     def start(self):
-        current_time = datetime.datetime.now()
-        current_minute = current_time.time().minute
-        current_hour = current_time.time().hour
+        # wait until next 5 multiple time
+        self.wait()
 
-        if current_hour == 9 and current_minute < 30:
-            current_minute = 30
-        else:
-            while current_minute % 5 != 0:
-                current_minute += 1
-
-            current_minute += 1
-
-            if current_minute > 60:
-                current_hour += 1
-
-            current_hour %= 24
-            current_minute %= 60
-
-        self.start_time = datetime.time(current_hour, current_minute, 10)
-        print(f"[**] strategy starts at {self.start_time}")
         # First stock year, stock month, index year, index month, indexweek
         self.ticker_generator = TickerGenerator("22", "JAN", "22", "FEB", "")
 
