@@ -133,7 +133,7 @@ class OrderExecutor:
                     trade.quantity,
                     trade.entry_price,
                     options.get("profit_percent", 5),
-                    options.get("exit_time"),
+                    options.get("exit_time", ""),
                 )
                 # self.entries[trade.trading_symbol]
                 self.__db.create_order(order)
