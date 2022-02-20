@@ -237,6 +237,11 @@ class StockOptionBuying(TradeBot):
                             "previous_high"
                         ]
                     )
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
                     self.enter_trade(ce_trade)
@@ -250,6 +255,11 @@ class StockOptionBuying(TradeBot):
                         < self.data["stock_tickers"][ticks.ticker.tradingsymbol][
                             "previous_low"
                         ]
+                    )
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
                     )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
@@ -268,6 +278,11 @@ class StockOptionBuying(TradeBot):
                             "previous_high"
                         ]
                     )
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
                     self.enter_trade(ce_trade)
@@ -282,6 +297,11 @@ class StockOptionBuying(TradeBot):
                             "previous_low"
                         ]
                     )
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
                     self.enter_trade(pe_trade)
@@ -290,19 +310,33 @@ class StockOptionBuying(TradeBot):
                 # ------------------- PREVIOUS HIGH LOW CLOSE --------------------
 
                 # condition for prev_high_low ce
-                if quote.last_price > self.data["stock_tickers"][
-                    ticks.ticker.tradingsymbol
-                ]["previous_high"] and (
-                    ticks.ticker.tradingsymbol not in self.prev_high_low_tickers
+                if (
+                    quote.last_price
+                    > self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                        "previous_high"
+                    ]
+                    and (ticks.ticker.tradingsymbol not in self.prev_high_low_tickers)
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                 ):
                     self.enter_trade(ce_trade)
                     self.prev_high_low_tickers.add(ticks.ticker.tradingsymbol)
 
                 # condition for prev_high_low pe
-                if quote.last_price < self.data["stock_tickers"][
-                    ticks.ticker.tradingsymbol
-                ]["previous_low"] and (
-                    ticks.ticker.tradingsymbol not in self.prev_high_low_tickers
+                if (
+                    quote.last_price
+                    < self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                        "previous_low"
+                    ]
+                    and (ticks.ticker.tradingsymbol not in self.prev_high_low_tickers)
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                 ):
                     self.enter_trade(pe_trade)
                     self.prev_high_low_tickers.add(ticks.ticker.tradingsymbol)
@@ -321,6 +355,11 @@ class StockOptionBuying(TradeBot):
                         == self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].low
                     )
                     and (ohlc_view == "bull")
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                 ) or (view == "bull"):
                     if (
                         quote.last_price
@@ -341,6 +380,11 @@ class StockOptionBuying(TradeBot):
                         == self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].high
                     )
                     and (ohlc_view == "bear")
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                 ) or (view == "bear"):
                     if (
                         quote.last_price
@@ -363,6 +407,11 @@ class StockOptionBuying(TradeBot):
                     quote.last_price
                     > self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].high
                     and ticks.ticker.tradingsymbol not in self.fivemin_tickers_afternoon
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                 ):
                     if current_time >= datetime.time(
                         11, 30
@@ -375,6 +424,11 @@ class StockOptionBuying(TradeBot):
                     quote.last_price
                     < self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].low
                     and ticks.ticker.tradingsymbol not in self.fivemin_tickers_afternoon
+                    and (
+                        self.option_volatilty(
+                            quote.depth.sell[1].price, quote.depth.buy[1].price
+                        )
+                    )
                 ):
                     if current_time >= datetime.time(
                         11, 30
