@@ -19,6 +19,11 @@ class StockOptionBuying(TradeBot):
     bollband_tickers = set()
 
     original_tickers = {}
+    entered_data = {}
+
+    def option_volatilty(self, bid_price, ask_price):
+        return 100 * (ask_price - bid_price)/(bid_price)    
+
 
     def body_length(self, ohlc: HistoricalOHLC):
         return ohlc.close - ohlc.open
@@ -61,7 +66,7 @@ class StockOptionBuying(TradeBot):
     def entry_strategy(self):
         while True:
             if datetime.datetime.now().time() < datetime.time(
-                9, 40, 5
+                9, 30, 5
             ) or datetime.datetime.now().time() > datetime.time(15, 1, 5):
                 continue
 
@@ -96,11 +101,11 @@ class StockOptionBuying(TradeBot):
 
                     print(e)
                     continue
-                df = self.zerodha.get_ohlc_data_frame(intraday_data)
-                df["slope"] = (df["high"] - df["high"].shift(1)) / (
-                    df["low"] - df["low"].shift(1)
-                )
-                slope = df["slope"].iloc[-1]
+                # df = self.zerodha.get_ohlc_data_frame(intraday_data)
+                # df["slope"] = (df["high"].shift(1) - df["high"].shift(2)) / (
+                #     df["low"].shift(1) - df["low"].shift(2)
+                # )
+                # slope = df["slope"].iloc[-2]
 
                 try:
                     quote = self.zerodha.live_data(ticks.ticker.tradingsymbol)

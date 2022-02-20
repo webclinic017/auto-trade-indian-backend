@@ -1,3 +1,13 @@
+# the intraday output of each ticker can be appended or overwrite in stock_tickers.json (Entered Strategy, first five min high, first five min low
+# entered time, exited time, )
+# once entered update with the strategy entered entered time.
+# once exited updated with the time of exit so that re entry need not be necessary
+# Five min and OHLC strategy should be between 9.30 to 10.30
+# again five min strategy should start at 11.30 to 15
+# Bollinger Band strategy and prev high, low strategy should be between 9.30 to 15.00. Stoploss first five min high or low
+# Trade strategy should be positional until stoploss hits (which is first five min low)
+
+
 from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.ticker import TickerGenerator
