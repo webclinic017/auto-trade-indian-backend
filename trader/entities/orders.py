@@ -1,11 +1,11 @@
 from typing import Dict, Iterator
-
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
 from pymongo import MongoClient
 from pymongo.database import Database, Collection
 from enum import Enum
+import datetime
 
 
 class OrderExecutorType(Enum):
@@ -15,11 +15,28 @@ class OrderExecutorType(Enum):
 
 
 class Order:
-    def __init__(self, trading_symbol, exchange, total_quantity, average_entry_price):
+    def __init__(
+        self,
+        trading_symbol,
+        exchange,
+        total_quantity,
+        average_entry_price,
+        profit_percent=5,
+        exit_time="",
+    ):
         self.trading_symbol = trading_symbol
         self.exchange = exchange
         self.total_quantity = total_quantity
         self.average_entry_price = average_entry_price
+        self.profit_percent = profit_percent
+        self._exit_time = str(exit_time)
+
+    @property
+    def exit_time(self):
+        if self.exit_time:
+            return datetime.datetime.strptime(self.exit_time, "%H:%M:%S")
+
+        return None
 
     def add_trade(self, trade: Trade):
         self.total_quantity += trade.quantity
@@ -45,6 +62,8 @@ class OrderDatabase(MongoClient):
                 "average_entry_price": order.average_entry_price,
                 "exchange": order.exchange,
                 "total_quantity": order.total_quantity,
+                "profit_percent": order.profit_percent,
+                "exit_time": order._exit_time,
             }
         }
 
@@ -58,6 +77,8 @@ class OrderDatabase(MongoClient):
             order["exchange"],
             order["total_quantity"],
             order["average_entry_price"],
+            order["profit_percent"],
+            order["exit_time"],
         )
 
     def delete_order(self, trading_symbol) -> None:
@@ -72,6 +93,8 @@ class OrderDatabase(MongoClient):
                         order["exchange"],
                         order["total_quantity"],
                         order["average_entry_price"],
+                        order["profit_percent"],
+                        order["exit_time"],
                     )
         else:
             return []
@@ -91,7 +114,7 @@ class OrderExecutor:
 
         self.entered_tickers = set()
 
-    def enter_order(self, trade: Trade):
+    def enter_order(self, trade: Trade, options: dict = {}):
         if trade.trading_symbol not in self.entries:
             if self.mode == OrderExecutorType.STRICT:
                 if trade.trading_symbol not in self.entered_tickers:
@@ -109,6 +132,8 @@ class OrderExecutor:
                     trade.exchange,
                     trade.quantity,
                     trade.entry_price,
+                    options.get("profit_percent", 5),
+                    options.get("exit_time"),
                 )
                 # self.entries[trade.trading_symbol]
                 self.__db.create_order(order)
@@ -132,8 +157,8 @@ class OrderExecutor:
         #     yield self.entries[trading_symbol]
         return self.__db.orders()
 
-    def enter_trade(self, trade: Trade):
-        if self.enter_order(trade):
+    def enter_trade(self, trade: Trade, options: dict = {}):
+        if self.enter_order(trade, options):
             # publish the trade to the publisher
             self.publisher.publish_trade(trade)
 

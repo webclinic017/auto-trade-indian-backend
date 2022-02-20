@@ -244,7 +244,7 @@ class StockOptionBuying(TradeBot):
                     )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
-                    self.enter_trade(ce_trade)
+                    self.enter_trade(ce_trade, {"profit_percent": 10})
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
                 # condition for trade strategy for pe ticker
@@ -263,8 +263,7 @@ class StockOptionBuying(TradeBot):
                     )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
-
-                    self.enter_trade(pe_trade)
+                    self.enter_trade(pe_trade, {"profit_percent": 10})
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
                 # --------------------- BOLLINGER BAND ------------------------
@@ -285,7 +284,7 @@ class StockOptionBuying(TradeBot):
                     )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
-                    self.enter_trade(ce_trade)
+                    self.enter_trade(ce_trade, {"profit_percent": 15})
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
                 # condition for bollinger band pe
@@ -304,7 +303,7 @@ class StockOptionBuying(TradeBot):
                     )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
-                    self.enter_trade(pe_trade)
+                    self.enter_trade(pe_trade, {"profit_percent": 15})
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
                 # ------------------- PREVIOUS HIGH LOW CLOSE --------------------
@@ -322,7 +321,7 @@ class StockOptionBuying(TradeBot):
                         )
                     )
                 ):
-                    self.enter_trade(ce_trade)
+                    self.enter_trade(ce_trade, {"profit_percent": 5})
                     self.prev_high_low_tickers.add(ticks.ticker.tradingsymbol)
 
                 # condition for prev_high_low pe
@@ -338,7 +337,7 @@ class StockOptionBuying(TradeBot):
                         )
                     )
                 ):
-                    self.enter_trade(pe_trade)
+                    self.enter_trade(pe_trade, {"profit_percent": 5})
                     self.prev_high_low_tickers.add(ticks.ticker.tradingsymbol)
 
                 # ------------------------ FIRST 5 MINUTE -------------------------------
@@ -371,7 +370,13 @@ class StockOptionBuying(TradeBot):
                         if current_time >= datetime.time(
                             9, 30
                         ) and current_time <= datetime.time(10, 30):
-                            self.enter_trade(ce_trade)
+                            self.enter_trade(
+                                ce_trade,
+                                {
+                                    "profit_percent": 5,
+                                    "exit_time": datetime.time(10, 30),
+                                },
+                            )
                             self.fivemin_tickers_morning.add(ticks.ticker.tradingsymbol)
 
                 if (
@@ -397,7 +402,13 @@ class StockOptionBuying(TradeBot):
                         if current_time >= datetime.time(
                             9, 30
                         ) and current_time <= datetime.time(10, 30):
-                            self.enter_trade(pe_trade)
+                            self.enter_trade(
+                                pe_trade,
+                                {
+                                    "profit_percent": 5,
+                                    "exit_time": datetime.time(10, 30),
+                                },
+                            )
                             self.fivemin_tickers_morning.add(ticks.ticker.tradingsymbol)
 
                 # ----------------- TIMMINGS FROM 11 : 30 to 15 : 00 -------------------------
@@ -416,7 +427,7 @@ class StockOptionBuying(TradeBot):
                     if current_time >= datetime.time(
                         11, 30
                     ) and current_time <= datetime.time(15, 0):
-                        self.enter_trade(ce_trade)
+                        self.enter_trade(ce_trade, {"profit_percent": 5})
                         self.fivemin_tickers_afternoon.add(ticks.ticker.tradingsymbol)
 
                 # condition first 5min for pe ticker
@@ -433,13 +444,13 @@ class StockOptionBuying(TradeBot):
                     if current_time >= datetime.time(
                         11, 30
                     ) and current_time <= datetime.time(15, 0):
-                        self.enter_trade(pe_trade)
+                        self.enter_trade(pe_trade, {"profit_percent": 5})
                         self.fivemin_tickers_afternoon.add(ticks.ticker.tradingsymbol)
 
             time.sleep(10)
 
     def exit_strategy(self, order: Order):
-        profit = 115 / 100 * order.average_entry_price
+        profit = (100 + order.profit_percent) / 100 * order.average_entry_price
         loss = 95 / 100 * order.average_entry_price
 
         original_ticker = self.get_original_ticker(order.trading_symbol)
@@ -494,6 +505,11 @@ class StockOptionBuying(TradeBot):
             self.exit_trade(trade)
             return
 
-        if datetime.datetime.now().time() > datetime.time(15, 10, 1):
+        current_time = datetime.datetime.now().time()
+
+        # exit at the time specified in the strategy
+        if current_time > datetime.time(15, 10, 1) or (
+            order.exit_time and current_time > order.exit_time
+        ):
             self.exit_trade(trade)
             return
