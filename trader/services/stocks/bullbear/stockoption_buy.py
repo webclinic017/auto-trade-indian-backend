@@ -2,6 +2,17 @@
 # trade for CE. For PE
 
 
+# the intraday output of each ticker can be appended or overwrite in stock_tickers.json (Entered Strategy, first five min high, first five min low
+# entered time, exited time, )
+# once entered update with the strategy entered entered time.
+# once exited updated with the time of exit so that re entry need not be necessary
+# Five min and OHLC strategy should be between 9.30 to 10.30
+# again five min strategy should start at 11.30 to 15
+# Bollinger Band strategy and prev high, low strategy should be between 9.30 to 15.00. Stoploss first five min high or low
+# Trade strategy should be positional until stoploss hits (which is first five min low)
+
+
+from typing import Dict
 from interfaces.bot import TradeBot
 from entities.orders import Order
 from entities.ticker import TickerGenerator
@@ -9,21 +20,33 @@ from entities.zerodha import HistoricalDataInterval, HistoricalOHLC
 from entities.trade import Trade, TradeEndpoint, TradeTag, TradeType
 import time
 import datetime
+import math
 
 
 class StockOptionBuying(TradeBot):
     invalid_tickers = set()
-    fivemin_tickers = set()
+    fivemin_tickers_morning = set()
+    fivemin_tickers_afternoon = set()
     tenmin_tickers = set()
     trade_tickers = set()
     bollband_tickers = set()
+    prev_high_low_tickers = set()
 
     original_tickers = {}
     entered_data = {}
 
-    def option_volatilty(self, bid_price, ask_price):
-        return 100 * (ask_price - bid_price)/(bid_price)    
+    STRATEGY_FIRST_5MIN = "first_5minute"  # 9:30 to 10:30  again 11:30 to 15:00 PROFIT -> 5 % or else exit by time > 10 : 30 for morning
+    STRATEGY_OHLC = "ohlc_strategy"  # 9:30 to 10:30  again 11:30 to 15:00 PROFIT -> 5 % or else exit by time > 10 : 30 for morning
 
+    STRATEGY_BOLINGER_BAND = "bolinger_band"  # 9:30 to 15:00 -> PROFIT -> 15 %
+    STRATEGY_TRADE = "trade"  # 9:30 to 15:00 PROFIT -> 10 %
+    STRATEGY_PREV_HIGH_LOW = "prev_high_low"  # 9:30 to 15:00 PROFIT -> 5 %
+
+    # first 5 minute ohlc of each ticker
+    first_5min_ohlc_tickers: Dict[str, HistoricalOHLC] = dict()
+
+    def option_volatilty(self, bid_price, ask_price):
+        return 100 * (ask_price - bid_price) / (bid_price)
 
     def body_length(self, ohlc: HistoricalOHLC):
         return ohlc.close - ohlc.open
@@ -85,10 +108,17 @@ class StockOptionBuying(TradeBot):
                     continue
 
                 try:
-                    intraday_data = self.zerodha.historical_data_today(
-                        ticks.ticker.tradingsymbol,
-                        HistoricalDataInterval.INTERVAL_5_MINUTE,
-                    )
+                    # check if the first 5min for original ticker is present or not
+                    if ticks.ticker.tradingsymbol not in self.first_5min_ohlc_tickers:
+                        intraday_data = self.zerodha.historical_data_today(
+                            ticks.ticker.tradingsymbol,
+                            HistoricalDataInterval.INTERVAL_5_MINUTE,
+                        )
+
+                        # if the first 5min data is not present then add it to dictonary
+                        self.first_5min_ohlc_tickers[
+                            ticks.ticker.tradingsymbol
+                        ] = intraday_data[0]
 
                     if len(intraday_data) == 0:
                         raise Exception(
@@ -123,18 +153,15 @@ class StockOptionBuying(TradeBot):
                 ]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
                 # first five min data of each ticker
-                first_body_length = self.body_length(intraday_data[0])
+                first_body_length = self.body_length(
+                    self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol]
+                )
                 first_direction = self.direction(first_body_length)
-                first_candle_length = self.candle_length(intraday_data[0])
+                first_candle_length = self.candle_length(
+                    self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol]
+                )
                 first_view = self.view(
                     first_direction, first_candle_length, first_body_length
-                )
-
-                second_body_length = self.body_length(intraday_data[1])
-                second_direction = self.direction(second_body_length)
-                second_candle_length = self.candle_length(intraday_data[1])
-                second_view = self.ohlc_view(
-                    second_direction, second_candle_length, second_body_length
                 )
 
                 ohlc_view = self.ohlc_view(
@@ -156,11 +183,16 @@ class StockOptionBuying(TradeBot):
                     continue
 
                 if len(ce_quote.depth.sell) >= 2:
+                    ce_lots = math.ceil(
+                        10000
+                        / (ticks.ce_ticker.lot_size * ce_quote.depth.sell[1].price)
+                    )
+
                     ce_trade = Trade(
                         TradeEndpoint.LIMIT_ORDER_BUY,
                         ticks.ce_ticker.tradingsymbol,
                         "NFO",
-                        ticks.ce_ticker.lot_size,
+                        ce_lots,
                         TradeTag.ENTRY,
                         "",
                         ce_quote.depth.sell[1].price,
@@ -172,11 +204,16 @@ class StockOptionBuying(TradeBot):
                     continue
 
                 if len(pe_quote.depth.sell) >= 2:
+                    pe_lots = math.ceil(
+                        10000
+                        / (ticks.pe_ticker.lot_size * pe_quote.depth.sell[1].price)
+                    )
+
                     pe_trade = Trade(
                         TradeEndpoint.LIMIT_ORDER_BUY,
                         ticks.pe_ticker.tradingsymbol,
                         "NFO",
-                        ticks.pe_ticker.lot_size,
+                        pe_lots,
                         TradeTag.ENTRY,
                         "",
                         pe_quote.depth.sell[1].price,
@@ -187,100 +224,174 @@ class StockOptionBuying(TradeBot):
                 else:
                     continue
 
+                # ------------------------------------ entry conditions --------------------------------- #
+
+                # -------------------------- TRADE STRATEGY -----------------------
+
+                # condition for trade strategy for ce ticker
                 if (
                     (trade > 0)
-                    and (quote.last_price > intraday_data[0].high)
-                    and (slope > 1)
+                    and (
+                        quote.last_price
+                        > self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                            "previous_high"
+                        ]
+                    )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
-
                     self.enter_trade(ce_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
+                # condition for trade strategy for pe ticker
                 if (
                     (trade < 0)
-                    and (quote.last_price < intraday_data[0].low)
-                    and (slope < -1)
+                    and (
+                        quote.last_price
+                        < self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                            "previous_low"
+                        ]
+                    )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
 
                     self.enter_trade(pe_trade)
                     self.trade_tickers.add(ticks.ticker.tradingsymbol)
 
+                # --------------------- BOLLINGER BAND ------------------------
+
+                # condition for bollinger band ce
                 if (
                     (bollinger_band == "first_wide")
-                    and (quote.last_price > intraday_data[0].high)
-                    and (slope > 1)
+                    and (
+                        quote.last_price
+                        > self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                            "previous_high"
+                        ]
+                    )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
                     self.enter_trade(ce_trade)
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
+                # condition for bollinger band pe
                 if (
                     (bollinger_band == "first_wide")
-                    and (quote.last_price < intraday_data[0].low)
-                    and (slope < 1)
+                    and (
+                        quote.last_price
+                        < self.data["stock_tickers"][ticks.ticker.tradingsymbol][
+                            "previous_low"
+                        ]
+                    )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
                     self.enter_trade(pe_trade)
                     self.bollband_tickers.add(ticks.ticker.tradingsymbol)
 
-                # if (
-                #     (intraday_data[0].open == intraday_data[0].low)
-                #     and (ohlc_view == "bull")
-                #     and (slope > 1)
-                # ) or (view == "bull"):
-                #     if (quote.last_price > intraday_data[0].high) and (
-                #         ticks.ticker.tradingsymbol not in self.fivemin_tickers
-                #     ):
-                #         self.enter_trade(ce_trade)
-                #         self.fivemin_tickers.add(ticks.ticker.tradingsymbol)
+                # ------------------- PREVIOUS HIGH LOW CLOSE --------------------
 
-                # if (
-                #     (first_view == "bear")
-                #     and (second_view == "bull")
-                #     and (quote.last_price > intraday_data[1].high)
-                #     and (slope > 1)
-                #     and (ticks.ticker.tradingsymbol not in self.tenmin_tickers)
-                # ):
-                #     self.enter_trade(ce_trade)
-                #     self.tenmin_tickers.add(ticks.ticker.tradingsymbol)
+                # condition for prev_high_low ce
+                if quote.last_price > self.data["stock_tickers"][
+                    ticks.ticker.tradingsymbol
+                ]["previous_high"] and (
+                    ticks.ticker.tradingsymbol not in self.prev_high_low_tickers
+                ):
+                    self.enter_trade(ce_trade)
+                    self.prev_high_low_tickers.add(ticks.ticker.tradingsymbol)
 
-                # if (
-                #     (intraday_data[0].open == intraday_data[0].high)
-                #     and (ohlc_view == "bear")
-                #     and (slope < -1)
-                # ) or (view == "bear"):
-                #     if (quote.last_price < intraday_data[0].low) and (
-                #         ticks.ticker.tradingsymbol not in self.fivemin_tickers
-                #     ):
-                #         self.enter_trade(pe_trade)
-                #         self.fivemin_tickers.add(ticks.ticker.tradingsymbol)
+                # condition for prev_high_low pe
+                if quote.last_price < self.data["stock_tickers"][
+                    ticks.ticker.tradingsymbol
+                ]["previous_low"] and (
+                    ticks.ticker.tradingsymbol not in self.prev_high_low_tickers
+                ):
+                    self.enter_trade(pe_trade)
+                    self.prev_high_low_tickers.add(ticks.ticker.tradingsymbol)
 
-                # if (
-                #     (first_view == "bull")
-                #     and (second_view == "bear")
-                #     and (quote.last_price < intraday_data[1].low)
-                #     and (slope < -1)
-                #     and (ticks.ticker.tradingsymbol not in self.tenmin_tickers)
-                # ):
-                #     self.enter_trade(pe_trade)
-                #     self.tenmin_tickers.add(ticks.ticker.tradingsymbol)
+                # ------------------------ FIRST 5 MINUTE -------------------------------
+
+                # compute the current time because below strategies are entered based on current time
+                current_time = datetime.datetime.now()
+
+                # ----------- TIMMINGS FROM 9 : 30 to 10 : 30 ---------------------------
+
+                # condition for ohlc ce ticker
+                if (
+                    (
+                        self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].open
+                        == self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].low
+                    )
+                    and (ohlc_view == "bull")
+                ) or (view == "bull"):
+                    if (
+                        quote.last_price
+                        > self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].high
+                    ) and (
+                        ticks.ticker.tradingsymbol not in self.fivemin_tickers_morning
+                    ):
+                        # enter between 9 : 30 to 10 : 30 time only
+                        if current_time >= datetime.time(
+                            9, 30
+                        ) and current_time <= datetime.time(10, 30):
+                            self.enter_trade(ce_trade)
+                            self.fivemin_tickers_morning.add(ticks.ticker.tradingsymbol)
+
+                if (
+                    (
+                        self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].open
+                        == self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].high
+                    )
+                    and (ohlc_view == "bear")
+                ) or (view == "bear"):
+                    if (
+                        quote.last_price
+                        < self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].low
+                    ) and (
+                        ticks.ticker.tradingsymbol not in self.fivemin_tickers_morning
+                    ):
+
+                        # enter between 9 : 30 to 10 : 30 time only
+                        if current_time >= datetime.time(
+                            9, 30
+                        ) and current_time <= datetime.time(10, 30):
+                            self.enter_trade(pe_trade)
+                            self.fivemin_tickers_morning.add(ticks.ticker.tradingsymbol)
+
+                # ----------------- TIMMINGS FROM 11 : 30 to 15 : 00 -------------------------
+
+                # condition first 5min for ce ticker
+                if (
+                    quote.last_price
+                    > self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].high
+                    and ticks.ticker.tradingsymbol not in self.fivemin_tickers_afternoon
+                ):
+                    if current_time >= datetime.time(
+                        11, 30
+                    ) and current_time <= datetime.time(15, 0):
+                        self.enter_trade(ce_trade)
+                        self.fivemin_tickers_afternoon.add(ticks.ticker.tradingsymbol)
+
+                # condition first 5min for pe ticker
+                if (
+                    quote.last_price
+                    < self.first_5min_ohlc_tickers[ticks.ticker.tradingsymbol].low
+                    and ticks.ticker.tradingsymbol not in self.fivemin_tickers_afternoon
+                ):
+                    if current_time >= datetime.time(
+                        11, 30
+                    ) and current_time <= datetime.time(15, 0):
+                        self.enter_trade(pe_trade)
+                        self.fivemin_tickers_afternoon.add(ticks.ticker.tradingsymbol)
 
             time.sleep(10)
 
     def exit_strategy(self, order: Order):
-
         profit = 115 / 100 * order.average_entry_price
-
         loss = 95 / 100 * order.average_entry_price
 
+        original_ticker = self.get_original_ticker(order.trading_symbol)
+
         try:
-            intraday_data = self.zerodha.historical_data_today(
-                self.get_original_ticker(order.trading_symbol),
-                HistoricalDataInterval.INTERVAL_5_MINUTE,
-            )
-            if len(intraday_data) == 0:
+            if original_ticker not in self.first_5min_ohlc_tickers:
                 raise Exception(
                     "empty historical data for original", order.trading_symbol
                 )
@@ -309,14 +420,14 @@ class StockOptionBuying(TradeBot):
 
         if (
             self.option_type(order.trading_symbol) == "CE"
-            and quote.last_price < intraday_data[0].low
+            and quote.last_price < self.first_5min_ohlc_tickers[original_ticker].low
         ):
             self.exit_trade(trade)
             return
 
         if (
             self.option_type(order.trading_symbol) == "PE"
-            and quote.last_price > intraday_data[0].high
+            and quote.last_price > self.first_5min_ohlc_tickers[original_ticker].high
         ):
             self.exit_trade(trade)
             return
@@ -325,9 +436,9 @@ class StockOptionBuying(TradeBot):
             self.exit_trade(trade)
             return
 
-        # if quote_derivative.last_price < loss:
-        #     self.exit_trade(trade)
-        #     return
+        if quote_derivative.last_price <= loss:
+            self.exit_trade(trade)
+            return
 
         if datetime.datetime.now().time() > datetime.time(15, 10, 1):
             self.exit_trade(trade)
