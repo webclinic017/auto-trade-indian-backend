@@ -21,6 +21,7 @@ class Order:
         exchange,
         total_quantity,
         average_entry_price,
+        parent_ticker,
         profit_percent=5,
         exit_time="",
     ):
@@ -30,11 +31,12 @@ class Order:
         self.average_entry_price = average_entry_price
         self.profit_percent = profit_percent
         self._exit_time = str(exit_time)
+        self.parent_ticker = parent_ticker
 
     @property
     def exit_time(self):
-        if self.exit_time:
-            return datetime.datetime.strptime(self.exit_time, "%H:%M:%S")
+        if self._exit_time:
+            return datetime.datetime.strptime(self._exit_time, "%H:%M:%S")
 
         return None
 
@@ -64,6 +66,7 @@ class OrderDatabase(MongoClient):
                 "total_quantity": order.total_quantity,
                 "profit_percent": order.profit_percent,
                 "exit_time": order._exit_time,
+                "parent_ticker": order.parent_ticker
             }
         }
 
@@ -79,6 +82,7 @@ class OrderDatabase(MongoClient):
             order["average_entry_price"],
             order["profit_percent"],
             order["exit_time"],
+            order["parent_ticker"]
         )
 
     def delete_order(self, trading_symbol) -> None:
@@ -95,6 +99,7 @@ class OrderDatabase(MongoClient):
                         order["average_entry_price"],
                         order["profit_percent"],
                         order["exit_time"],
+                        order["parent_ticker"]
                     )
         else:
             return []
@@ -115,6 +120,11 @@ class OrderExecutor:
         self.entered_tickers = set()
 
     def enter_order(self, trade: Trade, options: dict = {}):
+        '''
+            parameters:
+                trade: Trade
+                options: {"profit_percent":?, "exit_time":?}
+        '''
         if trade.trading_symbol not in self.entries:
             if self.mode == OrderExecutorType.STRICT:
                 if trade.trading_symbol not in self.entered_tickers:
@@ -134,6 +144,7 @@ class OrderExecutor:
                     trade.entry_price,
                     options.get("profit_percent", 5),
                     options.get("exit_time", ""),
+                    trade.parent_ticker
                 )
                 # self.entries[trade.trading_symbol]
                 self.__db.create_order(order)

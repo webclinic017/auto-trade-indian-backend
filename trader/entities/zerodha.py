@@ -2,6 +2,7 @@ from typing import DefaultDict, List, Union
 import datetime
 from enum import Enum
 from kiteconnect.connect import KiteConnect
+from kiteconnect.exceptions import PermissionException
 import redis
 import requests
 import time
@@ -141,12 +142,19 @@ class ZerodhaKite:
                 self.redis.get(f"historical:{interval.value}:{tradingsymbol}")
             )
         else:
-            _data = self.kite.historical_data(
-                self.token_map[tradingsymbol]["instrument_token"],
-                start_time,
-                end_time,
-                interval.value,
-            )
+            try:
+                _data = self.kite.historical_data(
+                    self.token_map[tradingsymbol]["instrument_token"],
+                    start_time,
+                    end_time,
+                    interval.value,
+                )
+            except PermissionException:
+                params = locals()
+                params.pop("self")
+
+                time.sleep(5)
+                return self.historical_data(**params)
 
             # add the historical data to cache
             self.redis.set(

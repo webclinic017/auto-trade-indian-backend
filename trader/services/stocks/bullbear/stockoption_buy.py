@@ -10,7 +10,13 @@
 # again five min strategy should start at 11.30 to 15
 # Bollinger Band strategy and prev high, low strategy should be between 9.30 to 15.00. Stoploss first five min high or low
 # Trade strategy should be positional until stoploss hits (which is first five min low)
-
+'''
+ self.enter_trade(pe_trade,
+                                {
+                                    "profit_percent": 5,
+                                    "exit_time": datetime.time(10, 30),
+                                },
+'''
 
 from typing import Dict
 from interfaces.bot import TradeBot
@@ -85,7 +91,7 @@ class StockOptionBuying(TradeBot):
 
     def get_original_ticker(self, trading_symbol: str):
         return self.original_tickers[trading_symbol]
-
+# BHARTIARTL22MAR740CE
     def entry_strategy(self):
         while True:
             if datetime.datetime.now().time() < datetime.time(
@@ -93,7 +99,7 @@ class StockOptionBuying(TradeBot):
             ) or datetime.datetime.now().time() > datetime.time(15, 1, 5):
                 continue
 
-            for ticks in TickerGenerator("22", "FEB", "", "", "").stocks():
+            for ticks in TickerGenerator("22", "MAR", "", "", "").stocks():
                 self.original_tickers[
                     ticks.ce_ticker.tradingsymbol
                 ] = ticks.ticker.tradingsymbol
@@ -148,9 +154,7 @@ class StockOptionBuying(TradeBot):
                     self.invalid_tickers.add(ticks.ticker.tradingsymbol)
                     continue
                 # historical technical data
-                bollinger_band = self.data["stock_tickers"][ticks.ticker.tradingsymbol][
-                    "bollinger_band"
-                ]
+                bollinger_band = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["bollinger_band"]
                 trade = self.data["stock_tickers"][ticks.ticker.tradingsymbol]["trade"]
                 # first five min data of each ticker
                 first_body_length = self.body_length(
@@ -183,16 +187,16 @@ class StockOptionBuying(TradeBot):
                     continue
 
                 if len(ce_quote.depth.sell) >= 2:
-                    ce_lots = math.ceil(
-                        10000
-                        / (ticks.ce_ticker.lot_size * ce_quote.depth.sell[1].price)
-                    )
+                    # ce_lots = math.ceil(
+                    #     10000
+                    #     / (ticks.ce_ticker.lot_size * ce_quote.depth.sell[1].price)
+                    # )*ticks.ce_ticker.lot_size
 
                     ce_trade = Trade(
                         TradeEndpoint.LIMIT_ORDER_BUY,
                         ticks.ce_ticker.tradingsymbol,
                         "NFO",
-                        ce_lots,
+                        ticks.ce_ticker.lot_size
                         TradeTag.ENTRY,
                         "",
                         ce_quote.depth.sell[1].price,
@@ -204,16 +208,16 @@ class StockOptionBuying(TradeBot):
                     continue
 
                 if len(pe_quote.depth.sell) >= 2:
-                    pe_lots = math.ceil(
-                        10000
-                        / (ticks.pe_ticker.lot_size * pe_quote.depth.sell[1].price)
-                    )
+                    # pe_lots = math.ceil(
+                    #     10000
+                    #     / (ticks.pe_ticker.lot_size * pe_quote.depth.sell[1].price)
+                    # )*ticks.pe_ticker.lot_size
 
                     pe_trade = Trade(
                         TradeEndpoint.LIMIT_ORDER_BUY,
                         ticks.pe_ticker.tradingsymbol,
                         "NFO",
-                        pe_lots,
+                        ticks.pe_ticker.lot_size,
                         TradeTag.ENTRY,
                         "",
                         pe_quote.depth.sell[1].price,
@@ -240,7 +244,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
@@ -259,7 +263,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                     and (ticks.ticker.tradingsymbol not in self.trade_tickers)
                 ):
@@ -280,7 +284,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
@@ -299,7 +303,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                     and (ticks.ticker.tradingsymbol not in self.bollband_tickers)
                 ):
@@ -318,7 +322,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                 ):
                     self.enter_trade(ce_trade, {"profit_percent": 5})
@@ -334,7 +338,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                 ):
                     self.enter_trade(pe_trade, {"profit_percent": 5})
@@ -343,7 +347,7 @@ class StockOptionBuying(TradeBot):
                 # ------------------------ FIRST 5 MINUTE -------------------------------
 
                 # compute the current time because below strategies are entered based on current time
-                current_time = datetime.datetime.now()
+                current_time = datetime.datetime.now().time()
 
                 # ----------- TIMMINGS FROM 9 : 30 to 10 : 30 ---------------------------
 
@@ -357,7 +361,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                 ) or (view == "bull"):
                     if (
@@ -388,7 +392,7 @@ class StockOptionBuying(TradeBot):
                     and (
                         self.option_volatilty(
                             quote.depth.sell[1].price, quote.depth.buy[1].price
-                        )
+                        ) < 5
                     )
                 ) or (view == "bear"):
                     if (
@@ -446,15 +450,24 @@ class StockOptionBuying(TradeBot):
                     ) and current_time <= datetime.time(15, 0):
                         self.enter_trade(pe_trade, {"profit_percent": 5})
                         self.fivemin_tickers_afternoon.add(ticks.ticker.tradingsymbol)
+            print("fivemin_tickers" , fivemin_tickers_morning)
+            print("fivemin_tickers_afternoon" , fivemin_tickers_afternoon
+            print("trade_tickers" , trade_tickers
+            print("bollband_tickers", bollband_tickers)
+            print("prev_high_low_tickers" , prev_high_low_tickers)
+
+
+
+      
 
             time.sleep(10)
 
     def exit_strategy(self, order: Order):
         profit = (100 + order.profit_percent) / 100 * order.average_entry_price
         loss = 95 / 100 * order.average_entry_price
+        original_ticker = order.parent_ticker
 
-        original_ticker = self.get_original_ticker(order.trading_symbol)
-
+        
         try:
             if original_ticker not in self.first_5min_ohlc_tickers:
                 raise Exception(
@@ -501,9 +514,9 @@ class StockOptionBuying(TradeBot):
             self.exit_trade(trade)
             return
 
-        if quote_derivative.last_price <= loss:
-            self.exit_trade(trade)
-            return
+        # if quote_derivative.last_price <= loss:
+        #     self.exit_trade(trade)
+        #     return
 
         current_time = datetime.datetime.now().time()
 

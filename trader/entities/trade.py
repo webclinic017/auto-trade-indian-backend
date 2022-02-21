@@ -37,6 +37,7 @@ class Trade:
         ltp: int,
         type: TradeType,
         max_quantity: int = -1,
+        parent_ticker: str = None,
     ):
         self.endpoint: TradeEndpoint = endpoint
         self.trading_symbol: str = trading_symbol
@@ -49,6 +50,7 @@ class Trade:
         self.ltp: int = ltp
         self.type: TradeType = type
         self.max_quantity = max_quantity
+        self.parent_ticker = parent_ticker
 
     def json(self):
         return json.dumps(

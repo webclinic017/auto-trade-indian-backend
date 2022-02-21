@@ -64,7 +64,7 @@ class BullBear(TradeBot):
             )
 
     def is_ticker_expired(self, tradingsymbol):
-        return self.zerodha.get(f"bullbear:index:{tradingsymbol}") != None
+        return self.zerodha.redis.get(f"bullbear:index:{tradingsymbol}") == None
 
     def entry_strategy(self):
         while True:
@@ -154,6 +154,7 @@ class BullBear(TradeBot):
                             price=ce_quote.depth.sell[1].price,
                             ltp=ce_quote.last_price,
                             type=TradeType.INDEXOPT,
+                            parent_ticker=tick.ticker_type
                         )
 
                         self.enter_trade(trade)
@@ -192,6 +193,7 @@ class BullBear(TradeBot):
                             ltp=pe_quote.last_price,
                             price=pe_quote.depth.sell[1].price,
                             type=TradeType.INDEXOPT,
+                            parent_ticker=tick.ticker_type
                         )
 
                         self.enter_trade(trade)
@@ -224,6 +226,7 @@ class BullBear(TradeBot):
                     direction = self.get_direction(body_length)
 
                     print("")
+                    print(f"[*] slope for BANKNIFTY  : {slope}")
                     print(f"[*] candle length for BANKNIFTY  : {candle_length}")
                     print(f"[*] body length for BANKNIFTY    : {body_length}")
                     print(f"[*] direction for BANKNIFTY      : {direction}")
@@ -266,6 +269,7 @@ class BullBear(TradeBot):
                             price=ce_quote.depth.sell[1].price,
                             ltp=ce_quote.last_price,
                             type=TradeType.INDEXOPT,
+                            parent_ticker=tick.ticker_type
                         )
 
                         self.enter_trade(trade)
@@ -302,6 +306,7 @@ class BullBear(TradeBot):
                             price=pe_quote.depth.sell[1].price,
                             ltp=pe_quote.last_price,
                             type=TradeType.INDEXOPT,
+                            parent_ticker=tick.ticker_type
                         )
 
                         self.enter_trade(trade)
@@ -311,10 +316,10 @@ class BullBear(TradeBot):
                         self.banknifty["pe_profit"] = slope
                         # self.sl_pe[ticks.tradingsymbol] = historical_data[-2].high
 
-            time.sleep(10)
+            time.sleep(300)
 
     def exit_strategy(self, order: Order):
-        if self.get_index_type(order.trading_symbol) == "BANKNIFTY":
+        if order.parent_ticker == "BANKNIFTY":
             quote = self.zerodha.live_data("NIFTY BANK")
             # ce_sl=self.sl_ce.get('banknifty', -float('inf'))
             # pe_sl=self.sl_pe.get('banknifty', -float('inf'))
