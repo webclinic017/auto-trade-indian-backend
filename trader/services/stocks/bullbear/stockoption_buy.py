@@ -196,7 +196,7 @@ class StockOptionBuying(TradeBot):
                         TradeEndpoint.LIMIT_ORDER_BUY,
                         ticks.ce_ticker.tradingsymbol,
                         "NFO",
-                        ticks.ce_ticker.lot_size
+                        ticks.ce_ticker.lot_size,
                         TradeTag.ENTRY,
                         "",
                         ce_quote.depth.sell[1].price,

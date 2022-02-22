@@ -255,14 +255,14 @@ class BullBear(TradeBot):
                         except Exception:
                             continue
                         banknifty_celots = math.ceil(
-                            10000 / (25 * ce_quote.depth.sell[1].price)
+                            10000 / (100 * ce_quote.depth.sell[1].price)
                         )
                         trade = Trade(
                             endpoint=TradeEndpoint.MARKET_ORDER_BUY,
                             trading_symbol=tick.ce_ticker.tradingsymbol,
                             exchange="NFO",
                             # quantity=tick.ce_ticker.lot_size,
-                            quantity=banknifty_celots,
+                            quantity=25,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=ce_quote.last_price,
@@ -299,7 +299,7 @@ class BullBear(TradeBot):
                             trading_symbol=tick.pe_ticker.tradingsymbol,
                             exchange="NFO",
                             # quantity=tick.pe_ticker.lot_size,
-                            quantity=banknifty_pelots,
+                            quantity=25,
                             tag=TradeTag.ENTRY,
                             publisher="",
                             entry_price=pe_quote.last_price,
@@ -387,7 +387,7 @@ class BullBear(TradeBot):
         if (pe_profit < -5) and (pe_profit >= -10):
             profit = profit_five
 
-        if (pe_profit < -10) and (ce_profit >= -15):
+        if (pe_profit < -10) and (pe_profit >= -15):
             profit = profit_ten
 
         if pe_profit < -15:
