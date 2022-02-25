@@ -15,10 +15,13 @@ class Ticker:
 
 
 class StockTicker:
-    def __init__(self, ce_ticker: Ticker, pe_ticker: Ticker, ticker: Ticker):
+    def __init__(
+        self, ce_ticker: Ticker, pe_ticker: Ticker, ticker: Ticker, future: Ticker
+    ):
         self.ce_ticker = ce_ticker
         self.pe_ticker = pe_ticker
         self.ticker = ticker
+        self.future = future
 
 
 class IndexTicker:
@@ -163,6 +166,8 @@ class TickerGenerator:
                 + "PE"
             )
 
+            future = tradingsymbol + self.stock_year + self.stock_month + "FUT"
+
             if (
                 (ce_ticker not in self.instruments)
                 or (pe_ticker not in self.instruments)
@@ -187,7 +192,13 @@ class TickerGenerator:
                 self.instruments[tradingsymbol]["instrument_token"],
             )
 
-            yield StockTicker(ce, pe, ticker)
+            future = Ticker(
+                future,
+                self.instruments[future]["lot_size"],
+                self.instruments[future]["instrument_token"],
+            )
+
+            yield StockTicker(ce, pe, ticker, future)
 
     def stocks_historical_prices(self):
         factors = json.loads(open("/app/data/factors.json", "r").read())
