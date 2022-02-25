@@ -19,10 +19,6 @@ import math
 
 
 class BullBear(TradeBot):
-
-    # sl_ce={}
-    # sl_pe = {}
-    # profit = {}
     nifty = {}
     banknifty = {}
 
