@@ -22,6 +22,12 @@ class BullBear(TradeBot):
     nifty = {}
     banknifty = {}
 
+    total_profit = 0
+    total_loss = 0
+
+    PROFIT_LIMIT = 10000
+    LOSS_LIMIT = 5000
+
     def get_minutes(delta):
         return divmod(delta.seconds, 60)[0]
 
@@ -71,6 +77,10 @@ class BullBear(TradeBot):
                 datetime.datetime.now().time() > datetime.time(15, 1, 5)
             ):
                 continue
+
+            # completely stop the strategy
+            if self.total_profit >= self.PROFIT_LIMIT or self.total_loss >= self.LOSS_LIMIT:
+                break
 
             print(f"[**] time stamp: {datetime.datetime.now()}\n\n")
 
@@ -414,11 +424,18 @@ class BullBear(TradeBot):
             type=TradeType.INDEXOPT,
             max_quantity=1800,
         )
+
+        # completely exit the orders
+        if self.total_profit >= self.PROFIT_LIMIT or self.total_loss >= self.LOSS_LIMIT:
+            self.exit_trade(trade)
+            return
        
         current_time = datetime.datetime.now()
         
         if ((self.get_option_type(order.trading_symbol) == "CE") and (quote.last_price < ce_sl)):
             self.exit_trade(trade)
+            
+            self.total_loss += (order.average_entry_price - ticker_quote.last_price) * order.quantity
             return
 
         if ((self.get_option_type(order.trading_symbol) == "CE") and (entered_time_ce and (self.get_minutes(current_time - entered_time_ce)) >= 5)):
@@ -429,6 +446,8 @@ class BullBear(TradeBot):
 
         if ((self.get_option_type(order.trading_symbol) == "PE") and (quote.last_price > pe_sl)):
             self.exit_trade(trade)
+
+            self.total_loss += (order.average_entry_price - ticker_quote.last_price) * order.quantity
             return
 
         if ((self.get_option_type(order.trading_symbol) == "PE") and (entered_time_pe and self.get_minutes((current_time - entered_time_pe)) >= 5)):
@@ -437,13 +456,13 @@ class BullBear(TradeBot):
                 self.exit_trade(trade)
                 return
         
-
-
         if (
             ticker_quote.last_price >= profit
             or datetime.datetime.now().time() > datetime.time(15, 29)
         ):
             self.exit_trade(trade)
+
+            self.total_profit += (ticker_quote.last_price - order.average_entry_price) * order.quantity
             return
 
     def start(self):
