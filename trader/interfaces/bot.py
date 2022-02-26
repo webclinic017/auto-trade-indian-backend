@@ -38,7 +38,7 @@ class TradeBot(OrderExecutor):
         while _start_time.minute % 5 != 0:
             _start_time += datetime.timedelta(minutes=1)
 
-        print(f'[**] strategy starts at: {_start_time}')
+        print(f"[**] strategy starts at: {_start_time}")
 
         while current_time.minute % 5 != 0:
             # sleep for 1 second
@@ -57,11 +57,6 @@ class TradeBot(OrderExecutor):
 
     def _exit_strategy(self, interval=10):
         while True:
-            # tickers = set(self.entries.keys()).copy()
-
-            # for ticker in tickers:
-            #     if ticker in self.entries:
-            #         self.exit_strategy(self.entries[ticker])
             for order in self.get_orders():
                 self.exit_strategy(order)
 

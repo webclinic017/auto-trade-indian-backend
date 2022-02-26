@@ -1,5 +1,6 @@
 import time, os
 from entities.orders import OrderExecutorType
+from services.stocks.FutureBuyOptionSell.futurebuy_optionsell import FutureBuyOptionSell
 from utils.auth import get_key_token
 from threading import (
     Thread as Process,
@@ -7,6 +8,7 @@ from threading import (
 from kiteconnect import KiteConnect
 import json
 from services.index.bullbear.bullbear import BullBear as BullBearIndex
+
 # from services.stocks.bullbear.bullbear import BullBear as BullBearStocks
 # from services.stocks.bullbear.stockoption_buy import StockOptionBuying as StockOptionBuy
 
@@ -36,12 +38,11 @@ with open("/tmp/instruments.json", "w") as f:
 
 
 services = [
-    {
-        "name": "bullbear_index",
-        "script": BullBearIndex(name="bullbear_index").start,
-        "args": [],
-    },
-    
+    # {
+    #     "name": "bullbear_index",
+    #     "script": BullBearIndex(name="bullbear_index").start,
+    #     "args": [],
+    # },
     # {
     #     "name": "bullbear_stock",
     #     "script": BullBearStocks(
@@ -49,20 +50,23 @@ services = [
     #     ).start,
     #     "args": [],
     # },
-    
     # {
     #     "name": "bullbear_stock",
     #     "script": BullBearStocks(
     #         name="bullbear_stock").start,
     #     "args": [],
     # },
-    
     # {
     #     "name": "stockoption_buying",
     #     "script": StockOptionBuy(
     #         name="stockoption_buying").start,
     #     "args": [],
     # },
+    # {
+    #     "name": "futurebuy_optionsell",
+    #     "script": FutureBuyOptionSell(name="future_buy_option_sell").start,
+    #     "args": [],
+    # }
 ]
 
 processes = {}
