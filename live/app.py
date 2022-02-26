@@ -1,3 +1,4 @@
+from datetime import timedelta
 from kiteconnect import KiteTicker, KiteConnect
 from utils.auth import get_key_token
 from threading import Thread
@@ -47,7 +48,7 @@ def appendTickers(ticks):
         ticker = ticker_map[tick["instrument_token"]]["tradingsymbol"]
         # print(tick)
 
-        rdb.set(ticker, json.dumps(tick, default=str))
+        rdb.set(ticker, json.dumps(tick, default=str), timedelta(seconds=5))
 
 
 def on_ticks(ws, ticks):
