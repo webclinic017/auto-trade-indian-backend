@@ -1,9 +1,10 @@
-from typing import Dict, Iterator
+from typing import Dict, Iterator, List
 from entities.publisher import Publisher
 from entities.trade import Trade
 from constants.index import PUBLISHER
 from pymongo import MongoClient
 from pymongo.database import Database, Collection
+from bson import ObjectId
 from enum import Enum
 import datetime
 
@@ -12,6 +13,11 @@ class OrderExecutorType(Enum):
     SINGLE = "single"
     MULTIPLE = "multiple"
     STRICT = "strict"
+
+
+class StrategyType(Enum):
+    NORMAL = "normal"
+    HYBRID = "hybrid"
 
 
 class Order:
@@ -54,8 +60,9 @@ class OrderDatabase(MongoClient):
 
         self.db: Database = self["autotrade"]
         self.collection: Collection = self.db[name]
+        self.hybrid_collection: Collection = self.db[name + "_hybrid"]
 
-    def create_order(self, order: Order) -> None:
+    def create_order(self, order: Order) -> ObjectId:
         _filter = {"trading_symbol": order.trading_symbol}
 
         _update = {
@@ -66,11 +73,12 @@ class OrderDatabase(MongoClient):
                 "total_quantity": order.total_quantity,
                 "profit_percent": order.profit_percent,
                 "exit_time": order._exit_time,
-                "parent_ticker": order.parent_ticker
+                "parent_ticker": order.parent_ticker,
             }
         }
 
-        self.collection.update_one(_filter, _update, upsert=True)
+        update = self.collection.update_one(_filter, _update, upsert=True)
+        return update.raw_result["_id"]
 
     def get_order(self, trading_symbol) -> Order:
         order = self.collection.find_one({"trading_symbol": trading_symbol})
@@ -82,7 +90,7 @@ class OrderDatabase(MongoClient):
             order["average_entry_price"],
             order["profit_percent"],
             order["exit_time"],
-            order["parent_ticker"]
+            order["parent_ticker"],
         )
 
     def delete_order(self, trading_symbol) -> None:
@@ -99,7 +107,7 @@ class OrderDatabase(MongoClient):
                         order["average_entry_price"],
                         order["profit_percent"],
                         order["exit_time"],
-                        order["parent_ticker"]
+                        order["parent_ticker"],
                     )
         else:
             return []
@@ -120,11 +128,11 @@ class OrderExecutor:
         self.entered_tickers = set()
 
     def enter_order(self, trade: Trade, options: dict = {}):
-        '''
-            parameters:
-                trade: Trade
-                options: {"profit_percent":?, "exit_time":?}
-        '''
+        """
+        parameters:
+            trade: Trade
+            options: {"profit_percent":?, "exit_time":?}
+        """
         if trade.trading_symbol not in self.entries:
             if self.mode == OrderExecutorType.STRICT:
                 if trade.trading_symbol not in self.entered_tickers:
@@ -144,20 +152,20 @@ class OrderExecutor:
                     trade.entry_price,
                     options.get("profit_percent", 5),
                     options.get("exit_time", ""),
-                    trade.parent_ticker
+                    trade.parent_ticker,
                 )
                 # self.entries[trade.trading_symbol]
-                self.__db.create_order(order)
+                orderid = self.__db.create_order(order)
 
-                return True
+                return True, orderid
         else:
             if self.mode == OrderExecutorType.MULTIPLE:
                 order = self.__db.get_order(trade.trading_symbol).add_trade(trade)
-                self.__db.create_order(order)
+                orderid = self.__db.create_order(order)
                 # self.entries[trade.trading_symbol].add_trade(trade)
-                return True
+                return True, orderid
 
-        return False
+        return False, None
 
     def clean_order(self, trading_symbol: str):
         # del self.entries[trading_symbol]
@@ -169,9 +177,19 @@ class OrderExecutor:
         return self.__db.orders()
 
     def enter_trade(self, trade: Trade, options: dict = {}):
-        if self.enter_order(trade, options):
+        should_trade, _ = self.enter_order(trade, options)
+
+        if should_trade:
             # publish the trade to the publisher
             self.publisher.publish_trade(trade)
+
+    def enter_hybrid_trade(self, trades: List[Trade], options={}):
+        order_ids = []
+
+        for trade in trades:
+            _, orderid = self.enter_trade(trade, options)
+
+            order_ids.append(orderid)
 
     def exit_trade(self, trade: Trade):
         self.clean_order(trade.trading_symbol)
