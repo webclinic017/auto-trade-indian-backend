@@ -1,6 +1,5 @@
 from typing import DefaultDict, List, Union
 import datetime
-from enum import Enum
 from kiteconnect.connect import KiteConnect
 from kiteconnect.exceptions import PermissionException
 import redis
@@ -67,7 +66,7 @@ class LiveTicker:
         self.depth: Depth = Depth(live_ticker.get("depth", {}))
 
 
-class HistoricalDataInterval(Enum):
+class HistoricalDataInterval:
     INTERVAL_1_MINUTE = "1minute"
     INTERVAL_3_MINUTE = "3minute"
     INTERVAL_5_MINUTE = "5minute"
@@ -138,16 +137,14 @@ class ZerodhaKite:
         # check for the data in cache
         if self.redis.get(f"historical:{tradingsymbol}"):
             # if there is a cache hit get the historical data from cache
-            _data = json.loads(
-                self.redis.get(f"historical:{interval.value}:{tradingsymbol}")
-            )
+            _data = json.loads(self.redis.get(f"historical:{interval}:{tradingsymbol}"))
         else:
             try:
                 _data = self.kite.historical_data(
                     self.token_map[tradingsymbol]["instrument_token"],
                     start_time,
                     end_time,
-                    interval.value,
+                    interval,
                 )
             except PermissionException:
                 params = locals()
@@ -158,9 +155,9 @@ class ZerodhaKite:
 
             # add the historical data to cache
             self.redis.set(
-                f"historical:{interval.value}:{tradingsymbol}",
+                f"historical:{interval}:{tradingsymbol}",
                 json.dumps(_data, default=str),
-                self.get_expiry(interval.value),
+                self.get_expiry(interval),
             )
 
         data: List[HistoricalOHLC] = []

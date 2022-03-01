@@ -74,10 +74,10 @@ class BullBear(TradeBot):
 
     def entry_strategy(self):
         while True:
-            # if (datetime.datetime.now().time() < datetime.time(9, 25, 5)) or (
-            #     datetime.datetime.now().time() > datetime.time(15, 1, 5)
-            # ):
-            #     continue
+            if (datetime.datetime.now().time() < datetime.time(9, 25, 5)) or (
+                datetime.datetime.now().time() > datetime.time(15, 1, 5)
+            ):
+                continue
 
             # completely stop the strategy
             if (
@@ -127,20 +127,22 @@ class BullBear(TradeBot):
                     quote = self.zerodha.live_data("NIFTY 50")
 
                     print("***************** - NIFTY DATA BEGIN- *********************")
+
                     print(f"[*] slope for NIFTY             : {slope}")
                     print(
-                        f"[*] candle time for NIFTY       : {historical_data[-2].time}"
+                        f"[*] candle time for NIFTY         : {historical_data[-2].time}"
                     )
                     print(
-                        f"[*] latest high                 : {historical_data[-2].high}"
+                        f"[*] latest high                   : {historical_data[-2].high}"
                     )
                     print(
-                        f"[*] latest low                  : {historical_data[-2].low}"
+                        f"[*] latest low                    : {historical_data[-2].low}"
                     )
                     print(f"[*] candle length for NIFTY     : {candle_length}")
                     print(f"[*] body length for NIFTY       : {body_length}")
                     print(f"[*] direction for NIFTY         : {direction}")
                     print(f"[*] current price of nifty      : {quote.last_price}")
+
                     print("***************** - NIFTY DATA END- *********************")
 
                     if (
@@ -257,6 +259,7 @@ class BullBear(TradeBot):
                     print(
                         "***************** - BANK NIFTY DATA BEGIN- *********************"
                     )
+
                     print(f"[*] slope for BANK NIFTY             : {slope}")
                     print(
                         f"[*] candle time for BANK NIFTY         : {historical_data[-2].time}"
@@ -271,6 +274,7 @@ class BullBear(TradeBot):
                     print(f"[*] body length for BANK NIFTY       : {body_length}")
                     print(f"[*] direction for BANK NIFTY         : {direction}")
                     print(f"[*] current price of BANK nifty      : {quote.last_price}")
+
                     print(
                         "***************** - BANK NIFTY DATA END- *********************"
                     )
@@ -359,7 +363,10 @@ class BullBear(TradeBot):
         if "self" in params:
             params.pop("self")
 
-        return all([params[key] != None for key in params])
+        print(params)
+
+        if not (all([params[key] != None for key in params])):
+            raise Exception("validation failed")
 
     def exit_strategy(self, order: Order):
         if order.parent_ticker == "BANKNIFTY":
@@ -373,7 +380,7 @@ class BullBear(TradeBot):
             entered_price_pe = self.banknifty.get("pe_entry_value")
             entered_time_pe = self.banknifty.get("pe_entry_time")
 
-            if not (
+            try:
                 self.validate_exit(
                     ce_sl,
                     pe_sl,
@@ -384,7 +391,8 @@ class BullBear(TradeBot):
                     entered_price_pe,
                     entered_time_pe,
                 )
-            ):
+            except Exception as e:
+                print(f"[**] Exception : {e}")
                 return
 
             ce_sl = ce_sl / 2
@@ -400,7 +408,8 @@ class BullBear(TradeBot):
 
                 if len(historical_data) == 0:
                     raise Exception("empty historical data")
-            except Exception:
+            except Exception as e:
+                print(f"[**] Exception : {e}")
                 return
 
         else:
@@ -414,7 +423,7 @@ class BullBear(TradeBot):
             entered_price_pe = self.nifty.get("pe_entry_value")
             entered_time_pe = self.nifty.get("pe_entry_time")
 
-            if not (
+            try:
                 self.validate_exit(
                     ce_sl,
                     pe_sl,
@@ -425,7 +434,8 @@ class BullBear(TradeBot):
                     entered_price_pe,
                     entered_time_pe,
                 )
-            ):
+            except Exception as e:
+                print(f"[**] Exception : {e}")
                 return
 
             ce_sl = ce_sl / 2
@@ -441,7 +451,8 @@ class BullBear(TradeBot):
 
                 if len(historical_data) == 0:
                     raise Exception("empty historical data")
-            except Exception:
+            except Exception as e:
+                print(f"[**] Exception : {e}")
                 return
 
         ticker_quote = self.zerodha.live_data(order.trading_symbol)
@@ -533,7 +544,7 @@ class BullBear(TradeBot):
 
     def start(self):
         # wait until next 5 multiple time
-        # self.wait()
+        self.wait()
 
         # First stock year, stock month, index year, index month, indexweek
         self.ticker_generator = TickerGenerator("22", "JAN", "22", "3", "03")
