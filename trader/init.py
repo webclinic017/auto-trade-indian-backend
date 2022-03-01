@@ -38,11 +38,11 @@ with open("/tmp/instruments.json", "w") as f:
 
 
 services = [
-    # {
-    #     "name": "bullbear_index",
-    #     "script": BullBearIndex(name="bullbear_index").start,
-    #     "args": [],
-    # },
+    {
+        "name": "bullbear_index",
+        "script": BullBearIndex(name="bullbear_index").start,
+        "args": [],
+    },
     # {
     #     "name": "bullbear_stock",
     #     "script": BullBearStocks(
@@ -66,7 +66,7 @@ services = [
     #     "name": "futurebuy_optionsell",
     #     "script": FutureBuyOptionSell(name="future_buy_option_sell").start,
     #     "args": [],
-    # }
+    # },
 ]
 
 processes = {}

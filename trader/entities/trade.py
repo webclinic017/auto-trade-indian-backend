@@ -1,9 +1,7 @@
-from enum import Enum
 import json
-import datetime
 
 
-class TradeType(Enum):
+class TradeType:
     INDEXOPT = "INDEXOPT"
     INDEXFUT = "INDEXFUT"
     STOCKOPT = "STOCKOPT"
@@ -11,12 +9,12 @@ class TradeType(Enum):
     STOCKFUT = "STOCKFUT"
 
 
-class TradeTag(Enum):
+class TradeTag:
     ENTRY = "ENTRY"
     EXIT = "EXIT"
 
 
-class TradeEndpoint(Enum):
+class TradeEndpoint:
     MARKET_ORDER_BUY = "/place/market_order/buy"
     MARKET_ORDER_SELL = "/place/market_order/sell"
     LIMIT_ORDER_BUY = "/place/limit_order/buy"
@@ -55,16 +53,16 @@ class Trade:
     def json(self):
         return json.dumps(
             {
-                "endpoint": self.endpoint.value,
+                "endpoint": self.endpoint,
                 "trading_symbol": self.trading_symbol,
                 "exchange": self.exchange,
                 "quantity": self.quantity,
-                "tag": self.tag.value,
+                "tag": self.tag,
                 "publisher": self.publisher,
                 "entry_price": self.entry_price,
                 "price": self.price,
                 "ltp": self.ltp,
-                "type": self.type.value,
+                "type": self.type,
                 "max_quantity": self.max_quantity,
             },
             indent=1,

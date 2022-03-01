@@ -1,4 +1,6 @@
 import datetime
+from enum import Enum
+from typing import List
 from kiteconnect.connect import KiteConnect
 import os
 import time
@@ -10,7 +12,14 @@ import glob
 import json
 
 
+class StrategyType(Enum):
+    NORMAL = "normal"
+    HYBRID = "hybrid"
+
+
 class TradeBot(OrderExecutor):
+    strategy_type = StrategyType.NORMAL
+
     def __init__(
         self,
         name: str,
@@ -18,6 +27,7 @@ class TradeBot(OrderExecutor):
         mode: OrderExecutorType = OrderExecutorType.MULTIPLE,
     ):
         self.name = name
+
         super().__init__(publisher_uri=publisher_uri, mode=mode)
 
         self.kite = KiteConnect(
@@ -55,6 +65,9 @@ class TradeBot(OrderExecutor):
     def exit_strategy(self, order: Order):
         raise NotImplementedError
 
+    def exit_strategy_hybrid(self, orders: List[Order]):
+        raise NotImplementedError
+
     def _exit_strategy(self, interval=10):
         while True:
             for order in self.get_orders():
@@ -62,9 +75,21 @@ class TradeBot(OrderExecutor):
 
             time.sleep(interval)
 
+    def _exit_strategy_hybrid(self, interval=10):
+        # get all the hybrid orders
+        while True:
+            for orders in self.get_hybrid_orders():
+                self.exit_strategy_hybrid(orders)
+
+            time.sleep(10)
+
     def start(self):
         entry_thread = threading.Thread(target=self.entry_strategy)
-        exit_thread = threading.Thread(target=self._exit_strategy)
+
+        if self.strategy_type == StrategyType.HYBRID:
+            exit_thread = threading.Thread(target=self._exit_strategy_hybrid)
+        else:
+            exit_thread = threading.Thread(target=self._exit_strategy)
 
         entry_thread.start()
         exit_thread.start()
